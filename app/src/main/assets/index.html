@@ -66,7 +66,9 @@
             top: 0;
             left: 0;
             transform-style: preserve-3d;
-            transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.5s, box-shadow 0.5s;
+            transition: transform var(--transition-duration, 0.6s) var(--transition-easing, cubic-bezier(0.25, 1, 0.5, 1)), 
+                        opacity var(--transition-duration, 0.6s) var(--transition-easing, cubic-bezier(0.25, 1, 0.5, 1)), 
+                        box-shadow var(--transition-duration, 0.6s) var(--transition-easing, cubic-bezier(0.25, 1, 0.5, 1));
             cursor: grab;
             backface-visibility: hidden;
         }
@@ -112,6 +114,33 @@
             opacity: 0;
             z-index: 0;
             pointer-events: none;
+        }
+
+        #print-worksheet-area {
+            display: none;
+        }
+
+        @media print {
+            body {
+                background: #ffffff !important;
+                color: #000000 !important;
+                overflow: visible !important;
+            }
+            /* Hide all default dashboard and application elements during printing */
+            body > *:not(#print-worksheet-area) {
+                display: none !important;
+            }
+            #print-worksheet-area {
+                display: block !important;
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                margin: 0;
+                padding: 24px;
+                background: white !important;
+                color: black !important;
+            }
         }
     </style>
 </head>
@@ -343,6 +372,27 @@
                         </div>
                     </div>
 
+                    <!-- Transition Duration & Easing controls -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 rounded-2xl bg-slate-100/50 dark:bg-slate-800/30 border border-slate-200/50 dark:border-slate-800/50 text-xs">
+                        <div class="flex flex-col gap-1.5">
+                            <div class="flex justify-between items-center font-semibold">
+                                <span class="flex items-center gap-1"><i data-lucide="timer" class="w-3.5 h-3.5 text-purple-600"></i> Transition Duration</span>
+                                <span id="duration-val-label" class="px-1.5 py-0.5 rounded bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 font-bold">0.6s</span>
+                            </div>
+                            <input type="range" id="transition-duration" min="0.1" max="2.0" step="0.1" value="0.6" oninput="updateTransitionSettings()" class="w-full accent-purple-600">
+                        </div>
+                        <div class="flex flex-col gap-1.5">
+                            <label class="font-semibold flex items-center gap-1"><i data-lucide="activity" class="w-3.5 h-3.5 text-purple-600"></i> Transition Easing Curve</label>
+                            <select id="transition-easing" onchange="updateTransitionSettings()" class="w-full px-2 py-1.5 text-xs rounded-lg border bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700 font-medium">
+                                <option value="cubic-bezier(0.25, 1, 0.5, 1)">Smooth Deceleration (Out-Quad)</option>
+                                <option value="cubic-bezier(0.34, 1.56, 0.64, 1)">Spring / Snappy Elastic Bounce</option>
+                                <option value="cubic-bezier(0.16, 1, 0.3, 1)">Ultra-Smooth Slow-Motion (Expo)</option>
+                                <option value="ease-in-out">Standard In-Out Ease</option>
+                                <option value="linear">Strictly Linear</option>
+                            </select>
+                        </div>
+                    </div>
+
                     <!-- CONTROLS & DOTS -->
                     <div class="flex items-center justify-between pt-2">
                         <!-- Left Prev Arrow -->
@@ -400,7 +450,7 @@
                     <button onclick="generateWorksheet()" class="w-full py-3 rounded-xl bg-blue-600 text-white font-bold text-sm shadow-md">
                         Generate Worksheet
                     </button>
-                    <div id="ws-output" class="hidden glass-card rounded-xl p-4 text-xs font-mono space-y-2 max-h-60 overflow-y-auto"></div>
+                    <div id="ws-output" class="hidden space-y-4"></div>
                 </div>
             </div>
 
@@ -756,26 +806,169 @@
             }
         }
 
+        function updateTransitionSettings() {
+            const duration = document.getElementById('transition-duration').value;
+            const easing = document.getElementById('transition-easing').value;
+            
+            document.getElementById('duration-val-label').innerText = `${duration}s`;
+            
+            const container = document.getElementById('slide-cards-container');
+            if (container) {
+                container.style.setProperty('--transition-duration', `${duration}s`);
+                container.style.setProperty('--transition-easing', easing);
+            }
+        }
+
         function generateWorksheet() {
+            const subject = document.getElementById('ws-subject').value || "General Subject";
+            const grade = document.getElementById('ws-grade').value || "All Grades";
+            const topic = document.getElementById('ws-topic').value || "Study Module";
+            const count = parseInt(document.getElementById('ws-count').value) || 5;
+
             const out = document.getElementById('ws-output');
             out.classList.remove('hidden');
-            out.innerText = 'Generating Worksheet...';
+            out.innerHTML = `
+                <div class="glass-card rounded-2xl p-6 flex flex-col items-center justify-center py-10 text-center">
+                    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mb-3"></div>
+                    <span class="text-sm font-semibold text-slate-600 dark:text-slate-300">Assembling interactive questions & layouts...</span>
+                </div>
+            `;
+
             setTimeout(() => {
-                out.innerText = JSON.stringify({
-                    title: document.getElementById('ws-subject').value + ' Worksheet',
-                    topic: document.getElementById('ws-topic').value,
-                    questions: [
-                        { id: 1, question: "Sample question 1?", answer: "Option A" },
-                        { id: 2, question: "Sample question 2?", answer: "Option B" }
+                // Topic-specific custom templates
+                const templates = {
+                    "mathematics": [
+                        "Solve for x in the equation: 3x + 7 = 22. Detail all your working steps.",
+                        "Find the slope of the line passing through coordinates (2, 5) and (4, 11).",
+                        "Graph the system function y = -2x + 4. Identify the x-intercept and y-intercept.",
+                        "A rental car costs $40 flat fee plus $0.15 per mile. Formulate and solve the equation representing a $62.50 rental invoice.",
+                        "Determine if the relation represented by {(1,2), (2,4), (3,6), (2,8)} is a function. Explain your reasoning."
+                    ],
+                    "science": [
+                        "Explain the primary differences between physical changes and chemical changes. List two distinct examples of each.",
+                        "Describe the functions of mitochondria and chloroplasts in cellular energy processes.",
+                        "What is Newton's Second Law of Motion? State its formula and identify all variables and units.",
+                        "Detail the steps of the water cycle and explain how solar energy drives this process.",
+                        "Describe the process of photosynthesis, listing both the primary reactants and generated products."
+                    ],
+                    "history": [
+                        "What were the primary political and socio-economic catalysts of the French Revolution?",
+                        "Discuss the core historical significance of the Magna Carta signed in the year 1215.",
+                        "Analyze the impact of Gutenberg's printing press on the speed and reach of the Protestant Reformation.",
+                        "Outline the primary objective of the League of Nations and explain the key reasons behind its eventual failure.",
+                        "Discuss the immediate social and economic consequences of the Industrial Revolution on European urban centers."
                     ]
-                }, null, 2);
+                };
+
+                const subKey = subject.toLowerCase();
+                let chosenList = templates["mathematics"];
+                if (subKey.includes("math")) chosenList = templates["mathematics"];
+                else if (subKey.includes("sci") || subKey.includes("bio") || subKey.includes("chem") || subKey.includes("phys")) chosenList = templates["science"];
+                else if (subKey.includes("hist") || subKey.includes("social") || subKey.includes("civ")) chosenList = templates["history"];
+                else chosenList = templates["mathematics"]; // fallback
+
+                let questions = [];
+                for (let i = 0; i < count; i++) {
+                    const qText = chosenList[i % chosenList.length] || `Describe the fundamental characteristics and core theories surrounding ${topic} in relation to ${subject}.`;
+                    questions.push({ id: i + 1, question: qText });
+                }
+
+                // Render beautiful preview panel
+                let html = `
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 rounded-2xl bg-blue-50/50 dark:bg-blue-950/20 border border-blue-200/50 dark:border-blue-900/50">
+                        <div>
+                            <p class="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider">Worksheet Ready</p>
+                            <h4 class="text-sm font-semibold text-slate-800 dark:text-slate-100">Live preview matches standard print margins.</h4>
+                        </div>
+                        <button onclick="printWorksheet()" class="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md shadow-emerald-600/20 active:scale-95 transition-all">
+                            <i data-lucide="printer" class="w-4 h-4"></i> Download as PDF / Print
+                        </button>
+                    </div>
+                    
+                    <div id="worksheet-print-content" class="bg-white text-slate-900 p-8 rounded-2xl border border-slate-200 shadow-lg space-y-6">
+                        <!-- Header -->
+                        <div class="border-b-4 border-double border-slate-800 pb-4">
+                            <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-3">
+                                <div>
+                                    <h2 class="text-2xl font-black uppercase tracking-tight text-slate-900">${subject} CLASSWORK</h2>
+                                    <p class="text-sm font-bold text-slate-700">Topic: ${topic}</p>
+                                    <p class="text-xs font-medium text-slate-500">${grade}</p>
+                                </div>
+                                <div class="text-right text-xs font-mono text-slate-400">
+                                    <span>REF: WS-${Math.floor(1000 + Math.random() * 9000)}</span>
+                                </div>
+                            </div>
+                            
+                            <!-- Student Info block -->
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-5 pt-4 border-t border-dashed border-slate-300 text-xs text-slate-800 font-semibold">
+                                <div class="flex items-center gap-1.5">
+                                    <span>Student Name:</span>
+                                    <div class="flex-1 border-b border-slate-400 h-4"></div>
+                                </div>
+                                <div class="flex items-center gap-1.5">
+                                    <span>Date:</span>
+                                    <div class="flex-1 border-b border-slate-400 h-4"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Questions -->
+                        <div class="space-y-6">
+                `;
+
+                questions.forEach(q => {
+                    html += `
+                        <div class="space-y-3">
+                            <p class="text-sm font-bold text-slate-800 flex items-start gap-2 leading-relaxed">
+                                <span class="bg-slate-100 text-slate-800 px-2 py-0.5 rounded text-xs border border-slate-200 font-mono">Q${q.id}</span>
+                                <span>${q.question}</span>
+                            </p>
+                            <!-- Print Answer Space Lines -->
+                            <div class="space-y-3.5 pl-10 py-1">
+                                <div class="border-b border-slate-200 h-4"></div>
+                                <div class="border-b border-slate-200 h-4"></div>
+                                <div class="border-b border-slate-200 h-4"></div>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                html += `
+                        </div>
+
+                        <!-- Footer -->
+                        <div class="border-t border-slate-200 pt-4 text-center text-[10px] text-slate-400 flex justify-between items-center font-medium">
+                            <span>Generated by: Mr. Zaafouri Abdelmalek © 2026</span>
+                            <span>Score: ________ / ________</span>
+                        </div>
+                    </div>
+                `;
+
+                out.innerHTML = html;
+                lucide.createIcons();
             }, 800);
+        }
+
+        function printWorksheet() {
+            const printContent = document.getElementById('worksheet-print-content');
+            if (!printContent) return;
+
+            let printArea = document.getElementById('print-worksheet-area');
+            if (!printArea) {
+                printArea = document.createElement('div');
+                printArea.id = 'print-worksheet-area';
+                document.body.appendChild(printArea);
+            }
+
+            printArea.innerHTML = printContent.innerHTML;
+            window.print();
         }
 
         // Init
         renderThemeOptions();
         render3DSlider();
         attachGestureListeners();
+        updateTransitionSettings();
         lucide.createIcons();
     </script>
 </body>

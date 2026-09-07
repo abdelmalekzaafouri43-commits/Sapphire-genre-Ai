@@ -13,11 +13,22 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        
+        // Fully hide status bars, navigation bars, and all system icons on all sides of the screen
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+        WindowCompat.getInsetsController(window, window.decorView).apply {
+            hide(WindowInsetsCompat.Type.systemBars())
+            systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+        }
+
         setContent {
             HtmlAppScreen()
         }
@@ -30,6 +41,9 @@ fun HtmlAppScreen() {
     AndroidView(
         factory = { context ->
             WebView(context).apply {
+                // Force software rendering to bypass physical/virtual GPU MESA driver errors
+                setLayerType(android.view.View.LAYER_TYPE_SOFTWARE, null)
+                
                 webViewClient = WebViewClient()
                 webChromeClient = WebChromeClient()
                 settings.apply {
