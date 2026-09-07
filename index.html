@@ -390,8 +390,8 @@
                         </span>
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="md:col-span-2">
                             <label class="block text-xs font-semibold mb-1">Presentation Topic</label>
                             <input type="text" id="ppt-topic" value="Artificial Intelligence & Modern EdTech" class="w-full px-3 py-2 text-sm rounded-lg border bg-slate-50 dark:bg-slate-900 border-slate-300 dark:border-slate-700">
                         </div>
@@ -402,6 +402,13 @@
                         <div>
                             <label class="block text-xs font-semibold mb-1">Slide Count</label>
                             <input type="number" id="ppt-count" value="5" min="3" max="10" class="w-full px-3 py-2 text-sm rounded-lg border bg-slate-50 dark:bg-slate-900 border-slate-300 dark:border-slate-700">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold mb-1">Language / Langue</label>
+                            <select id="ppt-lang" class="w-full px-3 py-2 text-sm rounded-lg border bg-slate-50 dark:bg-slate-900 border-slate-300 dark:border-slate-700 font-semibold">
+                                <option value="en">English (Anglais)</option>
+                                <option value="fr">Français (French)</option>
+                            </select>
                         </div>
                         <div>
                             <label class="block text-xs font-semibold mb-1">Visual Theme</label>
@@ -503,7 +510,7 @@
                     <h3 class="font-bold text-lg flex items-center gap-2">
                         <i data-lucide="file-text" class="w-5 h-5 text-blue-600"></i> Worksheet AI Generator
                     </h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
                             <label class="block text-xs font-semibold mb-1">Subject</label>
                             <input type="text" id="ws-subject" value="Mathematics" class="w-full px-3 py-2 text-sm rounded-lg border bg-slate-50 dark:bg-slate-900 border-slate-300 dark:border-slate-700">
@@ -519,6 +526,13 @@
                         <div>
                             <label class="block text-xs font-semibold mb-1">Questions Count</label>
                             <input type="number" id="ws-count" value="5" class="w-full px-3 py-2 text-sm rounded-lg border bg-slate-50 dark:bg-slate-900 border-slate-300 dark:border-slate-700">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold mb-1">Language / Langue</label>
+                            <select id="ws-lang" class="w-full px-3 py-2 text-sm rounded-lg border bg-slate-50 dark:bg-slate-900 border-slate-300 dark:border-slate-700 font-semibold">
+                                <option value="en">English (Anglais)</option>
+                                <option value="fr">Français (French)</option>
+                            </select>
                         </div>
                     </div>
                     <button onclick="generateWorksheet()" class="w-full py-3 rounded-xl bg-blue-600 text-white font-bold text-sm shadow-md">
@@ -922,24 +936,85 @@
             box.classList.toggle('hidden');
         }
 
-        function generatePPTDeck() {
+        async function generatePPTDeck() {
             const topic = document.getElementById('ppt-topic').value || "AI Innovations";
             const audience = document.getElementById('ppt-audience').value || "General Audience";
             const count = parseInt(document.getElementById('ppt-count').value) || 5;
+            const lang = document.getElementById('ppt-lang').value || "en";
 
-            slidesData = Array.from({ length: count }, (_, i) => ({
-                number: i + 1,
-                tag: i === 0 ? "EXECUTIVE OVERVIEW" : `MODULE ${i}`,
-                title: i === 0 ? topic : `${topic}: Key Dimension ${i}`,
-                subtitle: `Tailored for ${audience}`,
-                bullets: [
-                    `Key Insight ${i + 1}.1: Strategic analysis and overview`,
-                    `Key Insight ${i + 1}.2: Automated workflow optimization`,
-                    `Key Insight ${i + 1}.3: Actionable metrics for presentation`
-                ],
-                bgGradient: ["from-blue-600 to-indigo-800", "from-purple-600 to-indigo-900", "from-emerald-600 to-teal-900", "from-amber-600 to-orange-800", "from-fuchsia-600 to-pink-800"][i % 5],
-                notes: `Speaker note for slide ${i + 1}: Emphasize practical applications of ${topic}.`
-            }));
+            const apiKey = document.getElementById('api-key-input').value.trim();
+
+            if (apiKey) {
+                // Show a loading indicator in the carousel
+                const container = document.getElementById('slide-cards-container');
+                if (container) {
+                    container.innerHTML = `
+                        <div class="absolute inset-0 flex flex-col items-center justify-center text-center p-6 bg-slate-900/40 rounded-3xl border border-white/10 backdrop-blur-md">
+                            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500 mb-3"></div>
+                            <p class="text-sm font-semibold text-slate-100">Generating PowerPoint slides with Gemini...</p>
+                        </div>
+                    `;
+                }
+
+                try {
+                    const promptText = `Generate a presentation deck with exactly ${count} slides on the topic of: '${topic}' targeted for '${audience}'. The presentation MUST be written strictly in ${lang === 'fr' ? 'French (Français)' : 'English'}. Return ONLY a JSON array of slide objects. Each slide object MUST have: 'number' (number), 'tag' (string like 'OVERVIEW', 'CORE CONCEPT', etc.), 'title' (string), 'subtitle' (string), 'bullets' (array of 3 strings), and 'notes' (string of speaker notes). Do NOT include any markdown formatting like \`\`\`json or \`\`\`, just return the raw JSON array string. Ensure no trailing commas. Choose a dynamic visual background gradient representation for each slide from standard options like 'from-blue-600 to-indigo-800', 'from-purple-600 to-indigo-900', 'from-emerald-600 to-teal-900', 'from-amber-600 to-orange-800', 'from-fuchsia-600 to-pink-800' as 'bgGradient' property.`;
+
+                    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            contents: [{ parts: [{ text: promptText }] }]
+                        })
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+                        const cleanedText = rawText.replace(/```json/gi, "").replace(/```/g, "").trim();
+                        slidesData = JSON.parse(cleanedText);
+                        currentSlideIndex = 0;
+                        render3DSlider();
+                        showToast("Presentation Deck Generated successfully!");
+                        return;
+                    } else {
+                        showToast("Failed to query Gemini API, falling back to local generation...", "error");
+                    }
+                } catch (err) {
+                    console.error("Gemini PPT error", err);
+                    showToast("Network error, falling back to local generation...", "error");
+                }
+            }
+
+            // Fallback generation (local)
+            if (lang === "fr") {
+                slidesData = Array.from({ length: count }, (_, i) => ({
+                    number: i + 1,
+                    tag: i === 0 ? "APERÇU EXÉCUTIF" : `MODULE ${i}`,
+                    title: i === 0 ? topic : `${topic} : Dimension Clé ${i}`,
+                    subtitle: `Conçu pour ${audience}`,
+                    bullets: [
+                        `Perspective Clé ${i + 1}.1 : Analyse stratégique et vue d'ensemble de la thématique`,
+                        `Perspective Clé ${i + 1}.2 : Optimisation automatisée des flux de travail et des processus`,
+                        `Perspective Clé ${i + 1}.3 : Indicateurs de performance clés exploitables pour la présentation`
+                    ],
+                    bgGradient: ["from-blue-600 to-indigo-800", "from-purple-600 to-indigo-900", "from-emerald-600 to-teal-900", "from-amber-600 to-orange-800", "from-fuchsia-600 to-pink-800"][i % 5],
+                    notes: `Note de l'orateur pour la diapositive ${i + 1} : Soulignez les applications pratiques de la thématique '${topic}'.`
+                }));
+            } else {
+                slidesData = Array.from({ length: count }, (_, i) => ({
+                    number: i + 1,
+                    tag: i === 0 ? "EXECUTIVE OVERVIEW" : `MODULE ${i}`,
+                    title: i === 0 ? topic : `${topic}: Key Dimension ${i}`,
+                    subtitle: `Tailored for ${audience}`,
+                    bullets: [
+                        `Key Insight ${i + 1}.1: Strategic analysis and overview of the topic`,
+                        `Key Insight ${i + 1}.2: Automated workflow optimization and process management`,
+                        `Key Insight ${i + 1}.3: Actionable metrics and key results for presentation`
+                    ],
+                    bgGradient: ["from-blue-600 to-indigo-800", "from-purple-600 to-indigo-900", "from-emerald-600 to-teal-900", "from-amber-600 to-orange-800", "from-fuchsia-600 to-pink-800"][i % 5],
+                    notes: `Speaker note for slide ${i + 1}: Emphasize practical applications of ${topic}.`
+                }));
+            }
 
             currentSlideIndex = 0;
             render3DSlider();
@@ -1001,11 +1076,12 @@
             }
         }
 
-        function generateWorksheet() {
+        async function generateWorksheet() {
             const subject = document.getElementById('ws-subject').value || "General Subject";
             const grade = document.getElementById('ws-grade').value || "All Grades";
             const topic = document.getElementById('ws-topic').value || "Study Module";
             const count = parseInt(document.getElementById('ws-count').value) || 5;
+            const lang = document.getElementById('ws-lang').value || "en";
 
             const out = document.getElementById('ws-output');
             out.classList.remove('hidden');
@@ -1016,9 +1092,38 @@
                 </div>
             `;
 
-            setTimeout(() => {
-                // Topic-specific custom templates
-                const templates = {
+            let questions = [];
+            const apiKey = document.getElementById('api-key-input').value.trim();
+
+            if (apiKey) {
+                try {
+                    const promptText = `Generate a class worksheet with exactly ${count} educational questions on the topic of: '${topic}' in '${subject}' for grade level '${grade}'. The worksheet MUST be written strictly in ${lang === 'fr' ? 'French (Français)' : 'English'}. Return ONLY a JSON array of question objects. Each question object MUST have: 'id' (number) and 'question' (string containing the exercise description or task). Do NOT include any markdown formatting like \`\`\`json or \`\`\`, just return the raw JSON array string. Ensure no trailing commas.`;
+
+                    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            contents: [{ parts: [{ text: promptText }] }]
+                        })
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+                        const cleanedText = rawText.replace(/```json/gi, "").replace(/```/g, "").trim();
+                        questions = JSON.parse(cleanedText);
+                    } else {
+                        showToast("Failed to query Gemini API, using local templates...", "error");
+                    }
+                } catch (err) {
+                    console.error("Gemini Worksheet error", err);
+                    showToast("Network error, using local templates...", "error");
+                }
+            }
+
+            // Fallback templates if questions array is still empty
+            if (questions.length === 0) {
+                const templatesEn = {
                     "mathematics": [
                         "Solve for x in the equation: 3x + 7 = 22. Detail all your working steps.",
                         "Find the slope of the line passing through coordinates (2, 5) and (4, 11).",
@@ -1042,101 +1147,148 @@
                     ]
                 };
 
-                const subKey = subject.toLowerCase();
-                let chosenList = templates["mathematics"];
-                if (subKey.includes("math")) chosenList = templates["mathematics"];
-                else if (subKey.includes("sci") || subKey.includes("bio") || subKey.includes("chem") || subKey.includes("phys")) chosenList = templates["science"];
-                else if (subKey.includes("hist") || subKey.includes("social") || subKey.includes("civ")) chosenList = templates["history"];
-                else chosenList = templates["mathematics"]; // fallback
+                const templatesFr = {
+                    "mathematics": [
+                        "Résoudre pour x dans l'équation : 3x + 7 = 22. Détaillez toutes les étapes de votre calcul.",
+                        "Trouver la pente de la droite passant par les coordonnées (2, 5) et (4, 11).",
+                        "Tracer la fonction y = -2x + 4. Identifier l'ordonnée à l'origine et l'abscisse à l'origine.",
+                        "La location d'une voiture coûte un forfait de 40 $ plus 0,15 $ par mille. Formuler et résoudre l'équation représentant une facture de 62,50 $.",
+                        "Déterminer si la relation représentée par {(1,2), (2,4), (3,6), (2,8)} est une fonction. Expliquez votre raisonnement."
+                    ],
+                    "science": [
+                        "Expliquer les principales différences entre les changements physiques et chimiques. Citez deux exemples distincts de chacun.",
+                        "Décrire les fonctions des mitochondries et des chloroplastes dans les processus énergétiques cellulaires.",
+                        "Qu'est-ce que la deuxième loi du mouvement de Newton ? Énoncez sa formule et identifiez toutes les variables et unités.",
+                        "Détaillez les étapes du cycle de l'eau et expliquez comment l'énergie solaire alimente ce processus.",
+                        "Décrire le processus de photosynthèse, en énumérant à la fois les réactifs primaires et les produits générés."
+                    ],
+                    "history": [
+                        "Quels ont été les principaux catalyseurs politiques et socio-économiques de la Révolution française ?",
+                        "Discutez de l'importance historique fondamentale de la Magna Carta signée en l'an 1215.",
+                        "Analyser l'impact de l'imprimerie de Gutenberg sur la vitesse et la portée de la Réforme protestante.",
+                        "Décrire l'objectif principal de la Société des Nations et expliquer les raisons clés de l'échec final.",
+                        "Discutez des conséquences sociales et économiques immédiates de la révolution industrielle sur les centres urbains européens."
+                    ]
+                };
 
-                let questions = [];
-                for (let i = 0; i < count; i++) {
-                    const qText = chosenList[i % chosenList.length] || `Describe the fundamental characteristics and core theories surrounding ${topic} in relation to ${subject}.`;
-                    questions.push({ id: i + 1, question: qText });
+                const activeTemplates = lang === "fr" ? templatesFr : templatesEn;
+                const subKey = subject.toLowerCase();
+                let chosenList = activeTemplates["mathematics"];
+                if (subKey.includes("math") || subKey.includes("alg") || subKey.includes("géo") || subKey.includes("calc")) {
+                    chosenList = activeTemplates["mathematics"];
+                } else if (subKey.includes("sci") || subKey.includes("bio") || subKey.includes("chem") || subKey.includes("phys") || subKey.includes("phym") || subKey.includes("géo")) {
+                    chosenList = activeTemplates["science"];
+                } else if (subKey.includes("hist") || subKey.includes("social") || subKey.includes("civ") || subKey.includes("géo")) {
+                    chosenList = activeTemplates["history"];
+                } else {
+                    chosenList = activeTemplates["mathematics"];
                 }
 
-                // Render beautiful preview panel
-                let html = `
-                    <div class="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-3 p-4 rounded-2xl bg-blue-50/50 dark:bg-blue-950/20 border border-blue-200/50 dark:border-blue-900/50">
-                        <div>
-                            <p class="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider">Worksheet Ready</p>
-                            <h4 class="text-sm font-semibold text-slate-800 dark:text-slate-100">Choose an action below to bookmark, share, or download.</h4>
+                for (let i = 0; i < count; i++) {
+                    const fallbackText = lang === "fr" 
+                        ? `Décrire les caractéristiques fondamentales et les théories clés de '${topic}' par rapport à '${subject}'.`
+                        : `Describe the fundamental characteristics and core theories surrounding '${topic}' in relation to '${subject}'.`;
+                    const qText = chosenList[i % chosenList.length] || fallbackText;
+                    questions.push({ id: i + 1, question: qText });
+                }
+            }
+
+            // Beautiful localized strings
+            const readyTitle = lang === "fr" ? "Feuille d'exercices prête" : "Worksheet Ready";
+            const readyDesc = lang === "fr" ? "Choisissez une action ci-dessous pour l'enregistrer, la partager ou l'imprimer." : "Choose an action below to bookmark, share, or download.";
+            const saveBtnText = lang === "fr" ? "Enregistrer dans Mes Docs" : "Save to My Docs";
+            const qrBtnText = lang === "fr" ? "Partager le lien QR" : "Share QR Link";
+            const printBtnText = lang === "fr" ? "Télécharger / Imprimer" : "Download / Print";
+            const classworkLabel = lang === "fr" ? "TRAVAIL DE CLASSE" : "CLASSWORK";
+            const topicLabel = lang === "fr" ? "Sujet" : "Topic";
+            const studentNameLabel = lang === "fr" ? "Nom de l'étudiant :" : "Student Name:";
+            const dateLabel = lang === "fr" ? "Date :" : "Date:";
+            const generatedByLabel = lang === "fr" ? "Généré par" : "Generated by";
+            const scoreLabel = lang === "fr" ? "Note" : "Score";
+
+            // Render beautiful preview panel
+            let html = `
+                <div class="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-3 p-4 rounded-2xl bg-blue-50/50 dark:bg-blue-950/20 border border-blue-200/50 dark:border-blue-900/50">
+                    <div>
+                        <p class="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider">${readyTitle}</p>
+                        <h4 class="text-sm font-semibold text-slate-800 dark:text-slate-100">${readyDesc}</h4>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-2">
+                        <button id="ws-save-btn" onclick="saveCurrentWorksheet('${encodeURIComponent(JSON.stringify({subject, grade, topic, questions}))}')" class="px-3.5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md shadow-blue-600/20 active:scale-95 transition-all">
+                            <i data-lucide="bookmark" class="w-4 h-4"></i> ${saveBtnText}
+                        </button>
+                        <button id="ws-qr-btn" onclick="shareWorksheetQR('${encodeURIComponent(JSON.stringify({subject, grade, topic, questions}))}')" class="px-3.5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md shadow-indigo-600/20 active:scale-95 transition-all">
+                            <i data-lucide="qr-code" class="w-4 h-4"></i> ${qrBtnText}
+                        </button>
+                        <button onclick="printWorksheet()" class="px-3.5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md shadow-emerald-600/20 active:scale-95 transition-all">
+                            <i data-lucide="printer" class="w-4 h-4"></i> ${printBtnText}
+                        </button>
+                    </div>
+                </div>
+                
+                <div id="worksheet-print-content" class="bg-white text-slate-900 p-8 rounded-2xl border border-slate-200 shadow-lg space-y-6">
+                    <!-- Header -->
+                    <div class="border-b-4 border-double border-slate-800 pb-4">
+                        <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-3">
+                            <div>
+                                <h2 class="text-2xl font-black uppercase tracking-tight text-slate-900">${subject} ${classworkLabel}</h2>
+                                <p class="text-sm font-bold text-slate-700">${topicLabel}: ${topic}</p>
+                                <p class="text-xs font-medium text-slate-500">${grade}</p>
+                            </div>
+                            <div class="text-right text-xs font-mono text-slate-400">
+                                <span>REF: WS-${Math.floor(1000 + Math.random() * 9000)}</span>
+                            </div>
                         </div>
-                        <div class="flex flex-wrap items-center gap-2">
-                            <button id="ws-save-btn" onclick="saveCurrentWorksheet('${encodeURIComponent(JSON.stringify({subject, grade, topic, questions}))}')" class="px-3.5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md shadow-blue-600/20 active:scale-95 transition-all">
-                                <i data-lucide="bookmark" class="w-4 h-4"></i> Save to My Docs
-                            </button>
-                            <button id="ws-qr-btn" onclick="shareWorksheetQR('${encodeURIComponent(JSON.stringify({subject, grade, topic, questions}))}')" class="px-3.5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md shadow-indigo-600/20 active:scale-95 transition-all">
-                                <i data-lucide="qr-code" class="w-4 h-4"></i> Share QR Link
-                            </button>
-                            <button onclick="printWorksheet()" class="px-3.5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md shadow-emerald-600/20 active:scale-95 transition-all">
-                                <i data-lucide="printer" class="w-4 h-4"></i> Download / Print
-                            </button>
+                        
+                        <!-- Student Info block -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-5 pt-4 border-t border-dashed border-slate-300 text-xs text-slate-800 font-semibold">
+                            <div class="flex items-center gap-1.5">
+                                <span>${studentNameLabel}</span>
+                                <div class="flex-1 border-b border-slate-400 h-4"></div>
+                            </div>
+                            <div class="flex items-center gap-1.5">
+                                <span>${dateLabel}</span>
+                                <div class="flex-1 border-b border-slate-400 h-4"></div>
+                            </div>
                         </div>
                     </div>
-                    
-                    <div id="worksheet-print-content" class="bg-white text-slate-900 p-8 rounded-2xl border border-slate-200 shadow-lg space-y-6">
-                        <!-- Header -->
-                        <div class="border-b-4 border-double border-slate-800 pb-4">
-                            <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-3">
-                                <div>
-                                    <h2 class="text-2xl font-black uppercase tracking-tight text-slate-900">${subject} CLASSWORK</h2>
-                                    <p class="text-sm font-bold text-slate-700">Topic: ${topic}</p>
-                                    <p class="text-xs font-medium text-slate-500">${grade}</p>
-                                </div>
-                                <div class="text-right text-xs font-mono text-slate-400">
-                                    <span>REF: WS-${Math.floor(1000 + Math.random() * 9000)}</span>
-                                </div>
-                            </div>
-                            
-                            <!-- Student Info block -->
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-5 pt-4 border-t border-dashed border-slate-300 text-xs text-slate-800 font-semibold">
-                                <div class="flex items-center gap-1.5">
-                                    <span>Student Name:</span>
-                                    <div class="flex-1 border-b border-slate-400 h-4"></div>
-                                </div>
-                                <div class="flex items-center gap-1.5">
-                                    <span>Date:</span>
-                                    <div class="flex-1 border-b border-slate-400 h-4"></div>
-                                </div>
-                            </div>
-                        </div>
 
-                        <!-- Questions -->
-                        <div class="space-y-6">
-                `;
+                    <!-- Questions -->
+                    <div class="space-y-6">
+            `;
 
-                questions.forEach(q => {
-                    html += `
-                        <div class="space-y-3">
-                            <p class="text-sm font-bold text-slate-800 flex items-start gap-2 leading-relaxed">
-                                <span class="bg-slate-100 text-slate-800 px-2 py-0.5 rounded text-xs border border-slate-200 font-mono">Q${q.id}</span>
-                                <span>${q.question}</span>
-                            </p>
-                            <!-- Print Answer Space Lines -->
-                            <div class="space-y-3.5 pl-10 py-1">
-                                <div class="border-b border-slate-200 h-4"></div>
-                                <div class="border-b border-slate-200 h-4"></div>
-                                <div class="border-b border-slate-200 h-4"></div>
-                            </div>
-                        </div>
-                    `;
-                });
-
+            questions.forEach(q => {
                 html += `
-                        </div>
-
-                        <!-- Footer -->
-                        <div class="border-t border-slate-200 pt-4 text-center text-[10px] text-slate-400 flex justify-between items-center font-medium">
-                            <span>Generated by: Mr. Zaafouri Abdelmalek © 2026</span>
-                            <span>Score: ________ / ________</span>
+                    <div class="space-y-3">
+                        <p class="text-sm font-bold text-slate-800 flex items-start gap-2 leading-relaxed">
+                            <span class="bg-slate-100 text-slate-800 px-2 py-0.5 rounded text-xs border border-slate-200 font-mono">Q${q.id}</span>
+                            <span>${q.question}</span>
+                        </p>
+                        <!-- Print Answer Space Lines -->
+                        <div class="space-y-3.5 pl-10 py-1">
+                            <div class="border-b border-slate-200 h-4"></div>
+                            <div class="border-b border-slate-200 h-4"></div>
+                            <div class="border-b border-slate-200 h-4"></div>
                         </div>
                     </div>
                 `;
+            });
 
+            html += `
+                    </div>
+
+                    <!-- Footer -->
+                    <div class="border-t border-slate-200 pt-4 text-center text-[10px] text-slate-400 flex justify-between items-center font-medium">
+                        <span>${generatedByLabel}: Mr. Zaafouri Abdelmalek © 2026</span>
+                        <span>${scoreLabel}: ________ / ________</span>
+                    </div>
+                </div>
+            `;
+
+            setTimeout(() => {
                 out.innerHTML = html;
                 lucide.createIcons();
-            }, 800);
+            }, 500);
         }
 
         function printWorksheet() {
