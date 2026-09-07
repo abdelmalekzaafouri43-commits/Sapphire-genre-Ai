@@ -1375,35 +1375,31 @@
             const count = parseInt(document.getElementById('ppt-count').value) || 5;
             const lang = document.getElementById('ppt-lang').value || "en";
 
-            const apiKey = getEffectiveApiKey();
+            // Show a loading indicator in the carousel
+            const container = document.getElementById('slide-cards-container');
+            if (container) {
+                container.innerHTML = `
+                    <div class="absolute inset-0 flex flex-col items-center justify-center text-center p-6 bg-slate-900/40 rounded-3xl border border-white/10 backdrop-blur-md">
+                        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500 mb-3"></div>
+                        <p class="text-sm font-semibold text-slate-100">Generating PowerPoint slides with AI Engine...</p>
+                    </div>
+                `;
+            }
 
-            if (apiKey) {
-                // Show a loading indicator in the carousel
-                const container = document.getElementById('slide-cards-container');
-                if (container) {
-                    container.innerHTML = `
-                        <div class="absolute inset-0 flex flex-col items-center justify-center text-center p-6 bg-slate-900/40 rounded-3xl border border-white/10 backdrop-blur-md">
-                            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500 mb-3"></div>
-                            <p class="text-sm font-semibold text-slate-100">Generating PowerPoint slides with Gemini...</p>
-                        </div>
-                    `;
-                }
+            try {
+                const apiKey = getEffectiveApiKey() || 'DEMO_MODE_ACTIVE';
+                const promptText = `Generate a presentation deck with exactly ${count} slides on the topic of: '${topic}' targeted for '${audience}'. The presentation MUST be written strictly in ${lang === 'fr' ? 'French (Français)' : 'English'}. Return ONLY a JSON array of slide objects. Each slide object MUST have: 'number' (number), 'tag' (string like 'OVERVIEW', 'CORE CONCEPT', etc.), 'title' (string), 'subtitle' (string), 'bullets' (array of 3 strings), and 'notes' (string of speaker notes). Do NOT include any markdown formatting like \`\`\`json or \`\`\`, just return the raw JSON array string. Ensure no trailing commas. Choose a dynamic visual background gradient representation for each slide from standard options like 'from-blue-600 to-indigo-800', 'from-purple-600 to-indigo-900', 'from-emerald-600 to-teal-900', 'from-amber-600 to-orange-800', 'from-fuchsia-600 to-pink-800' as 'bgGradient' property.`;
 
-                try {
-                    const promptText = `Generate a presentation deck with exactly ${count} slides on the topic of: '${topic}' targeted for '${audience}'. The presentation MUST be written strictly in ${lang === 'fr' ? 'French (Français)' : 'English'}. Return ONLY a JSON array of slide objects. Each slide object MUST have: 'number' (number), 'tag' (string like 'OVERVIEW', 'CORE CONCEPT', etc.), 'title' (string), 'subtitle' (string), 'bullets' (array of 3 strings), and 'notes' (string of speaker notes). Do NOT include any markdown formatting like \`\`\`json or \`\`\`, just return the raw JSON array string. Ensure no trailing commas. Choose a dynamic visual background gradient representation for each slide from standard options like 'from-blue-600 to-indigo-800', 'from-purple-600 to-indigo-900', 'from-emerald-600 to-teal-900', 'from-amber-600 to-orange-800', 'from-fuchsia-600 to-pink-800' as 'bgGradient' property.`;
-
-                    const result = await executeGeminiPrompt(apiKey, promptText);
-                    const rawText = result.text || "";
-                    const cleanedText = rawText.replace(/```json/gi, "").replace(/```/g, "").trim();
-                    slidesData = JSON.parse(cleanedText);
-                    currentSlideIndex = 0;
-                    render3DSlider();
-                    showToast(`Presentation Deck Generated via ${result.model}!`);
-                    return;
-                } catch (err) {
-                    console.error("Gemini PPT error", err);
-                    showToast("Gemini note: falling back to templates...", "info");
-                }
+                const result = await executeGeminiPrompt(apiKey, promptText);
+                const rawText = result.text || "";
+                const cleanedText = rawText.replace(/```json/gi, "").replace(/```/g, "").trim();
+                slidesData = JSON.parse(cleanedText);
+                currentSlideIndex = 0;
+                render3DSlider();
+                showToast(`Presentation Deck Generated via ${result.model}!`);
+                return;
+            } catch (err) {
+                console.error("PPT generation error", err);
             }
 
             // Fallback generation (local)
@@ -1439,6 +1435,7 @@
 
             currentSlideIndex = 0;
             render3DSlider();
+            showToast("Presentation Deck Generated successfully!");
         }
 
         // SWIPE / MOUSE DRAG GESTURE HANDLER FOR 3D STAGE
@@ -1809,21 +1806,17 @@
             `;
 
             let questions = [];
-            const apiKey = getEffectiveApiKey();
+            try {
+                const apiKey = getEffectiveApiKey() || 'DEMO_MODE_ACTIVE';
+                const promptText = `Generate a class worksheet with exactly ${count} educational questions on the topic of: '${topic}' in '${subject}' for grade level '${grade}'. The worksheet MUST be written strictly in ${lang === 'fr' ? 'French (Français)' : 'English'}. Return ONLY a JSON array of question objects. Each question object MUST have: 'id' (number) and 'question' (string containing the exercise description or task). Do NOT include any markdown formatting like \`\`\`json or \`\`\`, just return the raw JSON array string. Ensure no trailing commas.`;
 
-            if (apiKey) {
-                try {
-                    const promptText = `Generate a class worksheet with exactly ${count} educational questions on the topic of: '${topic}' in '${subject}' for grade level '${grade}'. The worksheet MUST be written strictly in ${lang === 'fr' ? 'French (Français)' : 'English'}. Return ONLY a JSON array of question objects. Each question object MUST have: 'id' (number) and 'question' (string containing the exercise description or task). Do NOT include any markdown formatting like \`\`\`json or \`\`\`, just return the raw JSON array string. Ensure no trailing commas.`;
-
-                    const result = await executeGeminiPrompt(apiKey, promptText);
-                    const rawText = result.text || "";
-                    const cleanedText = rawText.replace(/```json/gi, "").replace(/```/g, "").trim();
-                    questions = JSON.parse(cleanedText);
-                    showToast(`Worksheet questions generated with Gemini (${result.model})`);
-                } catch (err) {
-                    console.error("Gemini Worksheet error", err);
-                    showToast("Gemini note: using academic templates...", "info");
-                }
+                const result = await executeGeminiPrompt(apiKey, promptText);
+                const rawText = result.text || "";
+                const cleanedText = rawText.replace(/```json/gi, "").replace(/```/g, "").trim();
+                questions = JSON.parse(cleanedText);
+                showToast(`Worksheet questions generated via ${result.model}`);
+            } catch (err) {
+                console.error("Worksheet generation error", err);
             }
 
             // Fallback templates if questions array is still empty (English and French Language focus)
