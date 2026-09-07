@@ -62,20 +62,27 @@
             margin: 0 auto;
             background: #ffffff;
             color: #0f172a;
-            padding: 16mm 18mm;
+            padding: 12mm 14mm;
             box-sizing: border-box;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
-            border-radius: 8px;
+            box-shadow: 0 12px 35px -5px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.08);
+            border-radius: 4px;
+            border: 2px solid #0f172a;
             position: relative;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
         }
 
+        .a4-ruled-line {
+            border-bottom: 1px dashed #cbd5e1;
+            height: 18px;
+            width: 100%;
+        }
+
         @media print {
             @page {
                 size: A4 portrait;
-                margin: 10mm 12mm;
+                margin: 8mm 10mm;
             }
             body {
                 background: #ffffff !important;
@@ -83,12 +90,12 @@
             }
             .a4-page-sheet {
                 box-shadow: none !important;
-                border: none !important;
+                border: 2px solid #000000 !important;
                 border-radius: 0 !important;
-                padding: 0 !important;
+                padding: 8mm 10mm !important;
                 max-width: 100% !important;
                 width: 100% !important;
-                min-height: auto !important;
+                min-height: 280mm !important;
             }
             .no-print, header, nav, #toast-container, button {
                 display: none !important;
@@ -538,9 +545,9 @@
                     </div>
 
                     <!-- 3D SLIDE DISPLAY STAGE -->
-                    <div class="relative w-full h-[360px] slider-perspective flex items-center justify-center overflow-hidden py-4" id="slider-stage">
-                        <!-- Dynamic 3D Slide Cards Container -->
-                        <div class="relative w-[85%] max-w-[580px] h-[310px]" id="slide-cards-container">
+                    <div class="relative w-full h-[420px] slider-perspective flex items-center justify-center overflow-hidden py-4" id="slider-stage">
+                        <!-- Dynamic 3D Slide Cards Container with Illustrations -->
+                        <div class="relative w-[92%] max-w-[640px] h-[360px]" id="slide-cards-container">
                             <!-- Cards inserted via JS -->
                         </div>
                     </div>
@@ -1273,6 +1280,43 @@
             return questions;
         }
 
+        // VECTOR ILLUSTRATION GRAPHICS FOR POWERPOINT SLIDES
+        const slideIllustrations = {
+            futureTimeline: `<svg viewBox="0 0 120 120" class="w-full h-full"><circle cx="60" cy="60" r="54" fill="rgba(255,255,255,0.12)" stroke="rgba(255,255,255,0.4)" stroke-width="2"/><line x1="18" y1="64" x2="98" y2="64" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round"/><polygon points="102,64 92,59 92,69" fill="#FFFFFF"/><circle cx="34" cy="64" r="4" fill="#93C5FD"/><text x="34" y="80" font-size="7" fill="#E2E8F0" text-anchor="middle" font-weight="bold">PAST</text><circle cx="60" cy="64" r="6" fill="#FBBF24"/><text x="60" y="54" font-size="8" fill="#FEF08A" text-anchor="middle" font-weight="bold">NOW</text><circle cx="86" cy="64" r="5" fill="#34D399"/><text x="86" y="80" font-size="7" fill="#A7F3D0" text-anchor="middle" font-weight="bold">FUTURE</text><rect x="42" y="20" width="36" height="16" rx="4" fill="#FFFFFF"/><text x="60" y="31" font-size="8" fill="#1E3A8A" font-weight="black" text-anchor="middle">WILL + V</text></svg>`,
+            willVsGoingTo: `<svg viewBox="0 0 120 120" class="w-full h-full"><rect x="12" y="24" width="44" height="72" rx="8" fill="rgba(255,255,255,0.15)" stroke="rgba(255,255,255,0.3)" stroke-width="1.5"/><path d="M 34,35 L 26,52 L 34,52 L 32,68 L 44,48 L 36,48 Z" fill="#FBBF24"/><text x="34" y="78" font-size="8" fill="#FFF" font-weight="bold" text-anchor="middle">WILL</text><text x="34" y="86" font-size="6" fill="#E2E8F0" text-anchor="middle">Instant</text><rect x="64" y="24" width="44" height="72" rx="8" fill="rgba(255,255,255,0.15)" stroke="rgba(255,255,255,0.3)" stroke-width="1.5"/><rect x="74" y="36" width="24" height="24" rx="3" fill="#38BDF8"/><line x1="74" y1="44" x2="98" y2="44" stroke="#0369A1" stroke-width="1.5"/><circle cx="86" cy="52" r="3" fill="#FFF"/><text x="86" y="78" font-size="7" fill="#FFF" font-weight="bold" text-anchor="middle">GOING TO</text><text x="86" y="86" font-size="6" fill="#E2E8F0" text-anchor="middle">Planned</text></svg>`,
+            timeClauses: `<svg viewBox="0 0 120 120" class="w-full h-full"><rect x="15" y="22" width="90" height="26" rx="6" fill="rgba(255,255,255,0.2)" stroke="#FFF" stroke-width="1.5"/><text x="60" y="38" font-size="8" fill="#FFF" font-weight="bold" text-anchor="middle">MAIN CLAUSE (Future)</text><path d="M 60,49 L 60,63 L 56,63 L 60,70 L 64,63 L 60,63" fill="#FDE047" stroke="#FDE047" stroke-width="1.5"/><rect x="25" y="53" width="70" height="14" rx="3" fill="#F59E0B"/><text x="60" y="63" font-size="7" fill="#1F2937" font-weight="bold" text-anchor="middle">+ WHEN / AS SOON AS +</text><rect x="15" y="72" width="90" height="26" rx="6" fill="rgba(255,255,255,0.2)" stroke="#FFF" stroke-width="1.5"/><text x="60" y="88" font-size="8" fill="#FFF" font-weight="bold" text-anchor="middle">TIME CLAUSE (Present)</text></svg>`,
+            dialogueNuance: `<svg viewBox="0 0 120 120" class="w-full h-full"><rect x="18" y="20" width="84" height="80" rx="14" fill="rgba(255,255,255,0.12)" stroke="rgba(255,255,255,0.3)" stroke-width="2"/><path d="M 28,34 C 28,26 80,26 80,34 C 80,48 28,48 28,34" fill="#60A5FA" stroke="#2563EB"/><text x="54" y="38" font-size="7" fill="#FFF" font-weight="bold" text-anchor="middle">"Shall I assist you?"</text><path d="M 92,66 C 92,54 40,54 40,66 C 40,78 92,78 92,66" fill="#34D399" stroke="#059669"/><text x="66" y="70" font-size="7" fill="#064E3B" font-weight="bold" text-anchor="middle">"Yes, please!"</text><circle cx="60" cy="88" r="4" fill="#FDE047"/></svg>`,
+            practiceMastery: `<svg viewBox="0 0 120 120" class="w-full h-full"><rect x="25" y="20" width="70" height="80" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2"/><rect x="42" y="14" width="36" height="12" rx="3" fill="#64748B"/><line x1="38" y1="40" x2="82" y2="40" stroke="#94A3B8" stroke-width="2"/><circle cx="44" cy="52" r="5" fill="#10B981"/><path d="M 42,52 L 44,54 L 47,50" stroke="#FFF" stroke-width="1.5" fill="none"/><line x1="54" y1="52" x2="82" y2="52" stroke="#64748B" stroke-width="2"/><circle cx="44" cy="66" r="5" fill="#10B981"/><path d="M 42,66 L 44,68 L 47,64" stroke="#FFF" stroke-width="1.5" fill="none"/><line x1="54" y1="66" x2="82" y2="66" stroke="#64748B" stroke-width="2"/><circle cx="44" cy="80" r="5" fill="#10B981"/><path d="M 42,80 L 44,82 L 47,78" stroke="#FFF" stroke-width="1.5" fill="none"/><line x1="54" y1="80" x2="82" y2="80" stroke="#64748B" stroke-width="2"/></svg>`,
+            frenchConjugaison: `<svg viewBox="0 0 120 120" class="w-full h-full"><rect x="15" y="16" width="90" height="88" rx="8" fill="#FFFFFF" stroke="#DC2626" stroke-width="2"/><rect x="15" y="16" width="90" height="22" rx="6" fill="#DC2626"/><text x="60" y="30" font-size="8" fill="#FFF" font-weight="bold" text-anchor="middle">LE FUTUR SIMPLE</text><text x="25" y="50" font-size="7" fill="#991B1B" font-weight="bold">Je chanter-ai</text><text x="65" y="50" font-size="7" fill="#991B1B" font-weight="bold">Nous chanter-ons</text><text x="25" y="64" font-size="7" fill="#991B1B" font-weight="bold">Tu chanter-as</text><text x="65" y="64" font-size="7" fill="#991B1B" font-weight="bold">Vous chanter-ez</text><text x="25" y="78" font-size="7" fill="#991B1B" font-weight="bold">Il chanter-a</text><text x="65" y="78" font-size="7" fill="#991B1B" font-weight="bold">Ils chanter-ont</text><line x1="22" y1="88" x2="98" y2="88" stroke="#FCA5A5" stroke-width="1.5"/></svg>`,
+            frenchRadicaux: `<svg viewBox="0 0 120 120" class="w-full h-full"><rect x="15" y="18" width="90" height="84" rx="8" fill="#FEF2F2" stroke="#B91C1C" stroke-width="2"/><rect x="15" y="18" width="90" height="20" rx="6" fill="#B91C1C"/><text x="60" y="31" font-size="8" fill="#FFF" font-weight="bold" text-anchor="middle">RADICAUX 3e GROUPE</text><text x="24" y="50" font-size="7" fill="#1F2937">Être ➔ <tspan fill="#DC2626" font-weight="bold">SER-</tspan></text><text x="66" y="50" font-size="7" fill="#1F2937">Avoir ➔ <tspan fill="#DC2626" font-weight="bold">AUR-</tspan></text><text x="24" y="64" font-size="7" fill="#1F2937">Faire ➔ <tspan fill="#DC2626" font-weight="bold">FER-</tspan></text><text x="66" y="64" font-size="7" fill="#1F2937">Aller ➔ <tspan fill="#DC2626" font-weight="bold">IR-</tspan></text><text x="24" y="78" font-size="7" fill="#1F2937">Pouvoir ➔ <tspan fill="#DC2626" font-weight="bold">POURR-</tspan></text><text x="66" y="78" font-size="7" fill="#1F2937">Voir ➔ <tspan fill="#DC2626" font-weight="bold">VERR-</tspan></text></svg>`,
+            frenchConcordance: `<svg viewBox="0 0 120 120" class="w-full h-full"><rect x="15" y="24" width="90" height="26" rx="6" fill="rgba(255,255,255,0.2)" stroke="#FFF" stroke-width="1.5"/><text x="60" y="40" font-size="8" fill="#FFF" font-weight="bold" text-anchor="middle">SI + PRÉSENT</text><path d="M 60,50 L 60,64 L 56,64 L 60,71 L 64,64 L 60,64" fill="#FDE047" stroke="#FDE047" stroke-width="1.5"/><rect x="25" y="54" width="70" height="14" rx="3" fill="#10B981"/><text x="60" y="64" font-size="7" fill="#FFF" font-weight="bold" text-anchor="middle">CONCORDANCE CLÉ</text><rect x="15" y="72" width="90" height="26" rx="6" fill="rgba(255,255,255,0.2)" stroke="#FFF" stroke-width="1.5"/><text x="60" y="88" font-size="8" fill="#FFF" font-weight="bold" text-anchor="middle">➔ FUTUR SIMPLE</text></svg>`,
+            frenchVigilance: `<svg viewBox="0 0 120 120" class="w-full h-full"><rect x="16" y="18" width="88" height="84" rx="8" fill="#FFFBEB" stroke="#D97706" stroke-width="2"/><text x="60" y="34" font-size="8" fill="#B45309" font-weight="bold" text-anchor="middle">VIGILANCE ORTHOGRAPHE</text><line x1="26" y1="40" x2="94" y2="40" stroke="#FDE68A" stroke-width="1.5"/><rect x="22" y="46" width="34" height="22" rx="4" fill="#DC2626"/><text x="39" y="57" font-size="7" fill="#FFF" font-weight="bold" text-anchor="middle">-AI</text><text x="39" y="64" font-size="6" fill="#FEE2E2" text-anchor="middle">Futur (Je ferai)</text><rect x="64" y="46" width="34" height="22" rx="4" fill="#2563EB"/><text x="81" y="57" font-size="7" fill="#FFF" font-weight="bold" text-anchor="middle">-AIS</text><text x="81" y="64" font-size="6" fill="#DBEAFE" text-anchor="middle">Cond. (Je ferais)</text><text x="60" y="84" font-size="7" fill="#78350F" font-weight="bold" text-anchor="middle">Astuce : Remplacez par "IL" !</text></svg>`,
+            frenchBilan: `<svg viewBox="0 0 120 120" class="w-full h-full"><circle cx="60" cy="52" r="30" fill="#FEF08A" stroke="#CA8A04" stroke-width="2"/><polygon points="60,33 63,42 72,42 65,48 67,57 60,52 53,57 55,48 48,42 57,42" fill="#F59E0B"/><path d="M 45,74 L 35,98 L 48,90 L 60,98 L 60,74 Z" fill="#DC2626"/><path d="M 60,74 L 60,98 L 72,90 L 85,98 L 75,74 Z" fill="#B91C1C"/><text x="60" y="67" font-size="7" fill="#854D0E" font-weight="bold" text-anchor="middle">MAÎTRISE ACQUISE</text></svg>`,
+            grammarTree: `<svg viewBox="0 0 120 120" class="w-full h-full"><rect x="35" y="12" width="50" height="20" rx="4" fill="#1E40AF" stroke="#60A5FA" stroke-width="1.5"/><text x="60" y="25" font-size="8" fill="#FFF" font-weight="bold" text-anchor="middle">SYNTAX TREE</text><line x1="60" y1="32" x2="35" y2="52" stroke="#FFF" stroke-width="2"/><line x1="60" y1="32" x2="85" y2="52" stroke="#FFF" stroke-width="2"/><rect x="15" y="52" width="40" height="18" rx="3" fill="#0284C7"/><text x="35" y="64" font-size="7" fill="#FFF" font-weight="bold" text-anchor="middle">Subject (NP)</text><rect x="65" y="52" width="40" height="18" rx="3" fill="#0D9488"/><text x="85" y="64" font-size="7" fill="#FFF" font-weight="bold" text-anchor="middle">Predicate (VP)</text><line x1="35" y1="70" x2="35" y2="86" stroke="#CBD5E1" stroke-width="1.5"/><line x1="85" y1="70" x2="85" y2="86" stroke="#CBD5E1" stroke-width="1.5"/><rect x="18" y="86" width="34" height="16" rx="3" fill="#F8FAFC"/><text x="35" y="97" font-size="7" fill="#0F172A" font-weight="bold" text-anchor="middle">Noun</text><rect x="68" y="86" width="34" height="16" rx="3" fill="#F8FAFC"/><text x="85" y="97" font-size="7" fill="#0F172A" font-weight="bold" text-anchor="middle">Verb</text></svg>`
+        };
+
+        function getGenericSlideIllustration(slideNumber, isFrench) {
+            if (isFrench) {
+                const frList = [
+                    { svg: slideIllustrations.frenchConjugaison, badge: "Grammaire" },
+                    { svg: slideIllustrations.frenchRadicaux, badge: "Morphologie" },
+                    { svg: slideIllustrations.frenchConcordance, badge: "Syntaxe" },
+                    { svg: slideIllustrations.frenchVigilance, badge: "Orthographe" },
+                    { svg: slideIllustrations.frenchBilan, badge: "Bilan" }
+                ];
+                return frList[(slideNumber - 1) % frList.length];
+            } else {
+                const enList = [
+                    { svg: slideIllustrations.futureTimeline, badge: "Timeline" },
+                    { svg: slideIllustrations.willVsGoingTo, badge: "Contrast" },
+                    { svg: slideIllustrations.timeClauses, badge: "Clauses" },
+                    { svg: slideIllustrations.dialogueNuance, badge: "Speech" },
+                    { svg: slideIllustrations.practiceMastery, badge: "Quiz" }
+                ];
+                return enList[(slideNumber - 1) % enList.length];
+            }
+        }
+
         // DEDICATED LANGUAGE SLIDE PRESENTATION GENERATOR (ENGLISH & FRENCH)
         function generateLanguagePresentationData(topic, audience, count, lang) {
             const topicClean = (topic || "Future Simple: Will, Won't & Going To").trim();
@@ -1302,6 +1346,8 @@
                                 "Formation générale : Infinitif complet + terminaisons (ex: chanter-ai, finir-as)",
                                 "L'accent tonique et la prononciation du 'r' caractéristique"
                             ],
+                            illustrationSvg: slideIllustrations.frenchConjugaison,
+                            illustrationBadge: "Conjugaison",
                             notes: "Bienvenue à tous. Présentez le futur simple comme le temps fondamental des projets et des actions à venir."
                         },
                         {
@@ -1314,6 +1360,8 @@
                                 "Pouvoir (pourr-), Voir (verr-), Vouloir (voudr-), Venir (viendr-)",
                                 "Attention au redoublement du 'r' : courir (courr-), mourir (mourr-)"
                             ],
+                            illustrationSvg: slideIllustrations.frenchRadicaux,
+                            illustrationBadge: "Radicaux 3e G.",
                             notes: "Attirez l'attention des élèves sur les verbes à double 'r' et faites répéter les formes orales."
                         },
                         {
@@ -1326,6 +1374,8 @@
                                 "Propositions temporelles introduites par : dès que, quand, lorsque",
                                 "Différence essentielle entre Futur Simple et Futur Proche (aller + infinitif)"
                             ],
+                            illustrationSvg: slideIllustrations.frenchConcordance,
+                            illustrationBadge: "Concordance",
                             notes: "Insistez sur le fait qu'on ne met jamais de futur directement après 'si' de condition en français."
                         },
                         {
@@ -1338,6 +1388,8 @@
                                 "Astuce de substitution : Remplacer par 'il' ('il prendra' vs 'il prendrait')",
                                 "Le futur affirme la certitude, le conditionnel exprime le doute ou le souhait"
                             ],
+                            illustrationSvg: slideIllustrations.frenchVigilance,
+                            illustrationBadge: "Vigilance -ai / -ais",
                             notes: "C'est l'erreur la plus fréquente chez les élèves : entraînez-les à remplacer par 'nous' ou 'il'."
                         },
                         {
@@ -1350,24 +1402,31 @@
                                 "Transformez un court récit du présent vers le futur simple",
                                 "Auto-évaluation et grille des compétences acquises"
                             ],
+                            illustrationSvg: slideIllustrations.frenchBilan,
+                            illustrationBadge: "Bilan & Quiz",
                             notes: "Invitez les apprenants à formuler chacun une phrase complète au futur pour valider l'assimilation."
                         }
                     ];
                     return frenchFutureSlides.slice(0, targetCount).map((s, idx) => ({ ...s, bgGradient: gradients[idx % gradients.length] }));
                 } else {
-                    return Array.from({ length: targetCount }, (_, i) => ({
-                        number: i + 1,
-                        tag: i === 0 ? "APERÇU DE LA LEÇON" : `MODULE ${i}`,
-                        title: i === 0 ? topicClean : `${topicClean} : Notions Clés`,
-                        subtitle: `Langue Française - Conçu pour ${audience}`,
-                        bullets: [
-                            `Règle linguistique ${i + 1}.1 : Définition, morphologie et analyse grammaticale`,
-                            `Règle linguistique ${i + 1}.2 : Exercices d'application et pièges orthographiques`,
-                            `Règle linguistique ${i + 1}.3 : Emploi en contexte d'expression écrite et orale`
-                        ],
-                        bgGradient: gradients[i % gradients.length],
-                        notes: `Note de l'enseignant pour la diapositive ${i + 1} : Expliquez l'application de '${topicClean}'.`
-                    }));
+                    return Array.from({ length: targetCount }, (_, i) => {
+                        const genericIll = getGenericSlideIllustration(i + 1, true);
+                        return {
+                            number: i + 1,
+                            tag: i === 0 ? "APERÇU DE LA LEÇON" : `MODULE ${i}`,
+                            title: i === 0 ? topicClean : `${topicClean} : Notions Clés`,
+                            subtitle: `Langue Française - Conçu pour ${audience}`,
+                            bullets: [
+                                `Règle linguistique ${i + 1}.1 : Définition, morphologie et analyse grammaticale`,
+                                `Règle linguistique ${i + 1}.2 : Exercices d'application et pièges orthographiques`,
+                                `Règle linguistique ${i + 1}.3 : Emploi en contexte d'expression écrite et orale`
+                            ],
+                            illustrationSvg: genericIll.svg,
+                            illustrationBadge: genericIll.badge,
+                            bgGradient: gradients[i % gradients.length],
+                            notes: `Note de l'enseignant pour la diapositive ${i + 1} : Expliquez l'application de '${topicClean}'.`
+                        };
+                    });
                 }
             } else {
                 // English
@@ -1383,6 +1442,8 @@
                                 "Negative: Subject + will not / won't + base verb",
                                 "Interrogative: Will + subject + base verb? (e.g., 'Will they attend?')"
                             ],
+                            illustrationSvg: slideIllustrations.futureTimeline,
+                            illustrationBadge: "Future Timeline",
                             notes: "Welcome students. Clarify that 'will' never changes with he/she/it (no -s ending)."
                         },
                         {
@@ -1395,6 +1456,8 @@
                                 "Use 'will' for offers, promises, and general future predictions",
                                 "Use 'be going to' for planned intentions and predictions based on visible evidence"
                             ],
+                            illustrationSvg: slideIllustrations.willVsGoingTo,
+                            illustrationBadge: "Will vs Going To",
                             notes: "Emphasize contrasting examples: 'The phone is ringing, I'll get it' vs 'Look at the dark clouds, it is going to rain'."
                         },
                         {
@@ -1407,6 +1470,8 @@
                                 "Formula: Main clause (Future) + time conjunction + Time clause (Present Simple)",
                                 "Example: 'We will start the lesson as soon as the bell rings.'"
                             ],
+                            illustrationSvg: slideIllustrations.timeClauses,
+                            illustrationBadge: "Time Clauses",
                             notes: "Point out that this is a classic exam question where students mistakenly say 'as soon as the bell will ring'."
                         },
                         {
@@ -1419,6 +1484,8 @@
                                 "Used for joint suggestions: 'Shall we begin our reading session?'",
                                 "In legal or formal British English: represents solemn obligations or declarations"
                             ],
+                            illustrationSvg: slideIllustrations.dialogueNuance,
+                            illustrationBadge: "Modals & Speech",
                             notes: "Highlight the polite nature of 'Shall I...' in contrast to 'Do you want me to...'."
                         },
                         {
@@ -1431,26 +1498,70 @@
                                 "Identify and correct erroneous time clauses",
                                 "Short communicative dialogue practice between partners"
                             ],
+                            illustrationSvg: slideIllustrations.practiceMastery,
+                            illustrationBadge: "Mastery Checklist",
                             notes: "Wrap up the lesson by having each student generate one original future sentence using 'will' or 'won't'."
                         }
                     ];
                     return englishFutureSlides.slice(0, targetCount).map((s, idx) => ({ ...s, bgGradient: gradients[idx % gradients.length] }));
                 } else {
-                    return Array.from({ length: targetCount }, (_, i) => ({
-                        number: i + 1,
-                        tag: i === 0 ? "EXECUTIVE OVERVIEW" : `MODULE ${i}`,
-                        title: i === 0 ? topicClean : `${topicClean}: Core Concepts`,
-                        subtitle: `English Language - Designed for ${audience}`,
-                        bullets: [
-                            `Key linguistic concept ${i + 1}.1: Structural framework and usage rules`,
-                            `Key linguistic concept ${i + 1}.2: Sentence construction and common pitfalls`,
-                            `Key linguistic concept ${i + 1}.3: Communicative application in reading and writing`
-                        ],
-                        bgGradient: gradients[i % gradients.length],
-                        notes: `Speaker note for slide ${i + 1}: Emphasize the practical application of '${topicClean}'.`
-                    }));
+                    return Array.from({ length: targetCount }, (_, i) => {
+                        const genericIll = getGenericSlideIllustration(i + 1, false);
+                        return {
+                            number: i + 1,
+                            tag: i === 0 ? "EXECUTIVE OVERVIEW" : `MODULE ${i}`,
+                            title: i === 0 ? topicClean : `${topicClean}: Core Concepts`,
+                            subtitle: `English Language - Designed for ${audience}`,
+                            bullets: [
+                                `Key linguistic concept ${i + 1}.1: Structural framework and usage rules`,
+                                `Key linguistic concept ${i + 1}.2: Sentence construction and common pitfalls`,
+                                `Key linguistic concept ${i + 1}.3: Communicative application in reading and writing`
+                            ],
+                            illustrationSvg: genericIll.svg,
+                            illustrationBadge: genericIll.badge,
+                            bgGradient: gradients[i % gradients.length],
+                            notes: `Speaker note for slide ${i + 1}: Emphasize the practical application of '${topicClean}'.`
+                        };
+                    });
                 }
             }
+        }
+
+        // Enrich any external/Gemini slide deck with illustrations
+        function enrichSlidesWithIllustrations(slides, topic, lang) {
+            const isFr = (lang === "fr") || (topic && topic.toLowerCase().includes("français"));
+            const topicLower = (topic || "").toLowerCase();
+            const isFuture = topicLower.includes("future") || topicLower.includes("futur") || topicLower.includes("will");
+
+            return slides.map((slide, idx) => {
+                if (slide.illustrationSvg && slide.illustrationBadge) return slide;
+                if (isFuture) {
+                    if (isFr) {
+                        const frIlls = [
+                            { svg: slideIllustrations.frenchConjugaison, badge: "Conjugaison" },
+                            { svg: slideIllustrations.frenchRadicaux, badge: "Radicaux" },
+                            { svg: slideIllustrations.frenchConcordance, badge: "Concordance" },
+                            { svg: slideIllustrations.frenchVigilance, badge: "Orthographe" },
+                            { svg: slideIllustrations.frenchBilan, badge: "Bilan" }
+                        ];
+                        const ill = frIlls[idx % frIlls.length];
+                        return { ...slide, illustrationSvg: ill.svg, illustrationBadge: ill.badge };
+                    } else {
+                        const enIlls = [
+                            { svg: slideIllustrations.futureTimeline, badge: "Timeline" },
+                            { svg: slideIllustrations.willVsGoingTo, badge: "Will vs Going To" },
+                            { svg: slideIllustrations.timeClauses, badge: "Time Clauses" },
+                            { svg: slideIllustrations.dialogueNuance, badge: "Modals" },
+                            { svg: slideIllustrations.practiceMastery, badge: "Mastery" }
+                        ];
+                        const ill = enIlls[idx % enIlls.length];
+                        return { ...slide, illustrationSvg: ill.svg, illustrationBadge: ill.badge };
+                    }
+                } else {
+                    const fallback = getGenericSlideIllustration(idx + 1, isFr);
+                    return { ...slide, illustrationSvg: fallback.svg, illustrationBadge: fallback.badge };
+                }
+            });
         }
 
         async function executeGeminiPrompt(apiKey, promptText) {
@@ -1619,28 +1730,46 @@
                 else if (idx === currentSlideIndex + 1) stateClass = "state-next";
                 else if (idx < currentSlideIndex - 1) stateClass = "state-far-prev";
 
+                const illSvg = slide.illustrationSvg || getGenericSlideIllustration(slide.number, (slide.subtitle || '').includes('Français')).svg;
+                const illBadge = slide.illustrationBadge || "Illustration";
+
                 return `
-                    <div class="slide-3d-card ${stateClass} glass-card rounded-2xl p-6 text-white bg-gradient-to-br ${slide.bgGradient} flex flex-col justify-between" onclick="selectSlide(${idx})">
+                    <div class="slide-3d-card ${stateClass} glass-card rounded-2xl p-5 sm:p-6 text-white bg-gradient-to-br ${slide.bgGradient} flex flex-col justify-between" onclick="selectSlide(${idx})">
                         <div>
-                            <div class="flex items-center justify-between mb-3">
+                            <div class="flex items-center justify-between mb-2 sm:mb-3">
                                 <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-white/20 backdrop-blur-md uppercase tracking-wider">${slide.tag}</span>
                                 <span class="text-xs font-bold text-white/80">Slide ${slide.number} / ${slidesData.length}</span>
                             </div>
-                            <h3 class="text-xl font-bold tracking-tight mb-1 text-white">${slide.title}</h3>
-                            <p class="text-xs text-white/80 font-medium mb-4">${slide.subtitle}</p>
-                            
-                            <ul class="space-y-2">
-                                ${slide.bullets.map(b => `
-                                    <li class="flex items-center gap-2 text-xs font-medium text-white/95">
-                                        <div class="w-1.5 h-1.5 rounded-full bg-white flex-shrink-0"></div>
-                                        <span>${b}</span>
-                                    </li>
-                                `).join('')}
-                            </ul>
+
+                            <div class="flex items-start justify-between gap-3 sm:gap-4">
+                                <div class="flex-1 min-w-0">
+                                    <h3 class="text-lg sm:text-xl font-black tracking-tight mb-1 text-white line-clamp-2">${slide.title}</h3>
+                                    <p class="text-xs text-white/85 font-medium mb-3 line-clamp-1">${slide.subtitle}</p>
+                                    
+                                    <ul class="space-y-1.5 sm:space-y-2">
+                                        ${slide.bullets.map(b => `
+                                            <li class="flex items-start gap-2 text-xs font-medium text-white/95 leading-snug">
+                                                <div class="w-1.5 h-1.5 rounded-full bg-white mt-1 flex-shrink-0"></div>
+                                                <span class="line-clamp-2">${b}</span>
+                                            </li>
+                                        `).join('')}
+                                    </ul>
+                                </div>
+
+                                <!-- Slide Illustration Picture Card -->
+                                <div class="flex flex-col items-center justify-center p-2 rounded-2xl bg-white/15 backdrop-blur-md border border-white/25 shadow-lg w-28 h-28 sm:w-36 sm:h-36 flex-shrink-0">
+                                    <div class="w-16 h-16 sm:w-24 sm:h-24 flex items-center justify-center">
+                                        ${illSvg}
+                                    </div>
+                                    <span class="text-[8px] sm:text-[9px] font-mono font-bold uppercase tracking-wider text-white/90 mt-1 text-center truncate max-w-full">
+                                        ${illBadge}
+                                    </span>
+                                </div>
+                            </div>
                         </div>
 
-                        <div class="flex items-center justify-between pt-3 border-t border-white/20 text-[10px] text-white/70">
-                            <span>Sapphire AI Presentation Deck</span>
+                        <div class="flex items-center justify-between pt-2.5 border-t border-white/20 text-[10px] text-white/75 font-medium mt-2">
+                            <span>Sapphire AI PowerPoint Deck</span>
                             <span>Mr. Zaafouri Abdelmalek</span>
                         </div>
                     </div>
@@ -1709,7 +1838,7 @@
                 const result = await executeGeminiPrompt(apiKey, promptText);
                 const rawText = result.text || "";
                 const cleanedText = rawText.replace(/```json/gi, "").replace(/```/g, "").trim();
-                slidesData = JSON.parse(cleanedText);
+                slidesData = enrichSlidesWithIllustrations(JSON.parse(cleanedText), topic, lang);
                 currentSlideIndex = 0;
                 render3DSlider();
                 showToast(`Presentation Deck Generated via ${result.model}!`);
@@ -1719,7 +1848,7 @@
             }
 
             // Fallback generation (local English and French Language generator)
-            slidesData = generateLanguagePresentationData(topic, audience, count, lang);
+            slidesData = enrichSlidesWithIllustrations(generateLanguagePresentationData(topic, audience, count, lang), topic, lang);
 
             currentSlideIndex = 0;
             render3DSlider();
@@ -1813,6 +1942,27 @@
                 title: 'Lexical Vocabulary & Flashcards',
                 badge: 'Lexicon',
                 svg: `<svg viewBox="0 0 100 100" class="w-full h-full"><rect x="25" y="20" width="55" height="40" rx="4" transform="rotate(-6 52 40)" fill="#FEF08A" stroke="#CA8A04" stroke-width="2"/><rect x="20" y="30" width="55" height="40" rx="4" fill="#FFFFFF" stroke="#0284C7" stroke-width="2"/><text x="47" y="48" font-size="10" fill="#0369A1" font-weight="bold" text-anchor="middle">VOCABULARY</text><text x="47" y="60" font-size="7" fill="#64748B" text-anchor="middle">Synonyms & Antonyms</text><polygon points="45,76 55,76 50,86" fill="#F59E0B"/></svg>`
+            },
+            {
+                id: 'future-timeline',
+                category: 'english',
+                title: 'Future Simple Timeline & Syntax',
+                badge: 'English Tenses',
+                svg: `<svg viewBox="0 0 100 100" class="w-full h-full"><rect x="5" y="8" width="90" height="84" rx="8" fill="#F8FAFC" stroke="#2563EB" stroke-width="2"/><line x1="14" y1="52" x2="86" y2="52" stroke="#2563EB" stroke-width="2.5" stroke-linecap="round"/><polygon points="88,52 80,47 80,57" fill="#2563EB"/><circle cx="28" cy="52" r="3.5" fill="#94A3B8"/><text x="28" y="66" font-size="6.5" fill="#64748B" font-weight="bold" text-anchor="middle">PAST</text><circle cx="50" cy="52" r="5" fill="#F59E0B"/><text x="50" y="44" font-size="7" fill="#B45309" font-weight="bold" text-anchor="middle">NOW</text><circle cx="74" cy="52" r="4.5" fill="#10B981"/><text x="74" y="66" font-size="6.5" fill="#047857" font-weight="bold" text-anchor="middle">FUTURE</text><rect x="25" y="16" width="50" height="16" rx="4" fill="#1D4ED8"/><text x="50" y="27" font-size="7.5" fill="#FFF" font-weight="bold" text-anchor="middle">WILL + VERB</text><text x="50" y="82" font-size="6" fill="#334155" text-anchor="middle">Tomorrow • Next Week • Soon</text></svg>`
+            },
+            {
+                id: 'fr-futur-simple',
+                category: 'french',
+                title: 'Morphologie du Futur Simple',
+                badge: 'Conjugaison FR',
+                svg: `<svg viewBox="0 0 100 100" class="w-full h-full"><rect x="6" y="8" width="88" height="84" rx="8" fill="#FFF1F2" stroke="#E11D48" stroke-width="2"/><rect x="6" y="8" width="88" height="20" rx="6" fill="#E11D48"/><text x="50" y="22" font-size="8" fill="#FFF" font-weight="bold" text-anchor="middle">LE FUTUR SIMPLE</text><text x="14" y="42" font-size="6.5" fill="#9F1239" font-weight="bold">Infinitif + Terminaisons :</text><text x="14" y="55" font-size="7" fill="#1E293B">-ai, -as, -a</text><text x="58" y="55" font-size="7" fill="#1E293B">-ons, -ez, -ont</text><line x1="14" y1="63" x2="86" y2="63" stroke="#FDA4AF" stroke-width="1.5"/><text x="14" y="74" font-size="6.5" fill="#881337" font-weight="bold">Règle d'or :</text><text x="14" y="84" font-size="6.5" fill="#334155">Si + Présent ➔ Futur Simple</text></svg>`
+            },
+            {
+                id: 'academic-crest',
+                category: 'all',
+                title: 'Official Academic Crest & Seal',
+                badge: 'Academic Seal',
+                svg: `<svg viewBox="0 0 100 100" class="w-full h-full"><circle cx="50" cy="50" r="46" fill="none" stroke="#0F172A" stroke-width="2.5"/><circle cx="50" cy="50" r="42" fill="none" stroke="#0F172A" stroke-width="1" stroke-dasharray="2,2"/><polygon points="50,15 53,24 62,24 55,30 58,39 50,34 42,39 45,30 38,24 47,24" fill="#0F172A"/><path d="M 30,45 C 30,38 70,38 70,45 L 70,68 C 70,78 30,78 30,68 Z" fill="#F8FAFC" stroke="#0F172A" stroke-width="2"/><path d="M 50,42 L 50,72" stroke="#0F172A" stroke-width="1.5"/><path d="M 35,50 Q 42,48 50,52 Q 58,48 65,50" stroke="#0F172A" stroke-width="1" fill="none"/><path d="M 35,58 Q 42,56 50,60 Q 58,56 65,58" stroke="#0F172A" stroke-width="1" fill="none"/><path d="M 22,65 Q 18,48 30,36" stroke="#0F172A" stroke-width="1.5" fill="none"/><path d="M 78,65 Q 82,48 70,36" stroke="#0F172A" stroke-width="1.5" fill="none"/><text x="50" y="86" font-size="6.5" font-family="serif" font-weight="bold" fill="#0F172A" text-anchor="middle">EXCELLENTIA</text></svg>`
             },
             {
                 id: 'fr-conjugaison',
@@ -2077,6 +2227,257 @@
             }
         }
 
+        // ACADEMIC WORKSHEET & ILLUSTRATION RENDERING PIPELINE
+        const academicCrestSvg = `<svg viewBox="0 0 100 100" class="w-full h-full"><circle cx="50" cy="50" r="46" fill="none" stroke="#0F172A" stroke-width="2.5"/><circle cx="50" cy="50" r="42" fill="none" stroke="#0F172A" stroke-width="1" stroke-dasharray="2,2"/><polygon points="50,15 53,24 62,24 55,30 58,39 50,34 42,39 45,30 38,24 47,24" fill="#0F172A"/><path d="M 30,45 C 30,38 70,38 70,45 L 70,68 C 70,78 30,78 30,68 Z" fill="#F8FAFC" stroke="#0F172A" stroke-width="2"/><path d="M 50,42 L 50,72" stroke="#0F172A" stroke-width="1.5"/><path d="M 35,50 Q 42,48 50,52 Q 58,48 65,50" stroke="#0F172A" stroke-width="1" fill="none"/><path d="M 35,58 Q 42,56 50,60 Q 58,56 65,58" stroke="#0F172A" stroke-width="1" fill="none"/><path d="M 22,65 Q 18,48 30,36" stroke="#0F172A" stroke-width="1.5" fill="none"/><path d="M 78,65 Q 82,48 70,36" stroke="#0F172A" stroke-width="1.5" fill="none"/><text x="50" y="86" font-size="6.5" font-family="serif" font-weight="bold" fill="#0F172A" text-anchor="middle">EXCELLENTIA</text></svg>`;
+
+        function resolveWorksheetImage(doc) {
+            if (doc.image && (doc.image.svg || doc.image.url)) {
+                return doc.image;
+            }
+            const topicLower = (doc.topic || "").toLowerCase();
+            const isFr = (doc.subject && doc.subject.toLowerCase().includes("français")) || (doc.lang === "fr") || topicLower.includes("futur") || topicLower.includes("français") || topicLower.includes("passe") || topicLower.includes("passé");
+            const isFuture = topicLower.includes("future") || topicLower.includes("futur") || topicLower.includes("will");
+
+            if (isFuture) {
+                return isFr 
+                    ? educationalGraphics.find(g => g.id === 'fr-futur-simple') || educationalGraphics.find(g => g.id === 'fr-conjugaison')
+                    : educationalGraphics.find(g => g.id === 'future-timeline') || educationalGraphics.find(g => g.id === 'en-grammar-tree');
+            }
+            if (isFr) {
+                return educationalGraphics.find(g => g.id === 'fr-conjugaison') || educationalGraphics[4];
+            }
+            return educationalGraphics.find(g => g.id === 'en-grammar-tree') || educationalGraphics[0];
+        }
+
+        function getPedagogicalFigureSvg(topic, isFr) {
+            const topicLower = (topic || "").toLowerCase();
+            const isFuture = topicLower.includes("future") || topicLower.includes("futur") || topicLower.includes("will");
+
+            if (isFuture) {
+                if (isFr) {
+                    return `<svg viewBox="0 0 600 110" class="w-full h-full max-h-24">
+                        <rect x="10" y="10" width="580" height="90" rx="10" fill="#FFF1F2" stroke="#E11D48" stroke-width="2"/>
+                        <rect x="25" y="22" width="165" height="66" rx="6" fill="#FFFFFF" stroke="#FDA4AF" stroke-width="1.5"/>
+                        <text x="107" y="42" font-size="11" fill="#9F1239" font-weight="bold" text-anchor="middle">RADICAL DU VERBE</text>
+                        <text x="107" y="60" font-size="10" fill="#334155" text-anchor="middle">Infinitif (ex: chanter-)</text>
+                        <text x="107" y="74" font-size="10" fill="#E11D48" font-weight="bold" text-anchor="middle">Irrégulier (ser-, aur-, fer-)</text>
+                        <text x="205" y="60" font-size="20" fill="#E11D48" font-weight="bold" text-anchor="middle">+</text>
+                        <rect x="225" y="22" width="170" height="66" rx="6" fill="#FFFFFF" stroke="#FDA4AF" stroke-width="1.5"/>
+                        <text x="310" y="42" font-size="11" fill="#9F1239" font-weight="bold" text-anchor="middle">TERMINAISONS UNIQUES</text>
+                        <text x="310" y="60" font-size="11" fill="#E11D48" font-weight="bold" text-anchor="middle">-ai, -as, -a</text>
+                        <text x="310" y="75" font-size="11" fill="#E11D48" font-weight="bold" text-anchor="middle">-ons, -ez, -ont</text>
+                        <text x="410" y="60" font-size="20" fill="#E11D48" font-weight="bold" text-anchor="middle">=</text>
+                        <rect x="425" y="22" width="150" height="66" rx="6" fill="#E11D48"/>
+                        <text x="500" y="44" font-size="11" fill="#FFFFFF" font-weight="bold" text-anchor="middle">FUTUR SIMPLE</text>
+                        <text x="500" y="60" font-size="10" fill="#FFE4E6" text-anchor="middle">Je chanter-ai</text>
+                        <text x="500" y="74" font-size="10" fill="#FFE4E6" text-anchor="middle">Nous ser-ons</text>
+                    </svg>`;
+                } else {
+                    return `<svg viewBox="0 0 600 110" class="w-full h-full max-h-24">
+                        <rect x="10" y="10" width="580" height="90" rx="10" fill="#EFF6FF" stroke="#2563EB" stroke-width="2"/>
+                        <line x1="40" y1="58" x2="550" y2="58" stroke="#2563EB" stroke-width="3" stroke-linecap="round"/>
+                        <polygon points="558,58 544,51 544,65" fill="#2563EB"/>
+                        <circle cx="110" cy="58" r="8" fill="#94A3B8"/>
+                        <text x="110" y="40" font-size="11" fill="#475569" font-weight="bold" text-anchor="middle">PAST</text>
+                        <text x="110" y="80" font-size="9" fill="#64748B" text-anchor="middle">Completed action</text>
+                        <circle cx="280" cy="58" r="10" fill="#F59E0B" stroke="#B45309" stroke-width="2"/>
+                        <text x="280" y="38" font-size="12" fill="#B45309" font-weight="black" text-anchor="middle">PRESENT (NOW)</text>
+                        <text x="280" y="80" font-size="9" fill="#78350F" text-anchor="middle">Point of speech</text>
+                        <circle cx="460" cy="58" r="9" fill="#10B981" stroke="#047857" stroke-width="2"/>
+                        <text x="460" y="38" font-size="12" fill="#047857" font-weight="black" text-anchor="middle">FUTURE SIMPLE</text>
+                        <text x="460" y="80" font-size="9" fill="#065F46" font-weight="bold" text-anchor="middle">Subject + WILL + Verb (Base)</text>
+                    </svg>`;
+                }
+            } else {
+                if (isFr) {
+                    return `<svg viewBox="0 0 600 110" class="w-full h-full max-h-24">
+                        <rect x="10" y="10" width="580" height="90" rx="10" fill="#F0FDF4" stroke="#16A34A" stroke-width="2"/>
+                        <rect x="30" y="24" width="120" height="60" rx="6" fill="#FFFFFF" stroke="#86EFAC" stroke-width="1.5"/>
+                        <text x="90" y="48" font-size="11" fill="#15803D" font-weight="bold" text-anchor="middle">SUJET</text>
+                        <text x="90" y="66" font-size="9" fill="#64748B" text-anchor="middle">Groupe Nominal</text>
+                        <text x="175" y="58" font-size="18" fill="#16A34A" font-weight="bold" text-anchor="middle">➔</text>
+                        <rect x="200" y="24" width="160" height="60" rx="6" fill="#FFFFFF" stroke="#86EFAC" stroke-width="1.5"/>
+                        <text x="280" y="48" font-size="11" fill="#15803D" font-weight="bold" text-anchor="middle">VERBE CONJUGUÉ</text>
+                        <text x="280" y="66" font-size="9" fill="#64748B" text-anchor="middle">Accord en personne & temps</text>
+                        <text x="385" y="58" font-size="18" fill="#16A34A" font-weight="bold" text-anchor="middle">➔</text>
+                        <rect x="410" y="24" width="155" height="60" rx="6" fill="#FFFFFF" stroke="#86EFAC" stroke-width="1.5"/>
+                        <text x="487" y="48" font-size="11" fill="#15803D" font-weight="bold" text-anchor="middle">COMPLÉMENTS</text>
+                        <text x="487" y="66" font-size="9" fill="#64748B" text-anchor="middle">Directs, Indirects, Circonstanciels</text>
+                    </svg>`;
+                } else {
+                    return `<svg viewBox="0 0 600 110" class="w-full h-full max-h-24">
+                        <rect x="10" y="10" width="580" height="90" rx="10" fill="#F8FAFC" stroke="#0284C7" stroke-width="2"/>
+                        <rect x="30" y="24" width="150" height="60" rx="6" fill="#FFFFFF" stroke="#BAE6FD" stroke-width="1.5"/>
+                        <text x="105" y="48" font-size="11" fill="#0369A1" font-weight="bold" text-anchor="middle">SUBJECT (Noun Phrase)</text>
+                        <text x="105" y="66" font-size="9" fill="#64748B" text-anchor="middle">Agent or experiencer</text>
+                        <text x="205" y="58" font-size="18" fill="#0284C7" font-weight="bold" text-anchor="middle">+</text>
+                        <rect x="230" y="24" width="150" height="60" rx="6" fill="#FFFFFF" stroke="#BAE6FD" stroke-width="1.5"/>
+                        <text x="305" y="48" font-size="11" fill="#0369A1" font-weight="bold" text-anchor="middle">VERB (Verb Phrase)</text>
+                        <text x="305" y="66" font-size="9" fill="#64748B" text-anchor="middle">Action, state, tense</text>
+                        <text x="405" y="58" font-size="18" fill="#0284C7" font-weight="bold" text-anchor="middle">+</text>
+                        <rect x="430" y="24" width="140" height="60" rx="6" fill="#FFFFFF" stroke="#BAE6FD" stroke-width="1.5"/>
+                        <text x="500" y="48" font-size="11" fill="#0369A1" font-weight="bold" text-anchor="middle">OBJECT / ADJUNCT</text>
+                        <text x="500" y="66" font-size="9" fill="#64748B" text-anchor="middle">Complements & modifiers</text>
+                    </svg>`;
+                }
+            }
+        }
+
+        function renderA4WorksheetHtml(doc, lang) {
+            const isFr = (lang === "fr") || (doc.subject && doc.subject.toLowerCase().includes("français")) || (doc.topic && doc.topic.toLowerCase().includes("futur"));
+            const resolvedImg = resolveWorksheetImage(doc);
+            const pedagogicalFig = getPedagogicalFigureSvg(doc.topic, isFr);
+            const refCode = doc.ref || `WS-${Math.floor(1000 + Math.random() * 9000)}`;
+
+            let imageHtml = '';
+            if (resolvedImg) {
+                if (resolvedImg.isCustom) {
+                    imageHtml = `<img src="${resolvedImg.url}" alt="illustration" class="w-full h-full object-contain">`;
+                } else if (resolvedImg.svg) {
+                    imageHtml = resolvedImg.svg;
+                }
+            }
+
+            const headerBadge = isFr ? "MINISTÈRE DE L'ÉDUCATION • ACADÉMIE MODERNE" : "ACADEMIC BOARD • MODERN LANGUAGES CURRICULUM";
+            const assessmentType = isFr ? "ÉVALUATION FORMATIVE & TRAVAIL DE CLASSE" : "CLASSWORK & FORMAL ASSESSMENT";
+            const topicLabel = isFr ? "Notion / Sujet :" : "Curriculum Topic:";
+            const levelLabel = isFr ? "Niveau :" : "Level:";
+            const yearLabel = isFr ? "Année Scolaire : 2025/2026" : "Academic Year: 2025/2026";
+            const candidateLabel = isFr ? "Nom & Prénom de l'élève :" : "Candidate Name:";
+            const groupLabel = isFr ? "Classe / Groupe :" : "Class / Group:";
+            const dateLabel = isFr ? "Date de l'épreuve :" : "Exam Date:";
+            const timeLabel = isFr ? "Durée : 45 min • Barème : /20" : "Duration: 45 min • Total: 20 pts";
+            const instructionsTitle = isFr ? "Consignes officielles :" : "Examination Instructions:";
+            const instructionsBody = isFr 
+                ? "Lisez attentivement l'ensemble des questions. Formulez des réponses complètes et soignées sur les lignes réglées. Aucune rature n'est tolérée."
+                : "Read all questions attentively. Formulate complete, grammatical answers in the ruled spaces provided below. Write legibly.";
+            const figureTitle = isFr ? "DOCUMENT RESSOURCE 1 : SCHÉMA SYNOPTIQUE & RÈGLES" : "FIGURE 1: PEDAGOGICAL TIMELINE & GRAMMAR REFERENCE";
+            const examinerLabel = isFr ? "Examinateur : Mr. Zaafouri Abdelmalek ✍️" : "Examiner: Mr. Zaafouri Abdelmalek ✍️";
+            const sealLabel = isFr ? "Visa Pédagogique Officiel" : "Official Academic Seal";
+            const scoreLabel = isFr ? "Note Finale :" : "Final Score:";
+            const pageLabel = isFr ? "Page 1 / 1 • Format A4 Conforme" : "Page 1 / 1 • Standard A4 Format";
+
+            const questions = doc.questions || [];
+            const pointsPerQ = questions.length > 0 ? Math.max(1, Math.floor(20 / questions.length)) : 4;
+
+            return `
+                <div id="worksheet-print-content" class="a4-page-sheet border-2 border-slate-900 shadow-2xl space-y-4 text-slate-900 bg-white">
+                    <!-- ACADEMIC EXAM HEADER -->
+                    <div class="border-b-4 border-double border-slate-900 pb-3">
+                        <div class="flex items-center justify-between gap-3">
+                            <!-- Left: Academic Crest -->
+                            <div class="w-16 h-16 sm:w-20 sm:h-20 flex-shrink-0 flex items-center justify-center p-1 rounded-xl border border-slate-300 bg-slate-50">
+                                ${academicCrestSvg}
+                            </div>
+
+                            <!-- Center: Titles & Metadata -->
+                            <div class="flex-1 text-center min-w-0">
+                                <span class="px-2 py-0.5 rounded bg-slate-900 text-white text-[9px] sm:text-[10px] font-mono font-bold uppercase tracking-wider inline-block">
+                                    ${headerBadge}
+                                </span>
+                                <h1 class="text-base sm:text-xl font-black uppercase tracking-tight text-slate-900 mt-1 truncate">
+                                    ${doc.subject} — ${assessmentType}
+                                </h1>
+                                <p class="text-xs sm:text-sm font-bold text-slate-800">
+                                    ${topicLabel} <span class="text-blue-900 underline">${doc.topic}</span>
+                                </p>
+                                <div class="flex items-center justify-center gap-2 sm:gap-4 text-[9px] sm:text-[10px] font-mono font-semibold text-slate-600 mt-0.5 flex-wrap">
+                                    <span>${levelLabel} ${doc.grade}</span>
+                                    <span>•</span>
+                                    <span>REF: ${refCode}</span>
+                                    <span>•</span>
+                                    <span>${yearLabel}</span>
+                                </div>
+                            </div>
+
+                            <!-- Right: Thematic Illustration Picture -->
+                            <div class="w-16 h-16 sm:w-20 sm:h-20 flex-shrink-0 flex flex-col items-center justify-center p-1 rounded-xl border-2 border-slate-900 bg-white shadow-xs">
+                                <div class="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center">
+                                    ${imageHtml}
+                                </div>
+                                <span class="text-[7px] sm:text-[8px] font-mono font-bold uppercase tracking-wider text-slate-700 text-center truncate w-full mt-0.5">
+                                    ${resolvedImg ? (resolvedImg.badge || resolvedImg.title) : "Illustration"}
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- STUDENT & EXAM METADATA GRID -->
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-3 pt-2.5 border-t-2 border-slate-900 text-xs text-slate-900 font-semibold">
+                            <div class="flex flex-col gap-0.5">
+                                <span class="text-[9px] uppercase tracking-wider text-slate-600 font-mono font-bold">${candidateLabel}</span>
+                                <div class="border-b border-slate-500 h-4"></div>
+                            </div>
+                            <div class="flex flex-col gap-0.5">
+                                <span class="text-[9px] uppercase tracking-wider text-slate-600 font-mono font-bold">${groupLabel}</span>
+                                <div class="border-b border-slate-500 h-4"></div>
+                            </div>
+                            <div class="flex flex-col gap-0.5">
+                                <span class="text-[9px] uppercase tracking-wider text-slate-600 font-mono font-bold">${dateLabel}</span>
+                                <div class="border-b border-slate-500 h-4"></div>
+                            </div>
+                            <div class="flex flex-col gap-0.5">
+                                <span class="text-[9px] uppercase tracking-wider text-slate-600 font-mono font-bold">${isFr ? "Durée / Note :" : "Time / Marks:"}</span>
+                                <div class="h-4 flex items-center text-[10px] font-mono font-bold text-slate-800">${timeLabel}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- INSTRUCTIONS BANNER -->
+                    <div class="px-3 py-1.5 rounded-lg bg-slate-100 border-l-4 border-slate-900 text-[10px] sm:text-[11px] text-slate-700">
+                        <strong class="font-bold text-slate-900">${instructionsTitle}</strong> ${instructionsBody}
+                    </div>
+
+                    <!-- FIGURE 1: PEDAGOGICAL REFERENCE ILLUSTRATION -->
+                    <div class="rounded-xl border border-slate-300 bg-slate-50/70 p-2 sm:p-2.5">
+                        <div class="flex items-center justify-between pb-1 border-b border-slate-300 mb-1.5">
+                            <span class="text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-slate-900 font-mono flex items-center gap-1.5">
+                                <i data-lucide="image" class="w-3.5 h-3.5 text-blue-700"></i> ${figureTitle}
+                            </span>
+                            <span class="text-[8px] font-bold text-slate-500 font-mono">${isFr ? "Aide Visuelle & Règles" : "Visual Rule Chart"}</span>
+                        </div>
+                        <div class="w-full flex items-center justify-center py-1">
+                            ${pedagogicalFig}
+                        </div>
+                    </div>
+
+                    <!-- QUESTIONS SECTION -->
+                    <div class="space-y-3.5 flex-1 py-1">
+                        ${questions.map((q, idx) => `
+                            <div class="space-y-1.5">
+                                <div class="text-xs font-bold text-slate-900 flex items-start justify-between gap-2 leading-relaxed">
+                                    <div class="flex items-start gap-2">
+                                        <span class="bg-slate-900 text-white px-2 py-0.5 rounded text-[10px] font-mono font-bold flex-shrink-0">Q${q.id || (idx + 1)}</span>
+                                        <span class="text-slate-900">${q.question}</span>
+                                    </div>
+                                    <span class="text-[9px] font-mono text-slate-500 font-bold flex-shrink-0">[${pointsPerQ} pts]</span>
+                                </div>
+                                <div class="space-y-2 pl-7 py-0.5">
+                                    <div class="a4-ruled-line"></div>
+                                    <div class="a4-ruled-line"></div>
+                                    <div class="a4-ruled-line"></div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+
+                    <!-- ACADEMIC FOOTER -->
+                    <div class="border-t-2 border-slate-900 pt-2.5 text-[9px] sm:text-[10px] text-slate-700 flex flex-wrap justify-between items-center font-semibold gap-2">
+                        <div class="flex items-center gap-2">
+                            <span>${examinerLabel}</span>
+                            <span class="text-slate-400">|</span>
+                            <span class="text-slate-500">${sealLabel}</span>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <div class="px-3 py-1 rounded border-2 border-slate-900 font-mono font-bold text-slate-900 bg-slate-50">
+                                ${scoreLabel} _____ / 20
+                            </div>
+                            <span class="font-mono text-slate-500">${pageLabel}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
         async function generateWorksheet() {
             const subject = document.getElementById('ws-subject').value || "General Subject";
             const grade = document.getElementById('ws-grade').value || "All Grades";
@@ -2112,19 +2513,8 @@
                 questions = generateLanguageWorksheetData(topic, subject, grade, lang, count);
             }
 
-            // Beautiful localized strings
-            const readyTitle = lang === "fr" ? "Feuille d'exercices prête" : "Worksheet Ready (A4 Format)";
-            const readyDesc = lang === "fr" ? "Format A4 standard conforme. Téléchargez en PDF, partagez par QR ou imprimez." : "Formatted to standard A4 layout. Download as PDF, share via QR, or print.";
-            const saveBtnText = lang === "fr" ? "Enregistrer" : "Save to Docs";
-            const qrBtnText = lang === "fr" ? "Partager via QR" : "Share via QR";
-            const downloadPdfBtnText = lang === "fr" ? "Télécharger en PDF" : "Download as PDF";
-            const printBtnText = lang === "fr" ? "Imprimer" : "Print";
-            const classworkLabel = lang === "fr" ? "TRAVAIL DE CLASSE" : "CLASSWORK";
-            const topicLabel = lang === "fr" ? "Sujet" : "Topic";
-            const studentNameLabel = lang === "fr" ? "Nom de l'étudiant :" : "Student Name:";
-            const dateLabel = lang === "fr" ? "Date :" : "Date:";
-            const generatedByLabel = lang === "fr" ? "Généré par" : "Generated by";
-            const scoreLabel = lang === "fr" ? "Note" : "Score";
+            // Resolve illustration
+            const activeImage = selectedWorksheetImage || resolveWorksheetImage({subject, grade, topic, lang});
 
             // Save active worksheet to memory for instant sharing
             currentActiveWorksheet = {
@@ -2132,18 +2522,19 @@
                 grade,
                 topic,
                 questions,
-                image: selectedWorksheetImage
+                image: activeImage,
+                lang
             };
 
-            // Optional Image HTML block
-            let imageHtml = '';
-            if (selectedWorksheetImage) {
-                if (selectedWorksheetImage.isCustom) {
-                    imageHtml = `<div class="w-24 h-24 p-1 rounded-xl border border-slate-300 bg-white flex items-center justify-center flex-shrink-0 shadow-xs"><img src="${selectedWorksheetImage.url}" alt="illustration" class="w-full h-full object-contain"></div>`;
-                } else {
-                    imageHtml = `<div class="w-24 h-24 p-2 rounded-xl border border-slate-300 bg-white flex items-center justify-center flex-shrink-0 shadow-xs">${selectedWorksheetImage.svg}</div>`;
-                }
-            }
+            // Beautiful localized strings
+            const readyTitle = lang === "fr" ? "Feuille d'exercices prête (Format A4 Conforme)" : "Worksheet Ready (A4 Exam Format)";
+            const readyDesc = lang === "fr" ? "Format A4 standard conforme avec illustrations intégrées. Téléchargez en PDF, partagez par QR ou imprimez." : "Standard A4 layout with integrated pedagogical illustrations. Download as PDF, share via QR, or print.";
+            const saveBtnText = lang === "fr" ? "Enregistrer" : "Save to Docs";
+            const qrBtnText = lang === "fr" ? "Partager via QR" : "Share via QR";
+            const downloadPdfBtnText = lang === "fr" ? "Télécharger en PDF" : "Download as PDF";
+            const printBtnText = lang === "fr" ? "Imprimer" : "Print";
+
+            const encodedData = encodeURIComponent(JSON.stringify(currentActiveWorksheet));
 
             // Render beautiful A4 preview panel
             let html = `
@@ -2153,13 +2544,13 @@
                         <h4 class="text-sm font-semibold text-slate-800 dark:text-slate-100">${readyDesc}</h4>
                     </div>
                     <div class="flex flex-wrap items-center gap-2">
-                        <button id="ws-save-btn" onclick="saveCurrentWorksheet('${encodeURIComponent(JSON.stringify({subject, grade, topic, questions, image: selectedWorksheetImage}))}')" class="px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md shadow-blue-600/20 active:scale-95 transition-all">
+                        <button id="ws-save-btn" onclick="saveCurrentWorksheet('${encodedData}')" class="px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md shadow-blue-600/20 active:scale-95 transition-all">
                             <i data-lucide="bookmark" class="w-4 h-4"></i> ${saveBtnText}
                         </button>
                         <button id="ws-download-pdf-btn" onclick="downloadWorksheetPDF()" class="px-3.5 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md shadow-rose-600/20 active:scale-95 transition-all">
                             <i data-lucide="file-down" class="w-4 h-4"></i> ${downloadPdfBtnText}
                         </button>
-                        <button id="ws-qr-btn" data-test="share-qr-button" onclick="shareWorksheetQR('${encodeURIComponent(JSON.stringify({subject, grade, topic, questions, image: selectedWorksheetImage}))}')" class="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md shadow-indigo-600/20 active:scale-95 transition-all">
+                        <button id="ws-qr-btn" data-test="share-qr-button" onclick="shareWorksheetQR('${encodedData}')" class="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md shadow-indigo-600/20 active:scale-95 transition-all">
                             <i data-lucide="qr-code" class="w-4 h-4"></i> ${qrBtnText}
                         </button>
                         <button id="ws-print-btn" onclick="printWorksheet()" class="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md shadow-emerald-600/20 active:scale-95 transition-all">
@@ -2170,75 +2561,14 @@
                 
                 <!-- A4 PAGE CONTAINER -->
                 <div class="overflow-x-auto py-2">
-                    <div id="worksheet-print-content" class="a4-page-sheet border border-slate-300 dark:border-slate-700 shadow-xl space-y-5 text-slate-900 bg-white">
-                        <!-- Header -->
-                        <div class="border-b-4 border-double border-slate-900 pb-3">
-                            <div class="flex justify-between items-start gap-4">
-                                <div class="flex-1">
-                                    <div class="flex items-center gap-2">
-                                        <span class="px-2 py-0.5 rounded bg-slate-900 text-white text-[10px] font-mono font-bold uppercase tracking-wider">A4 EXAM SHEET</span>
-                                        <span class="text-[10px] font-mono text-slate-500">REF: WS-${Math.floor(1000 + Math.random() * 9000)}</span>
-                                    </div>
-                                    <h2 class="text-2xl font-black uppercase tracking-tight text-slate-900 mt-1">${subject} ${classworkLabel}</h2>
-                                    <p class="text-sm font-bold text-slate-700">${topicLabel}: ${topic}</p>
-                                    <p class="text-xs font-semibold text-slate-500">${grade}</p>
-                                </div>
-                                ${imageHtml}
-                            </div>
-                            
-                            <!-- Student Info block -->
-                            <div class="grid grid-cols-2 gap-4 mt-4 pt-3 border-t border-dashed border-slate-400 text-xs text-slate-900 font-semibold">
-                                <div class="flex items-center gap-1.5">
-                                    <span>${studentNameLabel}</span>
-                                    <div class="flex-1 border-b border-slate-500 h-4"></div>
-                                </div>
-                                <div class="flex items-center gap-1.5">
-                                    <span>${dateLabel}</span>
-                                    <div class="flex-1 border-b border-slate-500 h-4"></div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Questions -->
-                        <div class="space-y-5 flex-1">
-                `;
-
-                questions.forEach(q => {
-                    html += `
-                        <div class="space-y-2.5">
-                            <p class="text-xs font-bold text-slate-900 flex items-start gap-2 leading-relaxed">
-                                <span class="bg-slate-900 text-white px-2 py-0.5 rounded text-[11px] font-mono font-bold">Q${q.id}</span>
-                                <span>${q.question}</span>
-                            </p>
-                            <!-- Print Answer Space Lines for standard A4 -->
-                            <div class="space-y-3 pl-8 py-0.5">
-                                <div class="border-b border-slate-300 h-3.5"></div>
-                                <div class="border-b border-slate-300 h-3.5"></div>
-                                <div class="border-b border-slate-300 h-3.5"></div>
-                            </div>
-                        </div>
-                    `;
-                });
-
-                html += `
-                        </div>
-
-                        <!-- Footer -->
-                        <div class="border-t-2 border-slate-800 pt-3 text-center text-[10px] text-slate-600 flex justify-between items-center font-semibold">
-                            <span>${generatedByLabel}: Mr. Zaafouri Abdelmalek © 2026</span>
-                            <div class="flex items-center gap-4">
-                                <span class="px-2 py-1 rounded border border-slate-400 font-mono">${scoreLabel}: _____ / 20</span>
-                                <span>Page 1 / 1</span>
-                            </div>
-                        </div>
-                    </div>
+                    ${renderA4WorksheetHtml(currentActiveWorksheet, lang)}
                 </div>
             `;
 
             setTimeout(() => {
                 out.innerHTML = html;
                 lucide.createIcons();
-            }, 300);
+            }, 250);
         }
 
         function printWorksheet() {
@@ -2481,98 +2811,33 @@
 
             // Keep reference to active document
             currentActiveWorksheet = doc;
+            const lang = doc.lang || (doc.subject && doc.subject.toLowerCase().includes('français') ? 'fr' : 'en');
 
             out.classList.remove('hidden');
 
-            let imageHtml = '';
-            if (doc.image) {
-                if (doc.image.isCustom) {
-                    imageHtml = `<div class="w-24 h-24 p-1 rounded-xl border border-slate-300 bg-white flex items-center justify-center flex-shrink-0 shadow-xs"><img src="${doc.image.url}" alt="illustration" class="w-full h-full object-contain"></div>`;
-                } else if (doc.image.svg) {
-                    imageHtml = `<div class="w-24 h-24 p-2 rounded-xl border border-slate-300 bg-white flex items-center justify-center flex-shrink-0 shadow-xs">${doc.image.svg}</div>`;
-                }
-            }
+            const encodedData = encodeURIComponent(JSON.stringify(doc));
 
             let html = `
                 <div class="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-3 p-4 rounded-2xl bg-blue-50/50 dark:bg-blue-950/20 border border-blue-200/50 dark:border-blue-900/50">
                     <div>
-                        <p class="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider">Bookmarked Worksheet Loaded (A4 Format)</p>
-                        <h4 class="text-sm font-semibold text-slate-800 dark:text-slate-100">Live preview matches standard A4 print margins.</h4>
+                        <p class="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider">${lang === 'fr' ? "Feuille d'exercices chargée (Format A4 Conforme)" : "Bookmarked Worksheet Loaded (A4 Exam Format)"}</p>
+                        <h4 class="text-sm font-semibold text-slate-800 dark:text-slate-100">${lang === 'fr' ? "Format A4 standard conforme avec illustrations pédagogiques intégrées." : "Live preview matches standard A4 print margins with educational illustrations."}</h4>
                     </div>
                     <div class="flex flex-wrap items-center gap-2">
                         <button id="ws-download-pdf-btn" onclick="downloadWorksheetPDF()" class="px-3.5 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md shadow-rose-600/20 active:scale-95 transition-all">
-                            <i data-lucide="file-down" class="w-4 h-4"></i> Download as PDF
+                            <i data-lucide="file-down" class="w-4 h-4"></i> ${lang === 'fr' ? "Télécharger en PDF" : "Download as PDF"}
                         </button>
-                        <button id="ws-qr-btn" data-test="share-qr-button" onclick="shareWorksheetQR('${encodeURIComponent(JSON.stringify(doc))}')" class="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md shadow-indigo-600/20 active:scale-95 transition-all">
-                            <i data-lucide="qr-code" class="w-4 h-4"></i> Share via QR
+                        <button id="ws-qr-btn" data-test="share-qr-button" onclick="shareWorksheetQR('${encodedData}')" class="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md shadow-indigo-600/20 active:scale-95 transition-all">
+                            <i data-lucide="qr-code" class="w-4 h-4"></i> ${lang === 'fr' ? "Partager via QR" : "Share via QR"}
                         </button>
                         <button id="ws-print-btn" onclick="printWorksheet()" class="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md shadow-emerald-600/20 active:scale-95 transition-all">
-                            <i data-lucide="printer" class="w-4 h-4"></i> Download / Print
+                            <i data-lucide="printer" class="w-4 h-4"></i> ${lang === 'fr' ? "Imprimer" : "Print"}
                         </button>
                     </div>
                 </div>
                 
                 <div class="overflow-x-auto py-2">
-                    <div id="worksheet-print-content" class="a4-page-sheet border border-slate-300 dark:border-slate-700 shadow-xl space-y-5 text-slate-900 bg-white">
-                        <!-- Header -->
-                        <div class="border-b-4 border-double border-slate-900 pb-3">
-                            <div class="flex justify-between items-start gap-4">
-                                <div class="flex-1">
-                                    <div class="flex items-center gap-2">
-                                        <span class="px-2 py-0.5 rounded bg-slate-900 text-white text-[10px] font-mono font-bold uppercase tracking-wider">A4 EXAM SHEET</span>
-                                        <span class="text-[10px] font-mono text-slate-500">REF: WS-${Math.floor(1000 + Math.random() * 9000)}</span>
-                                    </div>
-                                    <h2 class="text-2xl font-black uppercase tracking-tight text-slate-900 mt-1">${doc.subject} CLASSWORK</h2>
-                                    <p class="text-sm font-bold text-slate-700">Topic: ${doc.topic}</p>
-                                    <p class="text-xs font-semibold text-slate-500">${doc.grade}</p>
-                                </div>
-                                ${imageHtml}
-                            </div>
-                            
-                            <div class="grid grid-cols-2 gap-4 mt-4 pt-3 border-t border-dashed border-slate-400 text-xs text-slate-900 font-semibold">
-                                <div class="flex items-center gap-1.5">
-                                    <span>Student Name:</span>
-                                    <div class="flex-1 border-b border-slate-500 h-4"></div>
-                                </div>
-                                <div class="flex items-center gap-1.5">
-                                    <span>Date:</span>
-                                    <div class="flex-1 border-b border-slate-500 h-4"></div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Questions -->
-                        <div class="space-y-5 flex-1">
-                `;
-
-            doc.questions.forEach(q => {
-                html += `
-                    <div class="space-y-2.5">
-                        <p class="text-xs font-bold text-slate-900 flex items-start gap-2 leading-relaxed">
-                            <span class="bg-slate-900 text-white px-2 py-0.5 rounded text-[11px] font-mono font-bold">Q${q.id}</span>
-                            <span>${q.question}</span>
-                        </p>
-                        <div class="space-y-3 pl-8 py-0.5">
-                            <div class="border-b border-slate-300 h-3.5"></div>
-                            <div class="border-b border-slate-300 h-3.5"></div>
-                            <div class="border-b border-slate-300 h-3.5"></div>
-                        </div>
-                    </div>
-                `;
-            });
-
-            html += `
-                        </div>
-
-                        <!-- Footer -->
-                        <div class="border-t-2 border-slate-800 pt-3 text-center text-[10px] text-slate-600 flex justify-between items-center font-semibold">
-                            <span>Generated by: Mr. Zaafouri Abdelmalek © 2026</span>
-                            <div class="flex items-center gap-4">
-                                <span class="px-2 py-1 rounded border border-slate-400 font-mono">Score: _____ / 20</span>
-                                <span>Page 1 / 1</span>
-                            </div>
-                        </div>
-                    </div>
+                    ${renderA4WorksheetHtml(doc, lang)}
                 </div>
             `;
 
