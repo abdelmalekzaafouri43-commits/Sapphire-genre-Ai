@@ -4,9 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Automated Content Generator - Mr. Zaafouri Abdelmalek</title>
-    <!-- Tailwind CSS CDN & Lucide Icons -->
+    <!-- Tailwind CSS CDN, Lucide Icons & html2pdf.js -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         :root {
             --primary: #0F52BA;
@@ -51,6 +52,47 @@
         .custom-scrollbar::-webkit-scrollbar-thumb {
             background: rgba(15, 82, 186, 0.25);
             border-radius: 999px;
+        }
+
+        /* Standard A4 Worksheet Layout */
+        .a4-page-sheet {
+            width: 100%;
+            max-width: 210mm;
+            min-height: 297mm;
+            margin: 0 auto;
+            background: #ffffff;
+            color: #0f172a;
+            padding: 16mm 18mm;
+            box-sizing: border-box;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        @media print {
+            @page {
+                size: A4 portrait;
+                margin: 10mm 12mm;
+            }
+            body {
+                background: #ffffff !important;
+                color: #000000 !important;
+            }
+            .a4-page-sheet {
+                box-shadow: none !important;
+                border: none !important;
+                border-radius: 0 !important;
+                padding: 0 !important;
+                max-width: 100% !important;
+                width: 100% !important;
+                min-height: auto !important;
+            }
+            .no-print, header, nav, #toast-container, button {
+                display: none !important;
+            }
         }
 
         /* 3D CAROUSEL SLIDER CSS STYLES */
@@ -265,34 +307,62 @@
 
             <!-- API KEY BOX & TESTER -->
             <section class="glass-card rounded-2xl p-5 space-y-4">
-                <div class="flex items-center justify-between">
+                <div class="flex items-center justify-between flex-wrap gap-2">
                     <div class="flex items-center gap-3">
                         <div class="w-9 h-9 rounded-xl bg-blue-600/10 text-blue-600 flex items-center justify-center">
                             <i data-lucide="key" class="w-5 h-5"></i>
                         </div>
                         <div>
                             <h3 class="font-bold text-base">Gemini API Key Settings</h3>
-                            <p class="text-xs text-slate-500">Enter or test your API key for live AI generation</p>
+                            <p class="text-xs text-slate-500">Auto-detected from Secrets or enter custom key</p>
                         </div>
                     </div>
-                    <span class="px-2.5 py-1 rounded-md text-[10px] font-bold bg-slate-200 dark:bg-slate-800">CONFIG</span>
+                    <span id="api-status-badge" class="px-2.5 py-1 rounded-md text-[10px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300 flex items-center gap-1">
+                        <i data-lucide="shield-alert" class="w-3 h-3"></i> Checking Key...
+                    </span>
                 </div>
 
                 <div class="space-y-3">
                     <div class="relative">
-                        <input type="password" id="api-key-input" placeholder="AI Studio Key or Custom Gemini Key..." 
-                            class="w-full px-4 py-3 pl-10 pr-10 text-sm rounded-xl border bg-slate-50 dark:bg-slate-900 border-slate-300 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <input type="password" id="api-key-input" oninput="onApiKeyInputChanged()" placeholder="Paste Google Gemini Key (e.g. AIzaSy...)" 
+                            class="w-full px-4 py-3 pl-10 pr-20 text-sm rounded-xl border bg-slate-50 dark:bg-slate-900 border-slate-300 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono">
                         <i data-lucide="key" class="w-4 h-4 absolute left-3 top-3.5 text-slate-400"></i>
-                        <button onclick="toggleKeyVisibility()" class="absolute right-3 top-3.5 text-slate-400 hover:text-slate-600">
-                            <i data-lucide="eye" id="eye-icon" class="w-4 h-4"></i>
+                        <div class="absolute right-3 top-2.5 flex items-center gap-1.5">
+                            <button onclick="toggleKeyVisibility()" class="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200" title="Toggle visibility">
+                                <i data-lucide="eye" id="eye-icon" class="w-4 h-4"></i>
+                            </button>
+                            <button onclick="clearSavedApiKey()" class="p-1 text-slate-400 hover:text-rose-600" title="Clear key">
+                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-between gap-2 flex-wrap text-xs text-slate-500 dark:text-slate-400 bg-slate-100/60 dark:bg-slate-900/60 p-2.5 rounded-xl">
+                        <div class="flex items-center gap-1.5">
+                            <i data-lucide="cpu" class="w-4 h-4 text-blue-600"></i>
+                            <span class="font-medium">Active Model:</span>
+                        </div>
+                        <select id="gemini-model-select" onchange="onModelSelectChanged(this.value)" class="text-xs font-semibold bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-2.5 py-1 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                            <option value="gemini-3.5-flash" selected>gemini-3.5-flash (Fast & Recommended)</option>
+                            <option value="gemini-flash-latest">gemini-flash-latest</option>
+                            <option value="gemini-3.1-flash-lite-preview">gemini-3.1-flash-lite-preview (Ultra Fast)</option>
+                            <option value="gemini-3.1-pro-preview">gemini-3.1-pro-preview (Advanced Reasoning)</option>
+                        </select>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                        <button onclick="saveApiKeyManual()" class="py-2.5 px-3 rounded-xl bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold text-xs flex items-center justify-center gap-1.5 transition-all">
+                            <i data-lucide="save" class="w-4 h-4 text-blue-600"></i> Save Key
+                        </button>
+                        <button onclick="testApiKey()" id="test-key-btn" class="py-2.5 px-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-lg shadow-blue-500/20 transition-all">
+                            <i data-lucide="zap" class="w-4 h-4"></i> Verify Key
+                        </button>
+                        <button onclick="enableDemoAiMode()" class="py-2.5 px-3 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-lg shadow-purple-500/20 transition-all">
+                            <i data-lucide="sparkles" class="w-4 h-4"></i> Demo AI Mode
                         </button>
                     </div>
 
-                    <button onclick="testApiKey()" id="test-key-btn" class="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm flex items-center justify-center gap-2 shadow-lg shadow-blue-500/20 transition-all">
-                        <i data-lucide="wand-2" class="w-4 h-4"></i> Test & Verify API Key
-                    </button>
-
-                    <div id="api-key-result" class="hidden p-3 rounded-xl text-xs font-semibold flex items-center gap-2"></div>
+                    <div id="api-key-result" class="hidden p-3 rounded-xl text-xs font-medium space-y-1"></div>
                 </div>
             </section>
 
@@ -353,20 +423,23 @@
 
                     <!-- Suggestion chips -->
                     <div class="flex items-center gap-2 overflow-x-auto pb-1.5 custom-scrollbar relative z-10 scroll-smooth">
-                        <button onclick="sendAgentSuggestion('Draft an outline for a presentation on Quantum Mechanics')" class="flex-shrink-0 px-3 py-1.5 rounded-full border border-slate-200/60 dark:border-slate-800/60 hover:bg-white/50 dark:hover:bg-slate-800/40 text-[10px] font-semibold text-slate-600 dark:text-slate-300 transition-all active:scale-95">
-                            ⚛️ Quantum Mechanics PPT
+                        <button onclick="sendAgentSuggestion('Create an English grammar worksheet on Present Perfect vs Past Simple with 5 exercises')" class="flex-shrink-0 px-3 py-1.5 rounded-full border border-slate-200/60 dark:border-slate-800/60 hover:bg-white/50 dark:hover:bg-slate-800/40 text-[10px] font-semibold text-slate-600 dark:text-slate-300 transition-all active:scale-95">
+                            🇬🇧 English: Present Perfect vs Past Simple
                         </button>
-                        <button onclick="sendAgentSuggestion('Generate list of questions for a cell biology worksheet')" class="flex-shrink-0 px-3 py-1.5 rounded-full border border-slate-200/60 dark:border-slate-800/60 hover:bg-white/50 dark:hover:bg-slate-800/40 text-[10px] font-semibold text-slate-600 dark:text-slate-300 transition-all active:scale-95">
-                            🧫 Cell Biology Worksheet
+                        <button onclick="sendAgentSuggestion('Créer une feuille d exercices de français sur l accord du participe passé avec 5 questions')" class="flex-shrink-0 px-3 py-1.5 rounded-full border border-slate-200/60 dark:border-slate-800/60 hover:bg-white/50 dark:hover:bg-slate-800/40 text-[10px] font-semibold text-slate-600 dark:text-slate-300 transition-all active:scale-95">
+                            🇫🇷 Français: Accord du Participe Passé
                         </button>
-                        <button onclick="sendAgentSuggestion('Plan an interactive class activity on local climate ecosystems')" class="flex-shrink-0 px-3 py-1.5 rounded-full border border-slate-200/60 dark:border-slate-800/60 hover:bg-white/50 dark:hover:bg-slate-800/40 text-[10px] font-semibold text-slate-600 dark:text-slate-300 transition-all active:scale-95">
-                            🌍 Climate Ecosystems Activity
+                        <button onclick="sendAgentSuggestion('Draft an outline for a PowerPoint presentation on English Academic Writing and Essay Structure')" class="flex-shrink-0 px-3 py-1.5 rounded-full border border-slate-200/60 dark:border-slate-800/60 hover:bg-white/50 dark:hover:bg-slate-800/40 text-[10px] font-semibold text-slate-600 dark:text-slate-300 transition-all active:scale-95">
+                            📖 English Essay Structure PPT
+                        </button>
+                        <button onclick="sendAgentSuggestion('Préparer une présentation PowerPoint sur les figures de style en littérature française')" class="flex-shrink-0 px-3 py-1.5 rounded-full border border-slate-200/60 dark:border-slate-800/60 hover:bg-white/50 dark:hover:bg-slate-800/40 text-[10px] font-semibold text-slate-600 dark:text-slate-300 transition-all active:scale-95">
+                            🎭 Présentation: Figures de Style en Français
                         </button>
                     </div>
 
                     <!-- Input Bar -->
                     <div class="flex items-center gap-2 relative z-10">
-                        <input type="text" id="agent-input" placeholder="Ask Sapphire AI Agent to write or build..." 
+                        <input type="text" id="agent-input" placeholder="Ask Sapphire AI Agent for English or French lessons..." 
                             class="flex-1 px-4 py-3 text-xs rounded-xl border bg-white/40 dark:bg-slate-950/40 border-slate-300 dark:border-slate-700/60 focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-slate-400"
                             onkeydown="if(event.key === 'Enter') sendAgentMessage()">
                         <button onclick="sendAgentMessage()" class="w-10 h-10 rounded-xl bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center shadow-lg shadow-blue-500/20 active:scale-95 transition-all">
@@ -376,7 +449,7 @@
                 </div>
             </div>
 
-            <!-- TAB 3: PPT DECK AI GENERATOR WITH 3D INTERACTIVE SWIPE SLIDER -->
+            <!-- TAB 3: PPT DECK AI GENERATOR WITH 3D INTERACTIVE SWIPE SLIDER (ENGLISH & FRENCH ONLY) -->
             <div id="tab-ppt" class="space-y-6">
                 
                 <!-- Generator Config Card -->
@@ -386,25 +459,44 @@
                             <i data-lucide="presentation" class="w-5 h-5 text-purple-600"></i> PowerPoint 3D Deck AI Generator
                         </h3>
                         <span class="px-3 py-1 rounded-full text-xs font-bold bg-purple-100 text-purple-700 dark:bg-purple-900/50 dark:text-purple-300 flex items-center gap-1">
-                            <i data-lucide="box" class="w-3.5 h-3.5"></i> Interactive 3D Touch Enabled
+                            <i data-lucide="languages" class="w-3.5 h-3.5"></i> English & Français Only
                         </span>
+                    </div>
+
+                    <!-- Quick Language Topic Presets -->
+                    <div class="space-y-1.5">
+                        <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300">Quick Language Presets / Sujets Recommandés</label>
+                        <div class="flex flex-wrap gap-2">
+                            <button onclick="setPPTTopicPreset('Future Simple: Form, Will vs Going To, and Practice', 'Secondary & High School Students', 5, 'en')" class="px-3 py-1.5 rounded-xl border border-purple-200 dark:border-purple-800/60 bg-purple-50/70 dark:bg-purple-950/30 text-purple-700 dark:text-purple-300 text-xs font-semibold hover:bg-purple-100 active:scale-95 transition-all">
+                                🇬🇧 English: Future Simple Mastery
+                            </button>
+                            <button onclick="setPPTTopicPreset('English Grammar Mastery: Advanced Tenses & Modals', 'Secondary & High School Students', 5, 'en')" class="px-3 py-1.5 rounded-xl border border-purple-200 dark:border-purple-800/60 bg-purple-50/70 dark:bg-purple-950/30 text-purple-700 dark:text-purple-300 text-xs font-semibold hover:bg-purple-100 active:scale-95 transition-all">
+                                🇬🇧 English: Advanced Tenses
+                            </button>
+                            <button onclick="setPPTTopicPreset('Le Futur Simple en Français: Règles, Radicaux et Concordance', 'Élèves de Collège et Lycée', 5, 'fr')" class="px-3 py-1.5 rounded-xl border border-purple-200 dark:border-purple-800/60 bg-purple-50/70 dark:bg-purple-950/30 text-purple-700 dark:text-purple-300 text-xs font-semibold hover:bg-purple-100 active:scale-95 transition-all">
+                                🇫🇷 Français: Le Futur Simple
+                            </button>
+                            <button onclick="setPPTTopicPreset('Grammaire Française: Le Passé Composé et l Imparfait', 'Élèves de Collège et Lycée', 5, 'fr')" class="px-3 py-1.5 rounded-xl border border-purple-200 dark:border-purple-800/60 bg-purple-50/70 dark:bg-purple-950/30 text-purple-700 dark:text-purple-300 text-xs font-semibold hover:bg-purple-100 active:scale-95 transition-all">
+                                🇫🇷 Français: Passé Composé vs Imparfait
+                            </button>
+                        </div>
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div class="md:col-span-2">
-                            <label class="block text-xs font-semibold mb-1">Presentation Topic</label>
-                            <input type="text" id="ppt-topic" value="Artificial Intelligence & Modern EdTech" class="w-full px-3 py-2 text-sm rounded-lg border bg-slate-50 dark:bg-slate-900 border-slate-300 dark:border-slate-700">
+                            <label class="block text-xs font-semibold mb-1">Presentation Topic (English or French)</label>
+                            <input type="text" id="ppt-topic" value="Future Simple: Form, Will vs Going To, and Practice" class="w-full px-3 py-2 text-sm rounded-lg border bg-slate-50 dark:bg-slate-900 border-slate-300 dark:border-slate-700">
                         </div>
                         <div>
                             <label class="block text-xs font-semibold mb-1">Target Audience</label>
-                            <input type="text" id="ppt-audience" value="Educators & University Faculty" class="w-full px-3 py-2 text-sm rounded-lg border bg-slate-50 dark:bg-slate-900 border-slate-300 dark:border-slate-700">
+                            <input type="text" id="ppt-audience" value="Secondary & High School Students" class="w-full px-3 py-2 text-sm rounded-lg border bg-slate-50 dark:bg-slate-900 border-slate-300 dark:border-slate-700">
                         </div>
                         <div>
                             <label class="block text-xs font-semibold mb-1">Slide Count</label>
                             <input type="number" id="ppt-count" value="5" min="3" max="10" class="w-full px-3 py-2 text-sm rounded-lg border bg-slate-50 dark:bg-slate-900 border-slate-300 dark:border-slate-700">
                         </div>
                         <div>
-                            <label class="block text-xs font-semibold mb-1">Language / Langue</label>
+                            <label class="block text-xs font-semibold mb-1">Language / Langue (English / French only)</label>
                             <select id="ppt-lang" class="w-full px-3 py-2 text-sm rounded-lg border bg-slate-50 dark:bg-slate-900 border-slate-300 dark:border-slate-700 font-semibold">
                                 <option value="en">English (Anglais)</option>
                                 <option value="fr">Français (French)</option>
@@ -504,39 +596,99 @@
                 </div>
             </div>
 
-            <!-- TAB 2: WORKSHEET AI GENERATOR -->
+            <!-- TAB 2: WORKSHEET AI GENERATOR (ENGLISH & FRENCH ONLY) -->
             <div id="tab-worksheet" class="hidden space-y-6">
                 <div class="glass-card rounded-2xl p-6 space-y-4">
-                    <h3 class="font-bold text-lg flex items-center gap-2">
-                        <i data-lucide="file-text" class="w-5 h-5 text-blue-600"></i> Worksheet AI Generator
-                    </h3>
+                    <div class="flex items-center justify-between">
+                        <h3 class="font-bold text-lg flex items-center gap-2">
+                            <i data-lucide="file-text" class="w-5 h-5 text-blue-600"></i> Worksheet AI Generator
+                        </h3>
+                        <span class="px-3 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300 flex items-center gap-1">
+                            <i data-lucide="languages" class="w-3.5 h-3.5"></i> English & Français Only
+                        </span>
+                    </div>
+
+                    <!-- Quick Language Topic Presets -->
+                    <div class="space-y-1.5">
+                        <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300">Quick Curriculum Presets / Thèmes Pédagogiques</label>
+                        <div class="flex flex-wrap gap-2">
+                            <button onclick="setWorksheetPreset('English Language', 'Grade 8 / Intermediate', 'Future Simple & Tenses (will / won t / going to)', 'en')" class="px-3 py-1.5 rounded-xl border border-blue-200 dark:border-blue-800/60 bg-blue-50/70 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300 text-xs font-semibold hover:bg-blue-100 active:scale-95 transition-all">
+                                🇬🇧 English: Future Simple (Tenses)
+                            </button>
+                            <button onclick="setWorksheetPreset('English Language', 'Grade 8 / Intermediate', 'Present Perfect vs Past Simple Tenses', 'en')" class="px-3 py-1.5 rounded-xl border border-blue-200 dark:border-blue-800/60 bg-blue-50/70 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300 text-xs font-semibold hover:bg-blue-100 active:scale-95 transition-all">
+                                🇬🇧 English: Past & Perfect Tenses
+                            </button>
+                            <button onclick="setWorksheetPreset('English Language', 'Grade 9 / Secondary', 'Reading Comprehension & Vocabulary Analysis', 'en')" class="px-3 py-1.5 rounded-xl border border-blue-200 dark:border-blue-800/60 bg-blue-50/70 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300 text-xs font-semibold hover:bg-blue-100 active:scale-95 transition-all">
+                                🇬🇧 English: Reading & Vocab
+                            </button>
+                            <button onclick="setWorksheetPreset('Langue Française', '4ème / Collège', 'Le Futur Simple: Règles, Verbes Irréguliers et Concordance', 'fr')" class="px-3 py-1.5 rounded-xl border border-blue-200 dark:border-blue-800/60 bg-blue-50/70 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300 text-xs font-semibold hover:bg-blue-100 active:scale-95 transition-all">
+                                🇫🇷 Français: Le Futur Simple
+                            </button>
+                            <button onclick="setWorksheetPreset('Langue Française', '4ème / Collège', 'L Accord du Participe Passé avec Avoir et Être', 'fr')" class="px-3 py-1.5 rounded-xl border border-blue-200 dark:border-blue-800/60 bg-blue-50/70 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300 text-xs font-semibold hover:bg-blue-100 active:scale-95 transition-all">
+                                🇫🇷 Français: Accord Participe Passé
+                            </button>
+                            <button onclick="setWorksheetPreset('Langue Française', '3ème / Lycée', 'Conjugaison: Passé Simple et Imparfait', 'fr')" class="px-3 py-1.5 rounded-xl border border-blue-200 dark:border-blue-800/60 bg-blue-50/70 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300 text-xs font-semibold hover:bg-blue-100 active:scale-95 transition-all">
+                                🇫🇷 Français: Passé Simple & Imparfait
+                            </button>
+                            <button onclick="setWorksheetPreset('Langue Française', '5ème / Collège', 'Les Pronoms Personnels COD et COI', 'fr')" class="px-3 py-1.5 rounded-xl border border-blue-200 dark:border-blue-800/60 bg-blue-50/70 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300 text-xs font-semibold hover:bg-blue-100 active:scale-95 transition-all">
+                                🇫🇷 Français: Pronoms COD/COI
+                            </button>
+                        </div>
+                    </div>
+
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
-                            <label class="block text-xs font-semibold mb-1">Subject</label>
-                            <input type="text" id="ws-subject" value="Mathematics" class="w-full px-3 py-2 text-sm rounded-lg border bg-slate-50 dark:bg-slate-900 border-slate-300 dark:border-slate-700">
+                            <label class="block text-xs font-semibold mb-1">Language Subject / Matière</label>
+                            <select id="ws-subject-select" onchange="onWorksheetLanguageChange()" class="w-full px-3 py-2 text-sm rounded-lg border bg-slate-50 dark:bg-slate-900 border-slate-300 dark:border-slate-700 font-semibold text-blue-600 dark:text-blue-400">
+                                <option value="English Language">🇬🇧 English Language (Anglais)</option>
+                                <option value="Langue Française">🇫🇷 Langue Française (French)</option>
+                            </select>
+                            <input type="hidden" id="ws-subject" value="English Language">
                         </div>
                         <div>
-                            <label class="block text-xs font-semibold mb-1">Grade Level</label>
-                            <input type="text" id="ws-grade" value="Grade 8" class="w-full px-3 py-2 text-sm rounded-lg border bg-slate-50 dark:bg-slate-900 border-slate-300 dark:border-slate-700">
+                            <label class="block text-xs font-semibold mb-1">Grade Level / Niveau</label>
+                            <input type="text" id="ws-grade" value="Grade 8 / Intermediate" class="w-full px-3 py-2 text-sm rounded-lg border bg-slate-50 dark:bg-slate-900 border-slate-300 dark:border-slate-700">
                         </div>
                         <div>
-                            <label class="block text-xs font-semibold mb-1">Topic</label>
-                            <input type="text" id="ws-topic" value="Linear Equations & Functions" class="w-full px-3 py-2 text-sm rounded-lg border bg-slate-50 dark:bg-slate-900 border-slate-300 dark:border-slate-700">
+                            <label class="block text-xs font-semibold mb-1">Topic / Sujet d'étude</label>
+                            <input type="text" id="ws-topic" value="Future Simple & Tenses" class="w-full px-3 py-2 text-sm rounded-lg border bg-slate-50 dark:bg-slate-900 border-slate-300 dark:border-slate-700">
                         </div>
                         <div>
                             <label class="block text-xs font-semibold mb-1">Questions Count</label>
-                            <input type="number" id="ws-count" value="5" class="w-full px-3 py-2 text-sm rounded-lg border bg-slate-50 dark:bg-slate-900 border-slate-300 dark:border-slate-700">
+                            <input type="number" id="ws-count" value="5" min="2" max="10" class="w-full px-3 py-2 text-sm rounded-lg border bg-slate-50 dark:bg-slate-900 border-slate-300 dark:border-slate-700">
                         </div>
                         <div>
-                            <label class="block text-xs font-semibold mb-1">Language / Langue</label>
-                            <select id="ws-lang" class="w-full px-3 py-2 text-sm rounded-lg border bg-slate-50 dark:bg-slate-900 border-slate-300 dark:border-slate-700 font-semibold">
+                            <label class="block text-xs font-semibold mb-1">Target Language / Langue</label>
+                            <select id="ws-lang" onchange="syncWorksheetSubjectWithLang()" class="w-full px-3 py-2 text-sm rounded-lg border bg-slate-50 dark:bg-slate-900 border-slate-300 dark:border-slate-700 font-semibold">
                                 <option value="en">English (Anglais)</option>
                                 <option value="fr">Français (French)</option>
                             </select>
                         </div>
+                        <div class="flex flex-col justify-end">
+                            <label class="block text-xs font-semibold mb-1">Illustration / Visual</label>
+                            <button type="button" onclick="openImageLibraryModal()" class="w-full px-3 py-2 text-sm rounded-lg border bg-slate-50 hover:bg-slate-100 dark:bg-slate-900 dark:hover:bg-slate-800 border-slate-300 dark:border-slate-700 font-semibold flex items-center justify-center gap-1.5 transition-all text-blue-600 dark:text-blue-400">
+                                <i data-lucide="image-plus" class="w-4 h-4"></i>
+                                <span id="ws-selected-image-btn-text">Add Language Graphic</span>
+                            </button>
+                        </div>
                     </div>
-                    <button onclick="generateWorksheet()" class="w-full py-3 rounded-xl bg-blue-600 text-white font-bold text-sm shadow-md">
-                        Generate Worksheet
+
+                    <!-- Selected Image Badge (if chosen) -->
+                    <div id="ws-image-badge-container" class="hidden p-3 rounded-xl bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900/40 flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div id="ws-image-thumb" class="w-10 h-10 rounded-lg bg-white dark:bg-slate-800 p-1 flex items-center justify-center border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden"></div>
+                            <div>
+                                <p id="ws-image-title" class="text-xs font-bold text-slate-800 dark:text-slate-100">Educational Graphic</p>
+                                <p class="text-[10px] text-slate-500">Will be embedded into the header and layout of your A4 worksheet</p>
+                            </div>
+                        </div>
+                        <button type="button" onclick="removeSelectedImage()" class="px-2.5 py-1.5 rounded-lg bg-red-100 hover:bg-red-200 text-red-700 dark:bg-red-950/40 dark:text-red-300 text-xs font-bold transition-all">
+                            Remove
+                        </button>
+                    </div>
+
+                    <button onclick="generateWorksheet()" class="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm shadow-md transition-all flex items-center justify-center gap-2">
+                        <i data-lucide="sparkles" class="w-4 h-4"></i> Generate Language Worksheet (A4 Format)
                     </button>
                     <div id="ws-output" class="hidden space-y-4"></div>
                 </div>
@@ -612,6 +764,55 @@
         </div>
     </div>
 
+    <!-- EDUCATIONAL IMAGE & ICON LIBRARY MODAL -->
+    <div id="image-library-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs hidden" onclick="closeImageLibraryModal()">
+        <div class="glass-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 max-w-2xl w-full mx-4 shadow-2xl relative space-y-4 max-h-[90vh] flex flex-col" onclick="event.stopPropagation()">
+            <!-- Header -->
+            <div class="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800">
+                <div class="flex items-center gap-2.5">
+                    <div class="p-2 rounded-xl bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400">
+                        <i data-lucide="image" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-base text-slate-800 dark:text-slate-100">Educational Illustration Library</h3>
+                        <p class="text-[11px] text-slate-500 dark:text-slate-400">Select curated academic graphics or enter a custom visual for your A4 worksheet</p>
+                    </div>
+                </div>
+                <button onclick="closeImageLibraryModal()" class="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <!-- Categories Tabs -->
+            <div class="flex items-center gap-1.5 overflow-x-auto pb-1 custom-scrollbar text-xs font-semibold" id="image-category-tabs">
+                <button onclick="filterImageCategory('all')" id="img-cat-all" class="px-3 py-1.5 rounded-xl bg-blue-600 text-white transition-all">All Language Visuals</button>
+                <button onclick="filterImageCategory('english')" id="img-cat-english" class="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 transition-all">🇬🇧 English Language</button>
+                <button onclick="filterImageCategory('french')" id="img-cat-french" class="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 transition-all">🇫🇷 Langue Française</button>
+                <button onclick="filterImageCategory('custom')" id="img-cat-custom" class="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 transition-all">Custom URL / Upload</button>
+            </div>
+
+            <!-- Grid of Educational Visuals -->
+            <div id="image-library-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 overflow-y-auto max-h-80 p-1 custom-scrollbar flex-1">
+                <!-- Dynamically Populated -->
+            </div>
+
+            <!-- Custom URL or Upload Panel (Shown when Custom tab selected) -->
+            <div id="custom-image-panel" class="hidden space-y-3 p-4 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800">
+                <div>
+                    <label class="block text-xs font-semibold mb-1 text-slate-700 dark:text-slate-300">Custom Image Web URL</label>
+                    <div class="flex gap-2">
+                        <input type="text" id="custom-img-url" placeholder="https://example.com/diagram.png" class="flex-1 px-3 py-2 text-xs rounded-xl border bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700">
+                        <button onclick="applyCustomImageUrl()" class="px-4 py-2 rounded-xl bg-blue-600 text-white font-bold text-xs shadow-sm hover:bg-blue-700 transition-all">Apply</button>
+                    </div>
+                </div>
+                <div class="text-center text-[10px] text-slate-400 font-semibold uppercase tracking-wider">— or upload from device —</div>
+                <div>
+                    <input type="file" id="custom-img-file" accept="image/*" onchange="handleImageFileUpload(event)" class="w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- DYNAMIC NOTIFICATION TOAST -->
     <div id="toast-container" class="fixed top-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
 
@@ -630,73 +831,72 @@
 
         let activeTheme = themes[0];
 
-        // PPT SLIDE DECK DATA
+        // PPT SLIDE DECK DATA (ENGLISH & FRENCH PEDAGOGY)
         let slidesData = [
             {
                 number: 1,
-                tag: "EXECUTIVE OVERVIEW",
-                title: "Artificial Intelligence in Education",
-                subtitle: "Transforming Learning, Pedagogy & Assessment",
+                tag: "LANGUAGE PEDAGOGY",
+                title: "Mastering English Verb Tenses",
+                subtitle: "Present Perfect vs. Past Simple: Structure, Usage & Nuance",
                 bullets: [
-                    "Personalized adaptive learning pathways for every student",
-                    "Automated grading & instant formative feedback loops",
-                    "AI-assisted lesson planning & presentation generation"
+                    "Distinguishing indefinite past experiences from specific completed timeframes",
+                    "Temporal markers analysis: 'since', 'for', 'already', 'yet' vs 'yesterday', 'in 2020'",
+                    "Practical conversational & academic discourse applications"
                 ],
                 bgGradient: "from-blue-600 to-indigo-800",
-                notes: "Welcome your faculty members and outline the key promises of AI-driven pedagogy."
+                notes: "Introduce the core syntactic distinction between unfinished past time periods and completed historical actions."
             },
             {
                 number: 2,
-                tag: "KEY PILLARS",
-                title: "Core Educational Capabilities",
-                subtitle: "Three Fundamental Innovation Vectors",
+                tag: "GRAMMAR ARCHITECTURE",
+                title: "Syntactic Form & Conjugation",
+                subtitle: "Auxiliary Verbs 'Have / Has' + Past Participles",
                 bullets: [
-                    "Vector 1: Real-time intelligent tutoring systems (ITS)",
-                    "Vector 2: Multimodal content creation (Worksheets & PPTs)",
-                    "Vector 3: Automated analytics & predictive student support"
+                    "Regular verb formation: Base + -ed with phonological pronunciation rules (/t/, /d/, /ɪd/)",
+                    "Irregular past participle paradigms and mnemonic categorization",
+                    "Negative formations and inverted question structures in formal English"
                 ],
                 bgGradient: "from-purple-600 to-indigo-900",
-                notes: "Highlight how AI acts as an assistant to human educators rather than a replacement."
+                notes: "Review standard irregular verbs like go/went/gone and see/saw/seen with active student choral response."
             },
             {
                 number: 3,
-                tag: "DATA INSIGHTS",
-                title: "Student Engagement Analytics",
-                subtitle: "Measurable Impact Across Academic Cohorts",
+                tag: "EXERCICE PRATIQUE",
+                title: "L'Accord du Participe Passé",
+                subtitle: "Règles Fondamentales avec les Auxiliaires Être et Avoir",
                 bullets: [
-                    "+42% Increase in concept retention speed",
-                    "-65% Reduction in teacher administrative grading time",
-                    "98% Satisfaction rating among early adopter faculty"
+                    "Avec l'auxiliaire Être : accord systématique en genre et en nombre avec le sujet",
+                    "Avec l'auxiliaire Avoir : accord uniquement si le Complément d'Objet Direct (COD) précède",
+                    "Cas particuliers des verbes pronominaux et participes passés suivis d'un infinitif"
                 ],
                 bgGradient: "from-emerald-600 to-teal-900",
-                notes: "Reference empirical metrics to substantiate the value proposition of Sapphire AI."
+                notes: "Présentez des exemples concrets : 'Les fleurs qu'il a cueillies' vs 'Il a cueilli des fleurs'."
             },
             {
                 number: 4,
-                tag: "ROADMAP",
-                title: "Implementation Strategy",
-                subtitle: "4-Phase Institutional Deployment Model",
+                tag: "EXPRESSION ÉCRITE",
+                title: "Enrichissement Lexical & Style",
+                subtitle: "Connecteurs Logiques et Registres de Langue",
                 bullets: [
-                    "Phase 1: Faculty orientation & Gemini API setup",
-                    "Phase 2: Curriculum integration & pilot testing",
-                    "Phase 3: Automated worksheet & deck generation scaling",
-                    "Phase 4: Full institutional analytics evaluation"
+                    "Connecteurs d'opposition et de concession : 'néanmoins', 'toutefois', 'whereas', 'however'",
+                    "Transition du registre familier vers le registre soutenu et académique",
+                    "Analyse textuelle comparée : littérature classique et argumentation moderne"
                 ],
                 bgGradient: "from-amber-600 to-orange-800",
-                notes: "Walk through the four practical steps for institutional onboarding."
+                notes: "Guider les apprenants dans l'utilisation des connecteurs logiques pour structurer un paragraphe argumentatif."
             },
             {
                 number: 5,
-                tag: "CONCLUSION",
-                title: "Embracing the AI Horizon",
-                subtitle: "Empowering Educators & Inspiring Students",
+                tag: "SYNTHÈSE & ÉVALUATION",
+                title: "Language Mastery Milestones",
+                subtitle: "Bilingual Fluency & Assessment Framework",
                 bullets: [
-                    "Seamless AI integration tailored for every classroom",
-                    "Safe, controlled, and verifiable LLM execution",
-                    "Join the Sapphire AI workspace today"
+                    "Formative diagnostic checkpoints across oral and written production",
+                    "Interactive worksheet synthesis and collaborative peer review",
+                    "Autonomous language learning strategies & digital practice tools"
                 ],
                 bgGradient: "from-fuchsia-600 to-pink-800",
-                notes: "Conclude with an inspiring call to action and open the floor for Q&A."
+                notes: "Conclude the session with interactive questions and distribute the accompanying A4 worksheet."
             }
         ];
 
@@ -816,41 +1016,590 @@
         function toggleKeyVisibility() {
             keyVisible = !keyVisible;
             document.getElementById('api-key-input').type = keyVisible ? 'text' : 'password';
+            const icon = document.getElementById('eye-icon');
+            if (icon) {
+                icon.setAttribute('data-lucide', keyVisible ? 'eye-off' : 'eye');
+                lucide.createIcons();
+            }
+        }
+
+        // Supported, modern Google Gemini Models
+        let activeGeminiModel = 'gemini-3.5-flash';
+        const SUPPORTED_GEMINI_MODELS = [
+            'gemini-3.5-flash',
+            'gemini-flash-latest',
+            'gemini-3.1-flash-lite-preview',
+            'gemini-3.1-pro-preview'
+        ];
+
+        function getEffectiveApiKey() {
+            const inputVal = document.getElementById('api-key-input')?.value?.trim();
+            if (inputVal && inputVal !== "MY_GEMINI_API_KEY" && inputVal.length > 5) return inputVal;
+            
+            const localVal = localStorage.getItem('gemini_api_key')?.trim();
+            if (localVal && localVal !== "MY_GEMINI_API_KEY" && localVal.length > 5) return localVal;
+            
+            if (window.AndroidBridge && typeof window.AndroidBridge.getApiKey === 'function') {
+                const bridgeKey = window.AndroidBridge.getApiKey()?.trim();
+                if (bridgeKey && bridgeKey !== "MY_GEMINI_API_KEY" && bridgeKey.length > 5) return bridgeKey;
+            }
+            
+            if (window.ANDROID_GEMINI_API_KEY && window.ANDROID_GEMINI_API_KEY !== "MY_GEMINI_API_KEY") {
+                return window.ANDROID_GEMINI_API_KEY;
+            }
+            return '';
+        }
+
+        function updateApiKeyUIStatus(isActive, message) {
+            const badge = document.getElementById('api-status-badge');
+            if (!badge) return;
+
+            if (isActive) {
+                badge.className = 'px-2.5 py-1 rounded-md text-[10px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 flex items-center gap-1';
+                badge.innerHTML = `<i data-lucide="check-circle" class="w-3 h-3"></i> ${message || 'Key Active'}`;
+            } else {
+                badge.className = 'px-2.5 py-1 rounded-md text-[10px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300 flex items-center gap-1';
+                badge.innerHTML = `<i data-lucide="shield-alert" class="w-3 h-3"></i> ${message || 'Offline Ready'}`;
+            }
+            lucide.createIcons();
+        }
+
+        function onApiKeyInputChanged() {
+            const val = document.getElementById('api-key-input')?.value?.trim() || '';
+            if (val && val !== "MY_GEMINI_API_KEY" && val.length > 5) {
+                localStorage.setItem('gemini_api_key', val);
+                updateApiKeyUIStatus(true, "Key Saved (Active)");
+            } else {
+                updateApiKeyUIStatus(false, "No Key (Offline Mode)");
+            }
+        }
+
+        function saveApiKeyManual() {
+            const val = document.getElementById('api-key-input')?.value?.trim() || '';
+            if (!val || val === "MY_GEMINI_API_KEY") {
+                showToast("Please type an API key first", "error");
+                return;
+            }
+            localStorage.setItem('gemini_api_key', val);
+            updateApiKeyUIStatus(true, "Key Saved");
+            showToast("API Key saved securely to storage!");
+        }
+
+        function clearSavedApiKey() {
+            localStorage.removeItem('gemini_api_key');
+            window.ANDROID_GEMINI_API_KEY = null;
+            const input = document.getElementById('api-key-input');
+            if (input) input.value = '';
+            const resDiv = document.getElementById('api-key-result');
+            if (resDiv) resDiv.classList.add('hidden');
+            updateApiKeyUIStatus(false, "Key Cleared");
+            showToast("API Key removed from local device", "info");
+        }
+
+        function initApiKey() {
+            let key = '';
+            if (localStorage.getItem('gemini_api_key') === 'DEMO_MODE_ACTIVE') {
+                DEMO_AI_MODE = true;
+                const input = document.getElementById('api-key-input');
+                if (input) input.value = 'DEMO_MODE_ACTIVE_KEY';
+                updateApiKeyUIStatus(true, "Demo AI Mode Active");
+                return;
+            }
+            if (window.AndroidBridge && typeof window.AndroidBridge.getApiKey === 'function') {
+                key = window.AndroidBridge.getApiKey() || '';
+            }
+            if (!key || key === "MY_GEMINI_API_KEY") {
+                key = localStorage.getItem('gemini_api_key') || '';
+            }
+            if (key && key !== "MY_GEMINI_API_KEY" && key.length > 5) {
+                const input = document.getElementById('api-key-input');
+                if (input) input.value = key;
+                updateApiKeyUIStatus(true, "Key Ready");
+            } else {
+                updateApiKeyUIStatus(false, "Offline Ready");
+            }
+        }
+
+        let DEMO_AI_MODE = false;
+        function enableDemoAiMode() {
+            DEMO_AI_MODE = true;
+            localStorage.setItem('gemini_api_key', 'DEMO_MODE_ACTIVE');
+            const input = document.getElementById('api-key-input');
+            if (input) input.value = 'DEMO_MODE_ACTIVE_KEY';
+            updateApiKeyUIStatus(true, "Demo AI Mode Active");
+            const resDiv = document.getElementById('api-key-result');
+            if (resDiv) {
+                resDiv.classList.remove('hidden');
+                resDiv.className = 'p-3 rounded-xl text-xs font-semibold bg-purple-100 text-purple-800 dark:bg-purple-950/40 dark:text-purple-300 flex items-center gap-2';
+                resDiv.innerHTML = '<i data-lucide="sparkles" class="w-4 h-4 flex-shrink-0"></i> <span>Demo AI Mode enabled! All generators & chat are fully operational with instant simulation.</span>';
+                lucide.createIcons();
+            }
+            showToast("Demo AI Mode enabled successfully!");
+        }
+
+        window.onAndroidApiKeyLoaded = function(key) {
+            if (key && key !== "MY_GEMINI_API_KEY" && key.length > 5) {
+                window.ANDROID_GEMINI_API_KEY = key;
+                localStorage.setItem('gemini_api_key', key);
+                const input = document.getElementById('api-key-input');
+                if (input && !input.value) input.value = key;
+                updateApiKeyUIStatus(true, "Secret Key Active");
+            }
+        };
+
+        // DEDICATED LANGUAGE GENERATOR FOR ENGLISH AND FRENCH (NO OTHER SUBJECTS)
+        function generateLanguageWorksheetData(topic, subject, grade, lang, count) {
+            const topicClean = (topic || "Future Simple & Tenses").trim();
+            const topicLower = topicClean.toLowerCase();
+            const isFrench = (lang === "fr" || (subject && subject.toLowerCase().includes("fran")));
+            const targetCount = Math.min(Math.max(parseInt(count) || 5, 2), 10);
+
+            const isFuture = topicLower.includes("future") || topicLower.includes("futur") || topicLower.includes("will") || topicLower.includes("going to");
+            const isPast = topicLower.includes("past") || topicLower.includes("passé") || topicLower.includes("imparfait") || topicLower.includes("perfect");
+            const isConditional = topicLower.includes("condition") || topicLower.includes("if");
+            const isPassive = topicLower.includes("passive") || topicLower.includes("passif") || topicLower.includes("voix");
+            const isPronoun = topicLower.includes("pronom") || topicLower.includes("pronoun") || topicLower.includes("cod") || topicLower.includes("coi") || topicLower.includes("relatif");
+            const isAgreement = topicLower.includes("accord") || topicLower.includes("participe") || topicLower.includes("agreement");
+            const isVocab = topicLower.includes("vocab") || topicLower.includes("word") || topicLower.includes("mot") || topicLower.includes("synonym");
+
+            let pool = [];
+
+            if (isFrench) {
+                if (isFuture) {
+                    pool = [
+                        "Conjugaison au Futur Simple : Conjuguez les verbes entre parenthèses au futur simple : 'Dès que nous (recevoir) les consignes du professeur, nous vous (envoyer) les documents et vous (pouvoir) vous entraîner.'",
+                        "Verbes irréguliers au Futur Simple : Donnez la forme au futur simple (1ère personne du singulier 'je' et 1ère personne du pluriel 'nous') des verbes suivants : avoir, être, aller, faire, voir, pouvoir, savoir, venir.",
+                        "Règle de concordance avec 'Si' : Complétez la phrase selon la règle Si + présent -> futur simple : 'Si les élèves révisent régulièrement leurs règles de conjugaison, ils (réussir) tous leurs exercices sans hésitation.'",
+                        "Nuance Futur Simple vs Futur Proche : Analysez la différence entre 'Le train va partir' (action imminente) et 'Le train partira à 14h' (action différée ou programmée). Rédigez un exemple illustrant chaque nuance.",
+                        "Terminaisons régulières : Rappelez les 6 terminaisons régulières du futur simple (-ai, -as, -a, -ons, -ez, -ont) et conjuguez intégralement les verbes 'finir' et 'apprendre'.",
+                        "Homophonie grammaticale (-ai vs -ais) : Choisissez la bonne graphie entre futur simple (-ai) et conditionnel présent (-ais) : 'Demain matin, je (prendrai / prendrais) le premier vol si l'horaire est confirmé.'",
+                        "Production de phrases au futur : Rédigez trois phrases distinctes au futur simple décrivant vos projets d'études ou de carrière pour l'année prochaine."
+                    ];
+                } else if (isPast) {
+                    pool = [
+                        "Passé Simple vs Imparfait : Dans le récit suivant, justifiez l'emploi de l'imparfait pour la description du décor et du passé simple pour les actions soudaines de premier plan.",
+                        "Conjugaison au Passé Simple : Conjuguez au passé simple (3ème personne du singulier et du pluriel) : prendre, vouloir, savoir, naître, courir.",
+                        "Accord du Participe Passé : Complétez les phrases en accordant avec soin : 'Elles sont (partir) à l'aube' et 'Les leçons qu'ils ont (réviser) sont très utiles.'",
+                        "Valeurs de l'Imparfait : Précisez si l'imparfait exprime une habitude, une description ou une action en cours d'accomplissement dans les phrases données.",
+                        "Récit au passé : Rédigez un court paragraphe de 5 lignes au passé en employant correctement le passé composé et l'imparfait."
+                    ];
+                } else if (isAgreement) {
+                    pool = [
+                        "Accord avec l'auxiliaire Être : Accordez le participe passé : 'Les candidates se sont (présenté) devant le jury et sont (reparti) avec les félicitations.'",
+                        "Accord avec l'auxiliaire Avoir : Justifiez l'accord ou l'absence d'accord : 'Quelles belles rédactions as-tu (écrit) ?' vs 'J'ai (écrit) ces rédactions avec soin.'",
+                        "Verbes pronominaux : Analysez si le pronom réfléchi est COD ou COI dans : 'Ils se sont (téléphoné)' et 'Ils se sont (rencontré)'.",
+                        "Participe passé suivi d'un infinitif : Justifiez l'accord : 'Les musiciens que j'ai (entendu / entendus) jouer.'",
+                        "Réécriture : Réécrivez le texte au féminin pluriel en appliquant rigoureusement les règles d'accord du participe passé."
+                    ];
+                } else if (isPronoun) {
+                    pool = [
+                        "Pronoms COD et COI : Remplacez les compléments soulignés par les pronoms appropriés (le, la, les, lui, leur) : 'Le professeur explique la leçon aux élèves.'",
+                        "Place des doubles pronoms : Réécrivez la phrase à la forme affirmative puis à la forme négative : 'Donne le livre à ton camarade.'",
+                        "Pronoms relatifs (qui, que, dont, où) : Reliez les deux propositions indépendantes en utilisant le pronom relatif adapté.",
+                        "Pronoms adverbiaux 'en' et 'y' : Répondez aux questions en remplaçant les groupes prépositionnels par 'en' ou 'y' : 'Participes-tu à ce projet ?' et 'Combien de livres as-tu ?'",
+                        "Identification syntaxique : Soulignez les pronoms personnels dans le texte et précisez la fonction grammaticale de chacun."
+                    ];
+                } else {
+                    pool = [
+                        `Analyse grammaticale de '${topicClean}' : Énoncez et expliquez les règles fondamentales régissant '${topicClean}' en langue française.`,
+                        `Exercice d'application : Rédigez trois phrases illustrant l'usage précis et rigoureux de '${topicClean}' dans un style académique.`,
+                        `Orthographe et pièges fréquents : Identifiez et corrigez les erreurs les plus courantes commises par les élèves au sujet de '${topicClean}'.`,
+                        `Enrichissement lexical : Proposez des synonymes soutenus, des antonymes et des connecteurs logiques liés à '${topicClean}'.`,
+                        `Production d'écrit : Rédigez un paragraphe argumentatif structuré de 6 lignes mettant en pratique les principes de '${topicClean}'.`
+                    ];
+                }
+            } else {
+                // English Language
+                if (isFuture) {
+                    pool = [
+                        "Future Simple (will + base verb): Complete the sentence with the correct future form of the verb: 'By this time next month, our school ________ (launch) the new language lab and students ________ (begin) their workshops.'",
+                        "Future Simple vs. 'Be Going To': Choose the correct form to express an intention/prior plan vs. a spontaneous offer or prediction: 'Look at those storm clouds! It ________ (rain).' vs. 'The phone is ringing. Don't worry, I ________ (answer) it!'",
+                        "Sentence Transformation: Rewrite the following sentence into both the Future Simple negative form and the interrogative (question) form: 'The delegates will ratify the international education agreement tomorrow.'",
+                        "Time Clauses with Future Meaning: Put the verb in parentheses into the correct tense (Present Simple in the time clause): 'We will send out the feedback reports as soon as the evaluation board ________ (complete) the assessments.'",
+                        "Modal Auxiliaries ('Will' vs. 'Shall'): Explain the stylistic and communicative difference between 'will' and 'shall' for first-person offers ('Shall we review the lesson?'). Provide two illustrative sentences.",
+                        "Future Continuous & Future Perfect: Fill in the blanks: 'At 10:00 AM tomorrow, the students ________ (take) their grammar test, and by noon they ________ (finish) all modules.'",
+                        "Short Composition: Write a short paragraph (4-6 sentences) describing your future academic goals, using at least two examples of 'will' and two examples of 'be going to'."
+                    ];
+                } else if (isPast) {
+                    pool = [
+                        "Past Simple vs. Present Perfect: Fill in the blanks: 'She ________ (live) in Montreal for three years before moving to London, but since 2023 she ________ (study) in Dublin.' Explain your choice of tenses.",
+                        "Past Continuous vs. Past Simple: Formulate an interrupted action sentence using 'while' or 'when': '(read the novel / hear the alarm) and (walk to campus / start to rain).'",
+                        "Irregular Past Verbs: Give both the Past Simple and Past Participle forms for: arise, choose, freeze, strive, undertake, shrink, and withdraw.",
+                        "'Used to' vs. 'Would': Discuss the grammatical difference between 'used to' and 'would' when describing past states versus repeated past actions.",
+                        "Past Narrative Writing: Write a 5-sentence coherent past narrative incorporating at least three irregular verbs and two descriptive adverbs."
+                    ];
+                } else if (isConditional) {
+                    pool = [
+                        "Zero & First Conditionals: Formulate two distinct sentences: one expressing an invariant universal fact (Zero) and one expressing a probable real future condition (First Conditional).",
+                        "Second Conditional (Hypothetical): Complete the sentence with correct verb forms: 'If educational institutions ________ (integrate) AI mentors responsibly, students ________ (benefit) from personalized feedback.'",
+                        "Third Conditional (Unreal Past): Express regret about a past situation: 'If we ________ (review) the syntax guidelines earlier, we ________ (not make) those mistakes on the essay.'",
+                        "Mixed Conditionals: Explain how a past event or condition can produce a continuing present result, with an illustrative example sentence.",
+                        "Inverted Conditionals without 'If': Rewrite using inversion: 'If you should require further assistance, please contact the coordinator.' -> 'Should you require...'"
+                    ];
+                } else if (isPassive) {
+                    pool = [
+                        "Active to Passive Voice Transformation: Transform the active sentence into the passive voice: 'Linguists conduct thorough empirical studies on second-language acquisition every year.'",
+                        "Passive with Modal Verbs: Rewrite using passive structures: 'Students must submit their literature portfolios prior to the deadline.'",
+                        "Omitting the Agent ('By' phrase): When is omitting the agent grammatically necessary or stylistically preferred? Give two concrete examples.",
+                        "Causative Structures ('Have / Get something done'): Construct two sentences demonstrating arranged services using causative structures.",
+                        "Stylistic Register: Rewrite an informal active sentence into formal passive academic prose suitable for an academic paper."
+                    ];
+                } else if (isVocab) {
+                    pool = [
+                        `Contextual Vocabulary Analysis on '${topicClean}': Identify and define three essential academic terms related to '${topicClean}', providing two precise synonyms and one antonym for each.`,
+                        `Collocations & Phrasal Verbs: Identify common prepositional collocations and verbs frequently paired in academic discussions of '${topicClean}'.`,
+                        "Morphology (Prefixes & Suffixes): Analyze how prefixes and suffixes alter the grammatical function and meaning of root words in English.",
+                        "Idioms & Figurative Language: Explain the meaning of two common idioms and construct sentences demonstrating appropriate conversational register.",
+                        "Sentence Crafting: Write a sophisticated compound-complex sentence incorporating two newly acquired vocabulary words from this lesson."
+                    ];
+                } else {
+                    pool = [
+                        `Grammar & Linguistic Rules for '${topicClean}': Formulate and explain the key grammatical principles governing '${topicClean}' in standard English.`,
+                        `Sentence Transformation & Syntax: Construct three distinct sentences (affirmative, negative, complex) that correctly apply the rules of '${topicClean}'.`,
+                        `Error Correction & Analysis: Identify two common grammatical or syntax errors students make when applying '${topicClean}', and provide full corrections.`,
+                        `Register & Context: In what communicative contexts (formal writing, academic presentation, daily conversation) is '${topicClean}' most effectively utilized?`,
+                        `Applied Writing Exercise: Write a well-structured paragraph (5-7 sentences) exploring an educational topic while intentionally incorporating '${topicClean}'.`
+                    ];
+                }
+            }
+
+            const questions = [];
+            for (let i = 0; i < targetCount; i++) {
+                questions.push({
+                    id: i + 1,
+                    question: pool[i % pool.length]
+                });
+            }
+            return questions;
+        }
+
+        // DEDICATED LANGUAGE SLIDE PRESENTATION GENERATOR (ENGLISH & FRENCH)
+        function generateLanguagePresentationData(topic, audience, count, lang) {
+            const topicClean = (topic || "Future Simple: Will, Won't & Going To").trim();
+            const topicLower = topicClean.toLowerCase();
+            const isFrench = (lang === "fr");
+            const targetCount = Math.min(Math.max(parseInt(count) || 5, 3), 10);
+            const isFuture = topicLower.includes("future") || topicLower.includes("futur") || topicLower.includes("will");
+
+            const gradients = [
+                "from-blue-600 to-indigo-800",
+                "from-purple-600 to-indigo-900",
+                "from-emerald-600 to-teal-900",
+                "from-amber-600 to-orange-800",
+                "from-fuchsia-600 to-pink-800"
+            ];
+
+            if (isFrench) {
+                if (isFuture) {
+                    const frenchFutureSlides = [
+                        {
+                            number: 1,
+                            tag: "INTRODUCTION & RÈGLES",
+                            title: "Le Futur Simple en Français",
+                            subtitle: `Formation, morphologie et emplois - Pour ${audience}`,
+                            bullets: [
+                                "Terminaisons régulières universelles : -ai, -as, -a, -ons, -ez, -ont",
+                                "Formation générale : Infinitif complet + terminaisons (ex: chanter-ai, finir-as)",
+                                "L'accent tonique et la prononciation du 'r' caractéristique"
+                            ],
+                            notes: "Bienvenue à tous. Présentez le futur simple comme le temps fondamental des projets et des actions à venir."
+                        },
+                        {
+                            number: 2,
+                            tag: "VERBES IRRÉGULIERS",
+                            title: "Les Radicaux Particuliers",
+                            subtitle: "Les verbes du 3ème groupe à mémoriser",
+                            bullets: [
+                                "Être (ser-), Avoir (aur-), Faire (fer-), Aller (ir-)",
+                                "Pouvoir (pourr-), Voir (verr-), Vouloir (voudr-), Venir (viendr-)",
+                                "Attention au redoublement du 'r' : courir (courr-), mourir (mourr-)"
+                            ],
+                            notes: "Attirez l'attention des élèves sur les verbes à double 'r' et faites répéter les formes orales."
+                        },
+                        {
+                            number: 3,
+                            tag: "SYNTAXE & CONCORDANCE",
+                            title: "Emplois et Concordance des Temps",
+                            subtitle: "Propositions conditionnelles et temporelles",
+                            bullets: [
+                                "Règle clé : Si + présent -> verbe principal au futur simple",
+                                "Propositions temporelles introduites par : dès que, quand, lorsque",
+                                "Différence essentielle entre Futur Simple et Futur Proche (aller + infinitif)"
+                            ],
+                            notes: "Insistez sur le fait qu'on ne met jamais de futur directement après 'si' de condition en français."
+                        },
+                        {
+                            number: 4,
+                            tag: "ORTHOGRAPHE & VIGILANCE",
+                            title: "Futur Simple vs Conditionnel Présent",
+                            subtitle: "Distinguer -ai (futur) et -ais (conditionnel)",
+                            bullets: [
+                                "À la 1ère personne du singulier : 'je prendrai' (futur) vs 'je prendrais' (conditionnel)",
+                                "Astuce de substitution : Remplacer par 'il' ('il prendra' vs 'il prendrait')",
+                                "Le futur affirme la certitude, le conditionnel exprime le doute ou le souhait"
+                            ],
+                            notes: "C'est l'erreur la plus fréquente chez les élèves : entraînez-les à remplacer par 'nous' ou 'il'."
+                        },
+                        {
+                            number: 5,
+                            tag: "EXERCICES & BILAN",
+                            title: "Mise en Pratique et Synthèse",
+                            subtitle: "Pratique guidée et révision en classe",
+                            bullets: [
+                                "Complétez les phrases à trous en direct",
+                                "Transformez un court récit du présent vers le futur simple",
+                                "Auto-évaluation et grille des compétences acquises"
+                            ],
+                            notes: "Invitez les apprenants à formuler chacun une phrase complète au futur pour valider l'assimilation."
+                        }
+                    ];
+                    return frenchFutureSlides.slice(0, targetCount).map((s, idx) => ({ ...s, bgGradient: gradients[idx % gradients.length] }));
+                } else {
+                    return Array.from({ length: targetCount }, (_, i) => ({
+                        number: i + 1,
+                        tag: i === 0 ? "APERÇU DE LA LEÇON" : `MODULE ${i}`,
+                        title: i === 0 ? topicClean : `${topicClean} : Notions Clés`,
+                        subtitle: `Langue Française - Conçu pour ${audience}`,
+                        bullets: [
+                            `Règle linguistique ${i + 1}.1 : Définition, morphologie et analyse grammaticale`,
+                            `Règle linguistique ${i + 1}.2 : Exercices d'application et pièges orthographiques`,
+                            `Règle linguistique ${i + 1}.3 : Emploi en contexte d'expression écrite et orale`
+                        ],
+                        bgGradient: gradients[i % gradients.length],
+                        notes: `Note de l'enseignant pour la diapositive ${i + 1} : Expliquez l'application de '${topicClean}'.`
+                    }));
+                }
+            } else {
+                // English
+                if (isFuture) {
+                    const englishFutureSlides = [
+                        {
+                            number: 1,
+                            tag: "INTRODUCTION & FORMULA",
+                            title: "Future Simple: Will & Won't",
+                            subtitle: `Form, structure, and basic rules - For ${audience}`,
+                            bullets: [
+                                "Affirmative: Subject + will + base form of the verb (infinitive without 'to')",
+                                "Negative: Subject + will not / won't + base verb",
+                                "Interrogative: Will + subject + base verb? (e.g., 'Will they attend?')"
+                            ],
+                            notes: "Welcome students. Clarify that 'will' never changes with he/she/it (no -s ending)."
+                        },
+                        {
+                            number: 2,
+                            tag: "CORE DISTINCTION",
+                            title: "Will vs. 'Be Going To'",
+                            subtitle: "Spontaneous choices vs. prior plans & evidence",
+                            bullets: [
+                                "Use 'will' for spontaneous decisions made at the moment of speaking",
+                                "Use 'will' for offers, promises, and general future predictions",
+                                "Use 'be going to' for planned intentions and predictions based on visible evidence"
+                            ],
+                            notes: "Emphasize contrasting examples: 'The phone is ringing, I'll get it' vs 'Look at the dark clouds, it is going to rain'."
+                        },
+                        {
+                            number: 3,
+                            tag: "TIME CLAUSES & SYNTAX",
+                            title: "Future Meaning in Time Clauses",
+                            subtitle: "When, as soon as, before, after, until",
+                            bullets: [
+                                "Rule: Never use 'will' inside the time clause itself",
+                                "Formula: Main clause (Future) + time conjunction + Time clause (Present Simple)",
+                                "Example: 'We will start the lesson as soon as the bell rings.'"
+                            ],
+                            notes: "Point out that this is a classic exam question where students mistakenly say 'as soon as the bell will ring'."
+                        },
+                        {
+                            number: 4,
+                            tag: "MODAL NUANCES",
+                            title: "The Modal 'Shall' & Formal Usage",
+                            subtitle: "Polite offers, suggestions, and official writing",
+                            bullets: [
+                                "Used with 'I' and 'We' for first-person offers: 'Shall I open the window?'",
+                                "Used for joint suggestions: 'Shall we begin our reading session?'",
+                                "In legal or formal British English: represents solemn obligations or declarations"
+                            ],
+                            notes: "Highlight the polite nature of 'Shall I...' in contrast to 'Do you want me to...'."
+                        },
+                        {
+                            number: 5,
+                            tag: "SUMMARY & MASTERY",
+                            title: "Interactive Review & Practice",
+                            subtitle: "Classroom exercises and diagnostic quiz",
+                            bullets: [
+                                "Sentence transformation challenge: from present to future forms",
+                                "Identify and correct erroneous time clauses",
+                                "Short communicative dialogue practice between partners"
+                            ],
+                            notes: "Wrap up the lesson by having each student generate one original future sentence using 'will' or 'won't'."
+                        }
+                    ];
+                    return englishFutureSlides.slice(0, targetCount).map((s, idx) => ({ ...s, bgGradient: gradients[idx % gradients.length] }));
+                } else {
+                    return Array.from({ length: targetCount }, (_, i) => ({
+                        number: i + 1,
+                        tag: i === 0 ? "EXECUTIVE OVERVIEW" : `MODULE ${i}`,
+                        title: i === 0 ? topicClean : `${topicClean}: Core Concepts`,
+                        subtitle: `English Language - Designed for ${audience}`,
+                        bullets: [
+                            `Key linguistic concept ${i + 1}.1: Structural framework and usage rules`,
+                            `Key linguistic concept ${i + 1}.2: Sentence construction and common pitfalls`,
+                            `Key linguistic concept ${i + 1}.3: Communicative application in reading and writing`
+                        ],
+                        bgGradient: gradients[i % gradients.length],
+                        notes: `Speaker note for slide ${i + 1}: Emphasize the practical application of '${topicClean}'.`
+                    }));
+                }
+            }
+        }
+
+        async function executeGeminiPrompt(apiKey, promptText) {
+            const effectiveKey = (apiKey && apiKey.trim() !== "MY_GEMINI_API_KEY") ? apiKey.trim() : getEffectiveApiKey();
+            if (effectiveKey === 'DEMO_MODE_ACTIVE' || effectiveKey === 'DEMO_MODE_ACTIVE_KEY' || DEMO_AI_MODE || !effectiveKey) {
+                DEMO_AI_MODE = true;
+                await new Promise(r => setTimeout(r, 400));
+                
+                // Extract parameters from promptText
+                const topicMatch = promptText.match(/topic of:\s*'([^']+)'/i);
+                const topic = topicMatch ? topicMatch[1] : (promptText.includes('Future') ? 'Future Simple & Tenses' : 'English & French Grammar');
+                const isFr = promptText.includes('French (Français)') || promptText.includes("'fr'") || promptText.toLowerCase().includes('français');
+                const lang = isFr ? 'fr' : 'en';
+                const countMatch = promptText.match(/exactly\s*(\d+)/i);
+                const count = countMatch ? parseInt(countMatch[1]) : 5;
+
+                if (promptText.includes('JSON array of slide objects')) {
+                    const audienceMatch = promptText.match(/targeted for\s*'([^']+)'/i);
+                    const audience = audienceMatch ? audienceMatch[1] : (isFr ? "Élèves et Étudiants" : "Students & Learners");
+                    const slides = generateLanguagePresentationData(topic, audience, count, lang);
+                    return {
+                        text: JSON.stringify(slides),
+                        model: "instant-language-generator"
+                    };
+                } else if (promptText.includes('JSON array') && (promptText.includes('question') || promptText.includes('worksheet'))) {
+                    const gradeMatch = promptText.match(/grade level\s*'([^']+)'/i);
+                    const grade = gradeMatch ? gradeMatch[1] : (isFr ? "Collège / Lycée" : "Grade 8 / Intermediate");
+                    const questions = generateLanguageWorksheetData(topic, isFr ? "Langue Française" : "English Language", grade, lang, count);
+                    return {
+                        text: JSON.stringify(questions),
+                        model: "instant-language-generator"
+                    };
+                } else {
+                    return {
+                        text: isFr 
+                            ? `Bonjour ! Je suis Sapphire AI, votre assistant spécialisé exclusivement en Langue Française et Langue Anglaise. Posez-moi vos questions sur le futur simple, la grammaire, la conjugaison ou le vocabulaire.`
+                            : `Hello! I am Sapphire AI, your dedicated assistant specializing strictly in English Language and French Language. Ask me anything about Future Simple, grammar, tenses, or language exercises!`,
+                        model: "instant-language-generator"
+                    };
+                }
+            }
+
+            // Method 1: Use AndroidBridge native networking (bypasses any WebView CORS or origin limitations)
+            if (window.AndroidBridge && typeof window.AndroidBridge.executeGemini === 'function') {
+                try {
+                    const rawResult = window.AndroidBridge.executeGemini(effectiveKey, promptText, activeGeminiModel);
+                    if (rawResult) {
+                        const parsed = JSON.parse(rawResult);
+                        if (parsed.success && parsed.text) {
+                            if (parsed.model) activeGeminiModel = parsed.model;
+                            return { text: parsed.text, model: parsed.model || activeGeminiModel };
+                        } else if (parsed.error) {
+                            throw new Error(parsed.error);
+                        }
+                    }
+                } catch (e) {
+                    console.warn("AndroidBridge execution fallback to Web Fetch", e);
+                    // Fallthrough to fetch
+                }
+            }
+
+            // Method 2: Standard fetch fallback
+            const modelsToTry = [activeGeminiModel, ...SUPPORTED_GEMINI_MODELS.filter(m => m !== activeGeminiModel)];
+            let lastErr = null;
+
+            for (const model of modelsToTry) {
+                try {
+                    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${effectiveKey}`;
+                    const res = await fetch(endpoint, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            contents: [{ parts: [{ text: promptText }] }]
+                        })
+                    });
+
+                    if (res.ok) {
+                        activeGeminiModel = model;
+                        const data = await res.json();
+                        const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+                        if (text !== undefined && text !== null) {
+                            return { text, model };
+                        }
+                    } else {
+                        const errBody = await res.json().catch(() => null);
+                        const msg = errBody?.error?.message || `HTTP ${res.status}`;
+                        lastErr = `${model}: ${msg}`;
+                    }
+                } catch (e) {
+                    lastErr = `${model}: ${e.message}`;
+                }
+            }
+            throw new Error(lastErr || "Unable to communicate with Gemini API endpoints.");
+        }
+
+        function onModelSelectChanged(modelName) {
+            activeGeminiModel = modelName;
+            showToast(`Active AI Model changed to ${modelName}`, "info");
         }
 
         async function testApiKey() {
-            const key = document.getElementById('api-key-input').value.trim();
+            const key = getEffectiveApiKey();
             const resDiv = document.getElementById('api-key-result');
             resDiv.classList.remove('hidden');
 
             if (!key) {
-                resDiv.className = 'p-3 rounded-xl text-xs font-semibold bg-red-100 text-red-700 flex items-center gap-2';
-                resDiv.innerHTML = '<i data-lucide="alert-circle" class="w-4 h-4"></i> Please enter an API Key to test.';
+                resDiv.className = 'p-3 rounded-xl text-xs font-semibold bg-red-100 text-red-700 dark:bg-red-950/40 dark:text-red-300 flex items-center gap-2';
+                resDiv.innerHTML = '<i data-lucide="alert-circle" class="w-4 h-4 flex-shrink-0"></i> <span>Please paste your Google Gemini API Key into the field above and click Save or Test.</span>';
                 lucide.createIcons();
                 return;
             }
 
-            resDiv.className = 'p-3 rounded-xl text-xs font-semibold bg-blue-100 text-blue-700 flex items-center gap-2';
-            resDiv.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Contacting Google Gemini API...';
+            resDiv.className = 'p-3 rounded-xl text-xs font-semibold bg-blue-100 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300 flex items-center gap-2';
+            resDiv.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin flex-shrink-0"></i> <span>Testing connection with Google Gemini API endpoint...</span>';
             lucide.createIcons();
 
             try {
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ contents: [{ parts: [{ text: "Respond with 'OK'" }] }] })
-                });
-
-                if (response.ok) {
-                    resDiv.className = 'p-3 rounded-xl text-xs font-semibold bg-emerald-100 text-emerald-800 flex items-center gap-2';
-                    resDiv.innerHTML = '<i data-lucide="check-circle-2" class="w-4 h-4"></i> API Key is valid! Gemini 2.5 Flash operational.';
-                } else {
-                    resDiv.className = 'p-3 rounded-xl text-xs font-semibold bg-red-100 text-red-700 flex items-center gap-2';
-                    resDiv.innerHTML = `<i data-lucide="x-circle" class="w-4 h-4"></i> API Verification Error (${response.status})`;
-                }
+                const result = await executeGeminiPrompt(key, "Say 'OK' if you can read this message.");
+                resDiv.className = 'p-3 rounded-xl text-xs font-semibold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300 flex flex-col gap-1';
+                resDiv.innerHTML = `
+                    <div class="flex items-center gap-2">
+                        <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-600 flex-shrink-0"></i>
+                        <span class="font-bold">Gemini API Key Verified & Active!</span>
+                    </div>
+                    <div class="text-[11px] opacity-90 pl-6">Successfully connected and generated text via <strong>${result.model}</strong>.</div>
+                `;
+                localStorage.setItem('gemini_api_key', key);
+                updateApiKeyUIStatus(true, "Verified & Active");
             } catch (err) {
-                resDiv.className = 'p-3 rounded-xl text-xs font-semibold bg-red-100 text-red-700 flex items-center gap-2';
-                resDiv.innerHTML = '<i data-lucide="x-circle" class="w-4 h-4"></i> Network or connection failed.';
+                const errMsg = err.message || "Unknown error";
+                let helpText = "Please verify your key in Google AI Studio or select a different model above.";
+                if (errMsg.includes("API_KEY_INVALID") || errMsg.includes("invalid") || errMsg.includes("400")) {
+                    helpText = "The API key provided appears invalid or incorrectly copied. Check that there are no extra spaces or quotes.";
+                } else if (errMsg.includes("RESOURCE_EXHAUSTED") || errMsg.includes("429")) {
+                    helpText = "Quota exceeded for this key. Try switching the model above to gemini-3.1-flash-lite-preview or try again in a moment.";
+                } else if (errMsg.includes("PERMISSION_DENIED") || errMsg.includes("403")) {
+                    helpText = "Permission denied. Ensure the Generative Language API is enabled for your Google Cloud project.";
+                }
+
+                resDiv.className = 'p-3 rounded-xl text-xs bg-red-100 text-red-700 dark:bg-red-950/40 dark:text-red-300 flex flex-col gap-1';
+                resDiv.innerHTML = `
+                    <div class="flex items-center gap-2 font-bold">
+                        <i data-lucide="x-circle" class="w-4 h-4 text-rose-600 flex-shrink-0"></i>
+                        <span>Verification Failed:</span>
+                    </div>
+                    <div class="font-mono text-[11px] pl-6">${errMsg}</div>
+                    <div class="text-[11px] font-normal pl-6 mt-1 text-slate-700 dark:text-slate-300 opacity-90">💡 <strong>Tip:</strong> ${helpText}</div>
+                `;
+                updateApiKeyUIStatus(false, "Verification Error");
             }
             lucide.createIcons();
         }
@@ -942,82 +1691,39 @@
             const count = parseInt(document.getElementById('ppt-count').value) || 5;
             const lang = document.getElementById('ppt-lang').value || "en";
 
-            const apiKey = document.getElementById('api-key-input').value.trim();
-
-            if (apiKey) {
-                // Show a loading indicator in the carousel
-                const container = document.getElementById('slide-cards-container');
-                if (container) {
-                    container.innerHTML = `
-                        <div class="absolute inset-0 flex flex-col items-center justify-center text-center p-6 bg-slate-900/40 rounded-3xl border border-white/10 backdrop-blur-md">
-                            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500 mb-3"></div>
-                            <p class="text-sm font-semibold text-slate-100">Generating PowerPoint slides with Gemini...</p>
-                        </div>
-                    `;
-                }
-
-                try {
-                    const promptText = `Generate a presentation deck with exactly ${count} slides on the topic of: '${topic}' targeted for '${audience}'. The presentation MUST be written strictly in ${lang === 'fr' ? 'French (Français)' : 'English'}. Return ONLY a JSON array of slide objects. Each slide object MUST have: 'number' (number), 'tag' (string like 'OVERVIEW', 'CORE CONCEPT', etc.), 'title' (string), 'subtitle' (string), 'bullets' (array of 3 strings), and 'notes' (string of speaker notes). Do NOT include any markdown formatting like \`\`\`json or \`\`\`, just return the raw JSON array string. Ensure no trailing commas. Choose a dynamic visual background gradient representation for each slide from standard options like 'from-blue-600 to-indigo-800', 'from-purple-600 to-indigo-900', 'from-emerald-600 to-teal-900', 'from-amber-600 to-orange-800', 'from-fuchsia-600 to-pink-800' as 'bgGradient' property.`;
-
-                    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            contents: [{ parts: [{ text: promptText }] }]
-                        })
-                    });
-
-                    if (response.ok) {
-                        const data = await response.json();
-                        const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
-                        const cleanedText = rawText.replace(/```json/gi, "").replace(/```/g, "").trim();
-                        slidesData = JSON.parse(cleanedText);
-                        currentSlideIndex = 0;
-                        render3DSlider();
-                        showToast("Presentation Deck Generated successfully!");
-                        return;
-                    } else {
-                        showToast("Failed to query Gemini API, falling back to local generation...", "error");
-                    }
-                } catch (err) {
-                    console.error("Gemini PPT error", err);
-                    showToast("Network error, falling back to local generation...", "error");
-                }
+            // Show a loading indicator in the carousel
+            const container = document.getElementById('slide-cards-container');
+            if (container) {
+                container.innerHTML = `
+                    <div class="absolute inset-0 flex flex-col items-center justify-center text-center p-6 bg-slate-900/40 rounded-3xl border border-white/10 backdrop-blur-md">
+                        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500 mb-3"></div>
+                        <p class="text-sm font-semibold text-slate-100">Generating PowerPoint slides with AI Engine...</p>
+                    </div>
+                `;
             }
 
-            // Fallback generation (local)
-            if (lang === "fr") {
-                slidesData = Array.from({ length: count }, (_, i) => ({
-                    number: i + 1,
-                    tag: i === 0 ? "APERÇU EXÉCUTIF" : `MODULE ${i}`,
-                    title: i === 0 ? topic : `${topic} : Dimension Clé ${i}`,
-                    subtitle: `Conçu pour ${audience}`,
-                    bullets: [
-                        `Perspective Clé ${i + 1}.1 : Analyse stratégique et vue d'ensemble de la thématique`,
-                        `Perspective Clé ${i + 1}.2 : Optimisation automatisée des flux de travail et des processus`,
-                        `Perspective Clé ${i + 1}.3 : Indicateurs de performance clés exploitables pour la présentation`
-                    ],
-                    bgGradient: ["from-blue-600 to-indigo-800", "from-purple-600 to-indigo-900", "from-emerald-600 to-teal-900", "from-amber-600 to-orange-800", "from-fuchsia-600 to-pink-800"][i % 5],
-                    notes: `Note de l'orateur pour la diapositive ${i + 1} : Soulignez les applications pratiques de la thématique '${topic}'.`
-                }));
-            } else {
-                slidesData = Array.from({ length: count }, (_, i) => ({
-                    number: i + 1,
-                    tag: i === 0 ? "EXECUTIVE OVERVIEW" : `MODULE ${i}`,
-                    title: i === 0 ? topic : `${topic}: Key Dimension ${i}`,
-                    subtitle: `Tailored for ${audience}`,
-                    bullets: [
-                        `Key Insight ${i + 1}.1: Strategic analysis and overview of the topic`,
-                        `Key Insight ${i + 1}.2: Automated workflow optimization and process management`,
-                        `Key Insight ${i + 1}.3: Actionable metrics and key results for presentation`
-                    ],
-                    bgGradient: ["from-blue-600 to-indigo-800", "from-purple-600 to-indigo-900", "from-emerald-600 to-teal-900", "from-amber-600 to-orange-800", "from-fuchsia-600 to-pink-800"][i % 5],
-                    notes: `Speaker note for slide ${i + 1}: Emphasize practical applications of ${topic}.`
-                }));
+            try {
+                const apiKey = getEffectiveApiKey() || 'DEMO_MODE_ACTIVE';
+                const promptText = `Generate a presentation deck with exactly ${count} slides on the topic of: '${topic}' targeted for '${audience}'. The presentation MUST be written strictly in ${lang === 'fr' ? 'French (Français)' : 'English'}. Return ONLY a JSON array of slide objects. Each slide object MUST have: 'number' (number), 'tag' (string like 'OVERVIEW', 'CORE CONCEPT', etc.), 'title' (string), 'subtitle' (string), 'bullets' (array of 3 strings), and 'notes' (string of speaker notes). Do NOT include any markdown formatting like \`\`\`json or \`\`\`, just return the raw JSON array string. Ensure no trailing commas. Choose a dynamic visual background gradient representation for each slide from standard options like 'from-blue-600 to-indigo-800', 'from-purple-600 to-indigo-900', 'from-emerald-600 to-teal-900', 'from-amber-600 to-orange-800', 'from-fuchsia-600 to-pink-800' as 'bgGradient' property.`;
+
+                const result = await executeGeminiPrompt(apiKey, promptText);
+                const rawText = result.text || "";
+                const cleanedText = rawText.replace(/```json/gi, "").replace(/```/g, "").trim();
+                slidesData = JSON.parse(cleanedText);
+                currentSlideIndex = 0;
+                render3DSlider();
+                showToast(`Presentation Deck Generated via ${result.model}!`);
+                return;
+            } catch (err) {
+                console.error("PPT generation error", err);
             }
+
+            // Fallback generation (local English and French Language generator)
+            slidesData = generateLanguagePresentationData(topic, audience, count, lang);
 
             currentSlideIndex = 0;
             render3DSlider();
+            showToast("Presentation Deck Generated successfully!");
         }
 
         // SWIPE / MOUSE DRAG GESTURE HANDLER FOR 3D STAGE
@@ -1076,6 +1782,301 @@
             }
         }
 
+        // EDUCATIONAL IMAGE & ICON LIBRARY DATASET (ENGLISH & FRENCH LANGUAGE FOCUS)
+        let selectedWorksheetImage = null;
+
+        const educationalGraphics = [
+            {
+                id: 'en-grammar-tree',
+                category: 'english',
+                title: 'Sentence Syntax & Grammar Tree',
+                badge: 'English Grammar',
+                svg: `<svg viewBox="0 0 100 100" class="w-full h-full"><rect x="35" y="10" width="30" height="14" rx="3" fill="#1E40AF" stroke="#1D4ED8" stroke-width="1.5"/><text x="50" y="20" font-size="8" fill="#FFF" font-weight="bold" text-anchor="middle">SENTENCE</text><line x1="50" y1="24" x2="30" y2="40" stroke="#64748B" stroke-width="2"/><line x1="50" y1="24" x2="70" y2="40" stroke="#64748B" stroke-width="2"/><rect x="15" y="40" width="30" height="14" rx="3" fill="#0284C7"/><text x="30" y="50" font-size="8" fill="#FFF" font-weight="bold" text-anchor="middle">Subject (NP)</text><rect x="55" y="40" width="30" height="14" rx="3" fill="#0D9488"/><text x="70" y="50" font-size="8" fill="#FFF" font-weight="bold" text-anchor="middle">Predicate (VP)</text><line x1="30" y1="54" x2="30" y2="70" stroke="#64748B" stroke-width="2"/><line x1="70" y1="54" x2="70" y2="70" stroke="#64748B" stroke-width="2"/><rect x="18" y="70" width="24" height="12" rx="2" fill="#F8FAFC" stroke="#CBD5E1"/><text x="30" y="79" font-size="7" fill="#0F172A" font-weight="bold" text-anchor="middle">Noun</text><rect x="58" y="70" width="24" height="12" rx="2" fill="#F8FAFC" stroke="#CBD5E1"/><text x="70" y="79" font-size="7" fill="#0F172A" font-weight="bold" text-anchor="middle">Verb</text></svg>`
+            },
+            {
+                id: 'en-phonetics',
+                category: 'english',
+                title: 'IPA Phonetic Transcription',
+                badge: 'Phonology',
+                svg: `<svg viewBox="0 0 100 100" class="w-full h-full"><rect x="10" y="15" width="80" height="70" rx="10" fill="#EFF6FF" stroke="#3B82F6" stroke-width="2"/><text x="50" y="40" font-size="16" fill="#1E40AF" font-weight="bold" font-family="serif" text-anchor="middle">/fəˈnɛtɪks/</text><line x1="25" y1="52" x2="75" y2="52" stroke="#93C5FD" stroke-width="2"/><text x="50" y="68" font-size="9" fill="#2563EB" font-weight="bold" text-anchor="middle">VOWELS & CONSONANTS</text><circle cx="30" cy="74" r="2" fill="#2563EB"/><circle cx="50" cy="74" r="2" fill="#2563EB"/><circle cx="70" cy="74" r="2" fill="#2563EB"/></svg>`
+            },
+            {
+                id: 'en-dialogue',
+                category: 'english',
+                title: 'Oral Communication & Dialogue',
+                badge: 'Speaking Skills',
+                svg: `<svg viewBox="0 0 100 100" class="w-full h-full"><path d="M 20,25 C 20,18 70,18 70,25 C 70,38 20,38 20,25" fill="#DBEAFE" stroke="#2563EB" stroke-width="2"/><path d="M 20,30 L 15,42 L 30,36 Z" fill="#DBEAFE" stroke="#2563EB" stroke-width="1.5"/><text x="45" y="30" font-size="8" fill="#1E40AF" font-weight="bold" text-anchor="middle">"Good morning!"</text><path d="M 80,55 C 80,48 30,48 30,55 C 30,68 80,68 80,55" fill="#DCFCE7" stroke="#16A34A" stroke-width="2"/><path d="M 80,60 L 85,72 L 70,66 Z" fill="#DCFCE7" stroke="#16A34A" stroke-width="1.5"/><text x="55" y="60" font-size="8" fill="#15803D" font-weight="bold" text-anchor="middle">"How are you today?"</text></svg>`
+            },
+            {
+                id: 'en-vocabulary',
+                category: 'english',
+                title: 'Lexical Vocabulary & Flashcards',
+                badge: 'Lexicon',
+                svg: `<svg viewBox="0 0 100 100" class="w-full h-full"><rect x="25" y="20" width="55" height="40" rx="4" transform="rotate(-6 52 40)" fill="#FEF08A" stroke="#CA8A04" stroke-width="2"/><rect x="20" y="30" width="55" height="40" rx="4" fill="#FFFFFF" stroke="#0284C7" stroke-width="2"/><text x="47" y="48" font-size="10" fill="#0369A1" font-weight="bold" text-anchor="middle">VOCABULARY</text><text x="47" y="60" font-size="7" fill="#64748B" text-anchor="middle">Synonyms & Antonyms</text><polygon points="45,76 55,76 50,86" fill="#F59E0B"/></svg>`
+            },
+            {
+                id: 'fr-conjugaison',
+                category: 'french',
+                title: 'Conjugaison & Temps des Verbes',
+                badge: 'Grammaire Française',
+                svg: `<svg viewBox="0 0 100 100" class="w-full h-full"><rect x="15" y="15" width="70" height="70" rx="6" fill="#FEF2F2" stroke="#DC2626" stroke-width="2"/><rect x="15" y="15" width="70" height="20" rx="4" fill="#DC2626"/><text x="50" y="29" font-size="8" fill="#FFF" font-weight="bold" text-anchor="middle">LE BESCHERELLE</text><text x="25" y="48" font-size="7" fill="#991B1B" font-weight="bold">Présent :</text><text x="55" y="48" font-size="7" fill="#1F2937">Je chante</text><text x="25" y="60" font-size="7" fill="#991B1B" font-weight="bold">Passé Simple :</text><text x="55" y="60" font-size="7" fill="#1F2937">Je chantai</text><text x="25" y="72" font-size="7" fill="#991B1B" font-weight="bold">Futur :</text><text x="55" y="72" font-size="7" fill="#1F2937">Je chanterai</text></svg>`
+            },
+            {
+                id: 'fr-accents',
+                category: 'french',
+                title: 'Accents & Orthographe (é, è, ê, ç)',
+                badge: 'Orthographe',
+                svg: `<svg viewBox="0 0 100 100" class="w-full h-full"><circle cx="50" cy="50" r="38" fill="#F0FDF4" stroke="#16A34A" stroke-width="2.5"/><text x="35" y="42" font-size="18" fill="#15803D" font-weight="bold" font-family="serif">é</text><text x="60" y="42" font-size="18" fill="#15803D" font-weight="bold" font-family="serif">è</text><text x="35" y="68" font-size="18" fill="#15803D" font-weight="bold" font-family="serif">ê</text><text x="60" y="68" font-size="18" fill="#15803D" font-weight="bold" font-family="serif">ç</text><text x="50" y="82" font-size="6" fill="#166534" font-weight="bold" text-anchor="middle">RÈGLES D'ACCENTUATION</text></svg>`
+            },
+            {
+                id: 'fr-litterature',
+                category: 'french',
+                title: 'Littérature & Analyse Textuelle',
+                badge: 'Français Lettres',
+                svg: `<svg viewBox="0 0 100 100" class="w-full h-full"><path d="M 20,25 C 35,22 48,26 50,32 C 52,26 65,22 80,25 L 80,72 C 65,69 52,73 50,78 C 48,73 35,69 20,72 Z" fill="#FFFBEB" stroke="#B45309" stroke-width="2"/><line x1="50" y1="32" x2="50" y2="78" stroke="#B45309" stroke-width="2"/><line x1="26" y1="38" x2="44" y2="38" stroke="#D97706" stroke-width="1.5"/><line x1="26" y1="46" x2="44" y2="46" stroke="#D97706" stroke-width="1.5"/><line x1="26" y1="54" x2="44" y2="54" stroke="#D97706" stroke-width="1.5"/><line x1="56" y1="38" x2="74" y2="38" stroke="#D97706" stroke-width="1.5"/><line x1="56" y1="46" x2="74" y2="46" stroke="#D97706" stroke-width="1.5"/><line x1="56" y1="54" x2="74" y2="54" stroke="#D97706" stroke-width="1.5"/></svg>`
+            },
+            {
+                id: 'fr-plume',
+                category: 'french',
+                title: 'Expression & Plume d\'Écriture',
+                badge: 'Production Écrite',
+                svg: `<svg viewBox="0 0 100 100" class="w-full h-full"><path d="M 75,20 C 60,35 40,55 30,75 C 28,78 25,82 22,85 C 25,80 32,72 38,62 C 45,50 62,32 75,20" fill="#7C3AED" stroke="#6D28D9" stroke-width="1.5"/><circle cx="23" cy="85" r="3" fill="#6D28D9"/><path d="M 30,85 Q 50,80 75,85" stroke="#9333EA" stroke-width="2" stroke-linecap="round" fill="none"/></svg>`
+            }
+        ];
+
+        function setPPTTopicPreset(topic, audience, count, lang) {
+            document.getElementById('ppt-topic').value = topic;
+            document.getElementById('ppt-audience').value = audience;
+            document.getElementById('ppt-count').value = count;
+            document.getElementById('ppt-lang').value = lang;
+            showToast(`Preset loaded: ${topic}`, "info");
+        }
+
+        function setWorksheetPreset(subject, grade, topic, lang) {
+            const subjSelect = document.getElementById('ws-subject-select');
+            if (subjSelect) {
+                subjSelect.value = subject;
+            }
+            document.getElementById('ws-subject').value = subject;
+            document.getElementById('ws-grade').value = grade;
+            document.getElementById('ws-topic').value = topic;
+            document.getElementById('ws-lang').value = lang;
+            showToast(`Worksheet Preset: ${topic}`, "info");
+        }
+
+        function onWorksheetLanguageChange() {
+            const selectVal = document.getElementById('ws-subject-select').value;
+            document.getElementById('ws-subject').value = selectVal;
+            const langSelect = document.getElementById('ws-lang');
+            if (selectVal.includes("Française") || selectVal.includes("French")) {
+                langSelect.value = "fr";
+                document.getElementById('ws-grade').value = "4ème / Collège";
+                document.getElementById('ws-topic').value = "L Accord du Participe Passé";
+            } else {
+                langSelect.value = "en";
+                document.getElementById('ws-grade').value = "Grade 8 / Intermediate";
+                document.getElementById('ws-topic').value = "Present Perfect vs Past Simple Tenses";
+            }
+        }
+
+        function syncWorksheetSubjectWithLang() {
+            const lang = document.getElementById('ws-lang').value;
+            const subjSelect = document.getElementById('ws-subject-select');
+            if (lang === "fr") {
+                subjSelect.value = "Langue Française";
+                document.getElementById('ws-subject').value = "Langue Française";
+            } else {
+                subjSelect.value = "English Language";
+                document.getElementById('ws-subject').value = "English Language";
+            }
+        }
+
+        function openImageLibraryModal() {
+            renderImageLibraryGrid('all');
+            document.getElementById('image-library-modal').classList.remove('hidden');
+            lucide.createIcons();
+        }
+
+        function closeImageLibraryModal() {
+            document.getElementById('image-library-modal').classList.add('hidden');
+        }
+
+        function filterImageCategory(cat) {
+            const tabs = ['all', 'english', 'french', 'custom'];
+            tabs.forEach(t => {
+                const btn = document.getElementById(`img-cat-${t}`);
+                if (btn) {
+                    if (t === cat) {
+                        btn.className = 'px-3 py-1.5 rounded-xl bg-blue-600 text-white transition-all';
+                    } else {
+                        btn.className = 'px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 transition-all';
+                    }
+                }
+            });
+
+            const grid = document.getElementById('image-library-grid');
+            const customPanel = document.getElementById('custom-image-panel');
+
+            if (cat === 'custom') {
+                grid.classList.add('hidden');
+                customPanel.classList.remove('hidden');
+            } else {
+                grid.classList.remove('hidden');
+                customPanel.classList.add('hidden');
+                renderImageLibraryGrid(cat);
+            }
+        }
+
+        function renderImageLibraryGrid(filter) {
+            const grid = document.getElementById('image-library-grid');
+            if (!grid) return;
+
+            const items = filter === 'all' 
+                ? educationalGraphics 
+                : educationalGraphics.filter(g => g.category === filter);
+
+            grid.innerHTML = items.map(item => `
+                <div onclick="selectEducationalImage('${item.id}')" class="group cursor-pointer p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 hover:border-blue-500 hover:shadow-lg transition-all flex flex-col items-center text-center space-y-2">
+                    <div class="w-16 h-16 p-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex items-center justify-center shadow-xs group-hover:scale-105 transition-transform">
+                        ${item.svg}
+                    </div>
+                    <div>
+                        <span class="text-[9px] px-1.5 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 font-bold uppercase tracking-wider">${item.badge}</span>
+                        <h5 class="text-xs font-bold text-slate-800 dark:text-slate-100 mt-1 line-clamp-1">${item.title}</h5>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function selectEducationalImage(id) {
+            const item = educationalGraphics.find(g => g.id === id);
+            if (!item) return;
+
+            selectedWorksheetImage = {
+                id: item.id,
+                title: item.title,
+                badge: item.badge,
+                svg: item.svg,
+                isCustom: false
+            };
+
+            updateSelectedImageBadge();
+            closeImageLibraryModal();
+            showToast(`Selected: ${item.title}`);
+        }
+
+        function applyCustomImageUrl() {
+            const url = document.getElementById('custom-img-url').value.trim();
+            if (!url) {
+                showToast("Please enter an image URL", "error");
+                return;
+            }
+
+            selectedWorksheetImage = {
+                id: 'custom-' + Date.now(),
+                title: 'Custom Diagram',
+                badge: 'Custom URL',
+                url: url,
+                isCustom: true
+            };
+
+            updateSelectedImageBadge();
+            closeImageLibraryModal();
+            showToast("Custom image linked!");
+        }
+
+        function handleImageFileUpload(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                selectedWorksheetImage = {
+                    id: 'upload-' + Date.now(),
+                    title: file.name.substring(0, 18),
+                    badge: 'Uploaded',
+                    url: event.target.result,
+                    isCustom: true
+                };
+                updateSelectedImageBadge();
+                closeImageLibraryModal();
+                showToast("Image uploaded!");
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function updateSelectedImageBadge() {
+            const container = document.getElementById('ws-image-badge-container');
+            const thumb = document.getElementById('ws-image-thumb');
+            const title = document.getElementById('ws-image-title');
+            const btnText = document.getElementById('ws-selected-image-btn-text');
+
+            if (selectedWorksheetImage) {
+                container.classList.remove('hidden');
+                title.innerText = `${selectedWorksheetImage.title} (${selectedWorksheetImage.badge})`;
+                btnText.innerText = 'Change Image';
+
+                if (selectedWorksheetImage.isCustom) {
+                    thumb.innerHTML = `<img src="${selectedWorksheetImage.url}" alt="thumb" class="w-full h-full object-contain">`;
+                } else {
+                    thumb.innerHTML = selectedWorksheetImage.svg;
+                }
+            } else {
+                container.classList.add('hidden');
+                btnText.innerText = 'Add Image';
+            }
+            lucide.createIcons();
+        }
+
+        function removeSelectedImage() {
+            selectedWorksheetImage = null;
+            updateSelectedImageBadge();
+            showToast("Image removed from worksheet", "info");
+        }
+
+        function downloadWorksheetPDF() {
+            const element = document.getElementById('worksheet-print-content');
+            if (!element) {
+                showToast("No generated worksheet found to download.", "error");
+                return;
+            }
+
+            showToast("Exporting clean A4 PDF document...", "info");
+
+            const subject = document.getElementById('ws-subject')?.value || "Academic";
+            const topic = document.getElementById('ws-topic')?.value || "Classwork";
+            const cleanFileName = `${subject}_${topic}`.replace(/[^a-zA-Z0-9_\-]/g, '_') + '.pdf';
+
+            const opt = {
+                margin: [8, 8, 8, 8],
+                filename: cleanFileName,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: {
+                    scale: 2,
+                    useCORS: true,
+                    letterRendering: true,
+                    scrollY: 0
+                },
+                jsPDF: {
+                    unit: 'mm',
+                    format: 'a4',
+                    orientation: 'portrait'
+                },
+                pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+            };
+
+            if (window.html2pdf) {
+                html2pdf().set(opt).from(element).save().then(() => {
+                    showToast("A4 PDF Downloaded successfully!");
+                }).catch(err => {
+                    console.error("html2pdf generation error:", err);
+                    printWorksheet();
+                });
+            } else {
+                printWorksheet();
+            }
+        }
+
         async function generateWorksheet() {
             const subject = document.getElementById('ws-subject').value || "General Subject";
             const grade = document.getElementById('ws-grade').value || "All Grades";
@@ -1093,112 +2094,31 @@
             `;
 
             let questions = [];
-            const apiKey = document.getElementById('api-key-input').value.trim();
+            try {
+                const apiKey = getEffectiveApiKey() || 'DEMO_MODE_ACTIVE';
+                const promptText = `Generate a class worksheet with exactly ${count} educational questions on the topic of: '${topic}' in '${subject}' for grade level '${grade}'. The worksheet MUST be written strictly in ${lang === 'fr' ? 'French (Français)' : 'English'}. Return ONLY a JSON array of question objects. Each question object MUST have: 'id' (number) and 'question' (string containing the exercise description or task). Do NOT include any markdown formatting like \`\`\`json or \`\`\`, just return the raw JSON array string. Ensure no trailing commas.`;
 
-            if (apiKey) {
-                try {
-                    const promptText = `Generate a class worksheet with exactly ${count} educational questions on the topic of: '${topic}' in '${subject}' for grade level '${grade}'. The worksheet MUST be written strictly in ${lang === 'fr' ? 'French (Français)' : 'English'}. Return ONLY a JSON array of question objects. Each question object MUST have: 'id' (number) and 'question' (string containing the exercise description or task). Do NOT include any markdown formatting like \`\`\`json or \`\`\`, just return the raw JSON array string. Ensure no trailing commas.`;
-
-                    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            contents: [{ parts: [{ text: promptText }] }]
-                        })
-                    });
-
-                    if (response.ok) {
-                        const data = await response.json();
-                        const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
-                        const cleanedText = rawText.replace(/```json/gi, "").replace(/```/g, "").trim();
-                        questions = JSON.parse(cleanedText);
-                    } else {
-                        showToast("Failed to query Gemini API, using local templates...", "error");
-                    }
-                } catch (err) {
-                    console.error("Gemini Worksheet error", err);
-                    showToast("Network error, using local templates...", "error");
-                }
+                const result = await executeGeminiPrompt(apiKey, promptText);
+                const rawText = result.text || "";
+                const cleanedText = rawText.replace(/```json/gi, "").replace(/```/g, "").trim();
+                questions = JSON.parse(cleanedText);
+                showToast(`Worksheet questions generated via ${result.model}`);
+            } catch (err) {
+                console.error("Worksheet generation error", err);
             }
 
-            // Fallback templates if questions array is still empty
+            // Fallback templates if questions array is still empty (Strictly English and French Language)
             if (questions.length === 0) {
-                const templatesEn = {
-                    "mathematics": [
-                        "Solve for x in the equation: 3x + 7 = 22. Detail all your working steps.",
-                        "Find the slope of the line passing through coordinates (2, 5) and (4, 11).",
-                        "Graph the system function y = -2x + 4. Identify the x-intercept and y-intercept.",
-                        "A rental car costs $40 flat fee plus $0.15 per mile. Formulate and solve the equation representing a $62.50 rental invoice.",
-                        "Determine if the relation represented by {(1,2), (2,4), (3,6), (2,8)} is a function. Explain your reasoning."
-                    ],
-                    "science": [
-                        "Explain the primary differences between physical changes and chemical changes. List two distinct examples of each.",
-                        "Describe the functions of mitochondria and chloroplasts in cellular energy processes.",
-                        "What is Newton's Second Law of Motion? State its formula and identify all variables and units.",
-                        "Detail the steps of the water cycle and explain how solar energy drives this process.",
-                        "Describe the process of photosynthesis, listing both the primary reactants and generated products."
-                    ],
-                    "history": [
-                        "What were the primary political and socio-economic catalysts of the French Revolution?",
-                        "Discuss the core historical significance of the Magna Carta signed in the year 1215.",
-                        "Analyze the impact of Gutenberg's printing press on the speed and reach of the Protestant Reformation.",
-                        "Outline the primary objective of the League of Nations and explain the key reasons behind its eventual failure.",
-                        "Discuss the immediate social and economic consequences of the Industrial Revolution on European urban centers."
-                    ]
-                };
-
-                const templatesFr = {
-                    "mathematics": [
-                        "Résoudre pour x dans l'équation : 3x + 7 = 22. Détaillez toutes les étapes de votre calcul.",
-                        "Trouver la pente de la droite passant par les coordonnées (2, 5) et (4, 11).",
-                        "Tracer la fonction y = -2x + 4. Identifier l'ordonnée à l'origine et l'abscisse à l'origine.",
-                        "La location d'une voiture coûte un forfait de 40 $ plus 0,15 $ par mille. Formuler et résoudre l'équation représentant une facture de 62,50 $.",
-                        "Déterminer si la relation représentée par {(1,2), (2,4), (3,6), (2,8)} est une fonction. Expliquez votre raisonnement."
-                    ],
-                    "science": [
-                        "Expliquer les principales différences entre les changements physiques et chimiques. Citez deux exemples distincts de chacun.",
-                        "Décrire les fonctions des mitochondries et des chloroplastes dans les processus énergétiques cellulaires.",
-                        "Qu'est-ce que la deuxième loi du mouvement de Newton ? Énoncez sa formule et identifiez toutes les variables et unités.",
-                        "Détaillez les étapes du cycle de l'eau et expliquez comment l'énergie solaire alimente ce processus.",
-                        "Décrire le processus de photosynthèse, en énumérant à la fois les réactifs primaires et les produits générés."
-                    ],
-                    "history": [
-                        "Quels ont été les principaux catalyseurs politiques et socio-économiques de la Révolution française ?",
-                        "Discutez de l'importance historique fondamentale de la Magna Carta signée en l'an 1215.",
-                        "Analyser l'impact de l'imprimerie de Gutenberg sur la vitesse et la portée de la Réforme protestante.",
-                        "Décrire l'objectif principal de la Société des Nations et expliquer les raisons clés de l'échec final.",
-                        "Discutez des conséquences sociales et économiques immédiates de la révolution industrielle sur les centres urbains européens."
-                    ]
-                };
-
-                const activeTemplates = lang === "fr" ? templatesFr : templatesEn;
-                const subKey = subject.toLowerCase();
-                let chosenList = activeTemplates["mathematics"];
-                if (subKey.includes("math") || subKey.includes("alg") || subKey.includes("géo") || subKey.includes("calc")) {
-                    chosenList = activeTemplates["mathematics"];
-                } else if (subKey.includes("sci") || subKey.includes("bio") || subKey.includes("chem") || subKey.includes("phys") || subKey.includes("phym") || subKey.includes("géo")) {
-                    chosenList = activeTemplates["science"];
-                } else if (subKey.includes("hist") || subKey.includes("social") || subKey.includes("civ") || subKey.includes("géo")) {
-                    chosenList = activeTemplates["history"];
-                } else {
-                    chosenList = activeTemplates["mathematics"];
-                }
-
-                for (let i = 0; i < count; i++) {
-                    const fallbackText = lang === "fr" 
-                        ? `Décrire les caractéristiques fondamentales et les théories clés de '${topic}' par rapport à '${subject}'.`
-                        : `Describe the fundamental characteristics and core theories surrounding '${topic}' in relation to '${subject}'.`;
-                    const qText = chosenList[i % chosenList.length] || fallbackText;
-                    questions.push({ id: i + 1, question: qText });
-                }
+                questions = generateLanguageWorksheetData(topic, subject, grade, lang, count);
             }
 
             // Beautiful localized strings
-            const readyTitle = lang === "fr" ? "Feuille d'exercices prête" : "Worksheet Ready";
-            const readyDesc = lang === "fr" ? "Choisissez une action ci-dessous pour l'enregistrer, la partager ou l'imprimer." : "Choose an action below to bookmark, share, or download.";
-            const saveBtnText = lang === "fr" ? "Enregistrer dans Mes Docs" : "Save to My Docs";
-            const qrBtnText = lang === "fr" ? "Partager le lien QR" : "Share QR Link";
-            const printBtnText = lang === "fr" ? "Télécharger / Imprimer" : "Download / Print";
+            const readyTitle = lang === "fr" ? "Feuille d'exercices prête" : "Worksheet Ready (A4 Format)";
+            const readyDesc = lang === "fr" ? "Format A4 standard conforme. Téléchargez en PDF, partagez par QR ou imprimez." : "Formatted to standard A4 layout. Download as PDF, share via QR, or print.";
+            const saveBtnText = lang === "fr" ? "Enregistrer" : "Save to Docs";
+            const qrBtnText = lang === "fr" ? "Partager via QR" : "Share via QR";
+            const downloadPdfBtnText = lang === "fr" ? "Télécharger en PDF" : "Download as PDF";
+            const printBtnText = lang === "fr" ? "Imprimer" : "Print";
             const classworkLabel = lang === "fr" ? "TRAVAIL DE CLASSE" : "CLASSWORK";
             const topicLabel = lang === "fr" ? "Sujet" : "Topic";
             const studentNameLabel = lang === "fr" ? "Nom de l'étudiant :" : "Student Name:";
@@ -1206,7 +2126,26 @@
             const generatedByLabel = lang === "fr" ? "Généré par" : "Generated by";
             const scoreLabel = lang === "fr" ? "Note" : "Score";
 
-            // Render beautiful preview panel
+            // Save active worksheet to memory for instant sharing
+            currentActiveWorksheet = {
+                subject,
+                grade,
+                topic,
+                questions,
+                image: selectedWorksheetImage
+            };
+
+            // Optional Image HTML block
+            let imageHtml = '';
+            if (selectedWorksheetImage) {
+                if (selectedWorksheetImage.isCustom) {
+                    imageHtml = `<div class="w-24 h-24 p-1 rounded-xl border border-slate-300 bg-white flex items-center justify-center flex-shrink-0 shadow-xs"><img src="${selectedWorksheetImage.url}" alt="illustration" class="w-full h-full object-contain"></div>`;
+                } else {
+                    imageHtml = `<div class="w-24 h-24 p-2 rounded-xl border border-slate-300 bg-white flex items-center justify-center flex-shrink-0 shadow-xs">${selectedWorksheetImage.svg}</div>`;
+                }
+            }
+
+            // Render beautiful A4 preview panel
             let html = `
                 <div class="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-3 p-4 rounded-2xl bg-blue-50/50 dark:bg-blue-950/20 border border-blue-200/50 dark:border-blue-900/50">
                     <div>
@@ -1214,73 +2153,84 @@
                         <h4 class="text-sm font-semibold text-slate-800 dark:text-slate-100">${readyDesc}</h4>
                     </div>
                     <div class="flex flex-wrap items-center gap-2">
-                        <button id="ws-save-btn" onclick="saveCurrentWorksheet('${encodeURIComponent(JSON.stringify({subject, grade, topic, questions}))}')" class="px-3.5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md shadow-blue-600/20 active:scale-95 transition-all">
+                        <button id="ws-save-btn" onclick="saveCurrentWorksheet('${encodeURIComponent(JSON.stringify({subject, grade, topic, questions, image: selectedWorksheetImage}))}')" class="px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md shadow-blue-600/20 active:scale-95 transition-all">
                             <i data-lucide="bookmark" class="w-4 h-4"></i> ${saveBtnText}
                         </button>
-                        <button id="ws-qr-btn" onclick="shareWorksheetQR('${encodeURIComponent(JSON.stringify({subject, grade, topic, questions}))}')" class="px-3.5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md shadow-indigo-600/20 active:scale-95 transition-all">
+                        <button id="ws-download-pdf-btn" onclick="downloadWorksheetPDF()" class="px-3.5 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md shadow-rose-600/20 active:scale-95 transition-all">
+                            <i data-lucide="file-down" class="w-4 h-4"></i> ${downloadPdfBtnText}
+                        </button>
+                        <button id="ws-qr-btn" data-test="share-qr-button" onclick="shareWorksheetQR('${encodeURIComponent(JSON.stringify({subject, grade, topic, questions, image: selectedWorksheetImage}))}')" class="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md shadow-indigo-600/20 active:scale-95 transition-all">
                             <i data-lucide="qr-code" class="w-4 h-4"></i> ${qrBtnText}
                         </button>
-                        <button onclick="printWorksheet()" class="px-3.5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md shadow-emerald-600/20 active:scale-95 transition-all">
+                        <button id="ws-print-btn" onclick="printWorksheet()" class="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md shadow-emerald-600/20 active:scale-95 transition-all">
                             <i data-lucide="printer" class="w-4 h-4"></i> ${printBtnText}
                         </button>
                     </div>
                 </div>
                 
-                <div id="worksheet-print-content" class="bg-white text-slate-900 p-8 rounded-2xl border border-slate-200 shadow-lg space-y-6">
-                    <!-- Header -->
-                    <div class="border-b-4 border-double border-slate-800 pb-4">
-                        <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-3">
-                            <div>
-                                <h2 class="text-2xl font-black uppercase tracking-tight text-slate-900">${subject} ${classworkLabel}</h2>
-                                <p class="text-sm font-bold text-slate-700">${topicLabel}: ${topic}</p>
-                                <p class="text-xs font-medium text-slate-500">${grade}</p>
+                <!-- A4 PAGE CONTAINER -->
+                <div class="overflow-x-auto py-2">
+                    <div id="worksheet-print-content" class="a4-page-sheet border border-slate-300 dark:border-slate-700 shadow-xl space-y-5 text-slate-900 bg-white">
+                        <!-- Header -->
+                        <div class="border-b-4 border-double border-slate-900 pb-3">
+                            <div class="flex justify-between items-start gap-4">
+                                <div class="flex-1">
+                                    <div class="flex items-center gap-2">
+                                        <span class="px-2 py-0.5 rounded bg-slate-900 text-white text-[10px] font-mono font-bold uppercase tracking-wider">A4 EXAM SHEET</span>
+                                        <span class="text-[10px] font-mono text-slate-500">REF: WS-${Math.floor(1000 + Math.random() * 9000)}</span>
+                                    </div>
+                                    <h2 class="text-2xl font-black uppercase tracking-tight text-slate-900 mt-1">${subject} ${classworkLabel}</h2>
+                                    <p class="text-sm font-bold text-slate-700">${topicLabel}: ${topic}</p>
+                                    <p class="text-xs font-semibold text-slate-500">${grade}</p>
+                                </div>
+                                ${imageHtml}
                             </div>
-                            <div class="text-right text-xs font-mono text-slate-400">
-                                <span>REF: WS-${Math.floor(1000 + Math.random() * 9000)}</span>
+                            
+                            <!-- Student Info block -->
+                            <div class="grid grid-cols-2 gap-4 mt-4 pt-3 border-t border-dashed border-slate-400 text-xs text-slate-900 font-semibold">
+                                <div class="flex items-center gap-1.5">
+                                    <span>${studentNameLabel}</span>
+                                    <div class="flex-1 border-b border-slate-500 h-4"></div>
+                                </div>
+                                <div class="flex items-center gap-1.5">
+                                    <span>${dateLabel}</span>
+                                    <div class="flex-1 border-b border-slate-500 h-4"></div>
+                                </div>
                             </div>
                         </div>
-                        
-                        <!-- Student Info block -->
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-5 pt-4 border-t border-dashed border-slate-300 text-xs text-slate-800 font-semibold">
-                            <div class="flex items-center gap-1.5">
-                                <span>${studentNameLabel}</span>
-                                <div class="flex-1 border-b border-slate-400 h-4"></div>
-                            </div>
-                            <div class="flex items-center gap-1.5">
-                                <span>${dateLabel}</span>
-                                <div class="flex-1 border-b border-slate-400 h-4"></div>
-                            </div>
-                        </div>
-                    </div>
 
-                    <!-- Questions -->
-                    <div class="space-y-6">
-            `;
-
-            questions.forEach(q => {
-                html += `
-                    <div class="space-y-3">
-                        <p class="text-sm font-bold text-slate-800 flex items-start gap-2 leading-relaxed">
-                            <span class="bg-slate-100 text-slate-800 px-2 py-0.5 rounded text-xs border border-slate-200 font-mono">Q${q.id}</span>
-                            <span>${q.question}</span>
-                        </p>
-                        <!-- Print Answer Space Lines -->
-                        <div class="space-y-3.5 pl-10 py-1">
-                            <div class="border-b border-slate-200 h-4"></div>
-                            <div class="border-b border-slate-200 h-4"></div>
-                            <div class="border-b border-slate-200 h-4"></div>
-                        </div>
-                    </div>
+                        <!-- Questions -->
+                        <div class="space-y-5 flex-1">
                 `;
-            });
 
-            html += `
-                    </div>
+                questions.forEach(q => {
+                    html += `
+                        <div class="space-y-2.5">
+                            <p class="text-xs font-bold text-slate-900 flex items-start gap-2 leading-relaxed">
+                                <span class="bg-slate-900 text-white px-2 py-0.5 rounded text-[11px] font-mono font-bold">Q${q.id}</span>
+                                <span>${q.question}</span>
+                            </p>
+                            <!-- Print Answer Space Lines for standard A4 -->
+                            <div class="space-y-3 pl-8 py-0.5">
+                                <div class="border-b border-slate-300 h-3.5"></div>
+                                <div class="border-b border-slate-300 h-3.5"></div>
+                                <div class="border-b border-slate-300 h-3.5"></div>
+                            </div>
+                        </div>
+                    `;
+                });
 
-                    <!-- Footer -->
-                    <div class="border-t border-slate-200 pt-4 text-center text-[10px] text-slate-400 flex justify-between items-center font-medium">
-                        <span>${generatedByLabel}: Mr. Zaafouri Abdelmalek © 2026</span>
-                        <span>${scoreLabel}: ________ / ________</span>
+                html += `
+                        </div>
+
+                        <!-- Footer -->
+                        <div class="border-t-2 border-slate-800 pt-3 text-center text-[10px] text-slate-600 flex justify-between items-center font-semibold">
+                            <span>${generatedByLabel}: Mr. Zaafouri Abdelmalek © 2026</span>
+                            <div class="flex items-center gap-4">
+                                <span class="px-2 py-1 rounded border border-slate-400 font-mono">${scoreLabel}: _____ / 20</span>
+                                <span>Page 1 / 1</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
             `;
@@ -1288,7 +2238,7 @@
             setTimeout(() => {
                 out.innerHTML = html;
                 lucide.createIcons();
-            }, 500);
+            }, 300);
         }
 
         function printWorksheet() {
@@ -1314,10 +2264,10 @@
             inputEl.value = '';
             appendChatMessage('user', prompt);
 
-            const apiKey = document.getElementById('api-key-input').value.trim();
+            const apiKey = getEffectiveApiKey();
             if (!apiKey) {
                 setTimeout(() => {
-                    appendChatMessage('ai', `⚠️ <strong>API Key Missing</strong>: Please enter your Google Gemini API Key in the settings panel above to activate live agent chat conversations.`);
+                    appendChatMessage('ai', `⚠️ <strong>API Key Missing</strong>: Please enter your Google Gemini API Key in the settings panel above or in Secrets to activate live agent chat conversations.`);
                 }, 400);
                 return;
             }
@@ -1325,30 +2275,17 @@
             const loaderId = appendChatLoader();
 
             try {
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        contents: [{ parts: [{ text: `You are Sapphire AI Agent, a helpful teaching assistant designed by Mr. Zaafouri Abdelmalek. Answer this question concisely: ${prompt}` }] }]
-                    })
-                });
-
+                const systemPrompt = `You are Sapphire AI Agent, a helpful pedagogy and curriculum assistant designed by Mr. Zaafouri Abdelmalek. Answer this question concisely and clearly: ${prompt}`;
+                const result = await executeGeminiPrompt(apiKey, systemPrompt);
                 removeChatLoader(loaderId);
 
-                if (response.ok) {
-                    const data = await response.json();
-                    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "No response received.";
-                    // simple formatting helper
-                    let formattedText = text.replace(/\n/g, '<br>');
-                    // format bold markdown **text** to <strong>text</strong>
-                    formattedText = formattedText.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-                    appendChatMessage('ai', formattedText);
-                } else {
-                    appendChatMessage('ai', `❌ <strong>API Error</strong>: Failed to query Gemini. Check your key and connectivity.`);
-                }
+                const text = result.text || "No response received.";
+                let formattedText = text.replace(/\n/g, '<br>');
+                formattedText = formattedText.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                appendChatMessage('ai', formattedText);
             } catch (err) {
                 removeChatLoader(loaderId);
-                appendChatMessage('ai', `❌ <strong>Network Error</strong>: Unable to reach Gemini API. Details: ${err.message}`);
+                appendChatMessage('ai', `❌ <strong>API Error</strong>: Unable to reach Gemini API. Details: ${err.message}`);
             }
         }
 
@@ -1542,77 +2479,99 @@
             const out = document.getElementById('ws-output');
             if (!out) return;
 
+            // Keep reference to active document
+            currentActiveWorksheet = doc;
+
             out.classList.remove('hidden');
+
+            let imageHtml = '';
+            if (doc.image) {
+                if (doc.image.isCustom) {
+                    imageHtml = `<div class="w-24 h-24 p-1 rounded-xl border border-slate-300 bg-white flex items-center justify-center flex-shrink-0 shadow-xs"><img src="${doc.image.url}" alt="illustration" class="w-full h-full object-contain"></div>`;
+                } else if (doc.image.svg) {
+                    imageHtml = `<div class="w-24 h-24 p-2 rounded-xl border border-slate-300 bg-white flex items-center justify-center flex-shrink-0 shadow-xs">${doc.image.svg}</div>`;
+                }
+            }
 
             let html = `
                 <div class="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-3 p-4 rounded-2xl bg-blue-50/50 dark:bg-blue-950/20 border border-blue-200/50 dark:border-blue-900/50">
                     <div>
-                        <p class="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider">Bookmarked Worksheet Loaded</p>
-                        <h4 class="text-sm font-semibold text-slate-800 dark:text-slate-100">Live preview matches standard print margins.</h4>
+                        <p class="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider">Bookmarked Worksheet Loaded (A4 Format)</p>
+                        <h4 class="text-sm font-semibold text-slate-800 dark:text-slate-100">Live preview matches standard A4 print margins.</h4>
                     </div>
                     <div class="flex flex-wrap items-center gap-2">
-                        <button id="ws-qr-btn" onclick="shareWorksheetQR('${encodeURIComponent(JSON.stringify(doc))}')" class="px-3.5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md shadow-indigo-600/20 active:scale-95 transition-all">
-                            <i data-lucide="qr-code" class="w-4 h-4"></i> Share QR Link
+                        <button id="ws-download-pdf-btn" onclick="downloadWorksheetPDF()" class="px-3.5 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md shadow-rose-600/20 active:scale-95 transition-all">
+                            <i data-lucide="file-down" class="w-4 h-4"></i> Download as PDF
                         </button>
-                        <button onclick="printWorksheet()" class="px-3.5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md shadow-emerald-600/20 active:scale-95 transition-all">
+                        <button id="ws-qr-btn" data-test="share-qr-button" onclick="shareWorksheetQR('${encodeURIComponent(JSON.stringify(doc))}')" class="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md shadow-indigo-600/20 active:scale-95 transition-all">
+                            <i data-lucide="qr-code" class="w-4 h-4"></i> Share via QR
+                        </button>
+                        <button id="ws-print-btn" onclick="printWorksheet()" class="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md shadow-emerald-600/20 active:scale-95 transition-all">
                             <i data-lucide="printer" class="w-4 h-4"></i> Download / Print
                         </button>
                     </div>
                 </div>
                 
-                <div id="worksheet-print-content" class="bg-white text-slate-900 p-8 rounded-2xl border border-slate-200 shadow-lg space-y-6">
-                    <!-- Header -->
-                    <div class="border-b-4 border-double border-slate-800 pb-4">
-                        <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-3">
-                            <div>
-                                <h2 class="text-2xl font-black uppercase tracking-tight text-slate-900">${doc.subject} CLASSWORK</h2>
-                                <p class="text-sm font-bold text-slate-700">Topic: ${doc.topic}</p>
-                                <p class="text-xs font-medium text-slate-500">${doc.grade}</p>
+                <div class="overflow-x-auto py-2">
+                    <div id="worksheet-print-content" class="a4-page-sheet border border-slate-300 dark:border-slate-700 shadow-xl space-y-5 text-slate-900 bg-white">
+                        <!-- Header -->
+                        <div class="border-b-4 border-double border-slate-900 pb-3">
+                            <div class="flex justify-between items-start gap-4">
+                                <div class="flex-1">
+                                    <div class="flex items-center gap-2">
+                                        <span class="px-2 py-0.5 rounded bg-slate-900 text-white text-[10px] font-mono font-bold uppercase tracking-wider">A4 EXAM SHEET</span>
+                                        <span class="text-[10px] font-mono text-slate-500">REF: WS-${Math.floor(1000 + Math.random() * 9000)}</span>
+                                    </div>
+                                    <h2 class="text-2xl font-black uppercase tracking-tight text-slate-900 mt-1">${doc.subject} CLASSWORK</h2>
+                                    <p class="text-sm font-bold text-slate-700">Topic: ${doc.topic}</p>
+                                    <p class="text-xs font-semibold text-slate-500">${doc.grade}</p>
+                                </div>
+                                ${imageHtml}
                             </div>
-                            <div class="text-right text-xs font-mono text-slate-400">
-                                <span>REF: WS-${Math.floor(1000 + Math.random() * 9000)}</span>
+                            
+                            <div class="grid grid-cols-2 gap-4 mt-4 pt-3 border-t border-dashed border-slate-400 text-xs text-slate-900 font-semibold">
+                                <div class="flex items-center gap-1.5">
+                                    <span>Student Name:</span>
+                                    <div class="flex-1 border-b border-slate-500 h-4"></div>
+                                </div>
+                                <div class="flex items-center gap-1.5">
+                                    <span>Date:</span>
+                                    <div class="flex-1 border-b border-slate-500 h-4"></div>
+                                </div>
                             </div>
                         </div>
-                        
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-5 pt-4 border-t border-dashed border-slate-300 text-xs text-slate-800 font-semibold">
-                            <div class="flex items-center gap-1.5">
-                                <span>Student Name:</span>
-                                <div class="flex-1 border-b border-slate-400 h-4"></div>
-                            </div>
-                            <div class="flex items-center gap-1.5">
-                                <span>Date:</span>
-                                <div class="flex-1 border-b border-slate-400 h-4"></div>
-                            </div>
-                        </div>
-                    </div>
 
-                    <!-- Questions -->
-                    <div class="space-y-6">
-            `;
+                        <!-- Questions -->
+                        <div class="space-y-5 flex-1">
+                `;
 
             doc.questions.forEach(q => {
                 html += `
-                    <div class="space-y-3">
-                        <p class="text-sm font-bold text-slate-800 flex items-start gap-2 leading-relaxed">
-                            <span class="bg-slate-100 text-slate-800 px-2 py-0.5 rounded text-xs border border-slate-200 font-mono">Q${q.id}</span>
+                    <div class="space-y-2.5">
+                        <p class="text-xs font-bold text-slate-900 flex items-start gap-2 leading-relaxed">
+                            <span class="bg-slate-900 text-white px-2 py-0.5 rounded text-[11px] font-mono font-bold">Q${q.id}</span>
                             <span>${q.question}</span>
                         </p>
-                        <div class="space-y-3.5 pl-10 py-1">
-                            <div class="border-b border-slate-200 h-4"></div>
-                            <div class="border-b border-slate-200 h-4"></div>
-                            <div class="border-b border-slate-200 h-4"></div>
+                        <div class="space-y-3 pl-8 py-0.5">
+                            <div class="border-b border-slate-300 h-3.5"></div>
+                            <div class="border-b border-slate-300 h-3.5"></div>
+                            <div class="border-b border-slate-300 h-3.5"></div>
                         </div>
                     </div>
                 `;
             });
 
             html += `
-                    </div>
+                        </div>
 
-                    <!-- Footer -->
-                    <div class="border-t border-slate-200 pt-4 text-center text-[10px] text-slate-400 flex justify-between items-center font-medium">
-                        <span>Generated by: Mr. Zaafouri Abdelmalek © 2026</span>
-                        <span>Score: ________ / ________</span>
+                        <!-- Footer -->
+                        <div class="border-t-2 border-slate-800 pt-3 text-center text-[10px] text-slate-600 flex justify-between items-center font-semibold">
+                            <span>Generated by: Mr. Zaafouri Abdelmalek © 2026</span>
+                            <div class="flex items-center gap-4">
+                                <span class="px-2 py-1 rounded border border-slate-400 font-mono">Score: _____ / 20</span>
+                                <span>Page 1 / 1</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
             `;
@@ -1628,31 +2587,64 @@
             loadSavedDocuments();
         }
 
+        // Global pointer to current generated worksheet
+        let currentActiveWorksheet = null;
+
         // Real-Time Dynamic QR Link Generator
         function shareWorksheetQR(encodedDoc) {
             try {
-                const doc = JSON.parse(decodeURIComponent(encodedDoc));
+                let doc = null;
+                if (typeof encodedDoc === 'string' && encodedDoc.trim().length > 0) {
+                    doc = JSON.parse(decodeURIComponent(encodedDoc));
+                } else if (typeof encodedDoc === 'object' && encodedDoc !== null) {
+                    doc = encodedDoc;
+                } else if (currentActiveWorksheet) {
+                    doc = currentActiveWorksheet;
+                } else {
+                    const subject = document.getElementById('ws-subject')?.value || "English Language";
+                    const grade = document.getElementById('ws-grade')?.value || "Grade 8 / Intermediate";
+                    const topic = document.getElementById('ws-topic')?.value || "Future Simple & Tenses";
+                    const count = parseInt(document.getElementById('ws-count')?.value) || 5;
+                    const lang = document.getElementById('ws-lang')?.value || "en";
+                    doc = {
+                        subject,
+                        grade,
+                        topic,
+                        questions: generateLanguageWorksheetData(topic, subject, grade, lang, count),
+                        image: selectedWorksheetImage
+                    };
+                }
+
                 const sharePayload = encodeURIComponent(JSON.stringify({
                     subject: doc.subject,
                     grade: doc.grade,
                     topic: doc.topic,
-                    questions: doc.questions
+                    questions: doc.questions || [],
+                    image: doc.image || null
                 }));
                 
                 const origin = window.location.origin;
                 const path = window.location.pathname;
                 const shareUrl = `${origin}${path}?viewDoc=${sharePayload}`;
                 
-                document.getElementById('share-url-input').value = shareUrl;
+                const shareInput = document.getElementById('share-url-input');
+                if (shareInput) shareInput.value = shareUrl;
                 
                 const qrImg = document.getElementById('qr-code-img');
-                qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&color=0f172a&data=${encodeURIComponent(shareUrl)}`;
+                if (qrImg) {
+                    qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&color=0f172a&data=${encodeURIComponent(shareUrl)}`;
+                }
                 
-                document.getElementById('qr-modal').classList.remove('hidden');
+                const qrModal = document.getElementById('qr-modal');
+                if (qrModal) {
+                    qrModal.classList.remove('hidden');
+                }
+                
+                showToast("QR Code ready for this worksheet!", "info");
                 lucide.createIcons();
             } catch (e) {
                 console.error("QR Code generation failed", e);
-                showToast("Failed to share", "error");
+                showToast("Failed to generate QR code", "error");
             }
         }
 
@@ -1715,6 +2707,7 @@
 
         // Init
         setTheme('bright-sapphire'); 
+        initApiKey();
         render3DSlider();
         attachGestureListeners();
         updateTransitionSettings();

@@ -467,17 +467,17 @@
                     <div class="space-y-1.5">
                         <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300">Quick Language Presets / Sujets Recommandés</label>
                         <div class="flex flex-wrap gap-2">
-                            <button onclick="setPPTTopicPreset('English Grammar Mastery: Advanced Tenses & Modals', 'Secondary & High School Students', 'en')" class="px-3 py-1.5 rounded-xl border border-purple-200 dark:border-purple-800/60 bg-purple-50/70 dark:bg-purple-950/30 text-purple-700 dark:text-purple-300 text-xs font-semibold hover:bg-purple-100 active:scale-95 transition-all">
+                            <button onclick="setPPTTopicPreset('Future Simple: Form, Will vs Going To, and Practice', 'Secondary & High School Students', 5, 'en')" class="px-3 py-1.5 rounded-xl border border-purple-200 dark:border-purple-800/60 bg-purple-50/70 dark:bg-purple-950/30 text-purple-700 dark:text-purple-300 text-xs font-semibold hover:bg-purple-100 active:scale-95 transition-all">
+                                🇬🇧 English: Future Simple Mastery
+                            </button>
+                            <button onclick="setPPTTopicPreset('English Grammar Mastery: Advanced Tenses & Modals', 'Secondary & High School Students', 5, 'en')" class="px-3 py-1.5 rounded-xl border border-purple-200 dark:border-purple-800/60 bg-purple-50/70 dark:bg-purple-950/30 text-purple-700 dark:text-purple-300 text-xs font-semibold hover:bg-purple-100 active:scale-95 transition-all">
                                 🇬🇧 English: Advanced Tenses
                             </button>
-                            <button onclick="setPPTTopicPreset('English Academic Essay Composition & Rhetoric', 'High School & College Students', 'en')" class="px-3 py-1.5 rounded-xl border border-purple-200 dark:border-purple-800/60 bg-purple-50/70 dark:bg-purple-950/30 text-purple-700 dark:text-purple-300 text-xs font-semibold hover:bg-purple-100 active:scale-95 transition-all">
-                                🇬🇧 English: Essay Composition
+                            <button onclick="setPPTTopicPreset('Le Futur Simple en Français: Règles, Radicaux et Concordance', 'Élèves de Collège et Lycée', 5, 'fr')" class="px-3 py-1.5 rounded-xl border border-purple-200 dark:border-purple-800/60 bg-purple-50/70 dark:bg-purple-950/30 text-purple-700 dark:text-purple-300 text-xs font-semibold hover:bg-purple-100 active:scale-95 transition-all">
+                                🇫🇷 Français: Le Futur Simple
                             </button>
-                            <button onclick="setPPTTopicPreset('Grammaire Française: Le Passé Composé et l Imparfait', 'Élèves de Collège et Lycée', 'fr')" class="px-3 py-1.5 rounded-xl border border-purple-200 dark:border-purple-800/60 bg-purple-50/70 dark:bg-purple-950/30 text-purple-700 dark:text-purple-300 text-xs font-semibold hover:bg-purple-100 active:scale-95 transition-all">
+                            <button onclick="setPPTTopicPreset('Grammaire Française: Le Passé Composé et l Imparfait', 'Élèves de Collège et Lycée', 5, 'fr')" class="px-3 py-1.5 rounded-xl border border-purple-200 dark:border-purple-800/60 bg-purple-50/70 dark:bg-purple-950/30 text-purple-700 dark:text-purple-300 text-xs font-semibold hover:bg-purple-100 active:scale-95 transition-all">
                                 🇫🇷 Français: Passé Composé vs Imparfait
-                            </button>
-                            <button onclick="setPPTTopicPreset('Littérature Française: Les Figures de Style et la Rhétorique', 'Lycéens et Étudiants', 'fr')" class="px-3 py-1.5 rounded-xl border border-purple-200 dark:border-purple-800/60 bg-purple-50/70 dark:bg-purple-950/30 text-purple-700 dark:text-purple-300 text-xs font-semibold hover:bg-purple-100 active:scale-95 transition-all">
-                                🇫🇷 Français: Figures de Style
                             </button>
                         </div>
                     </div>
@@ -485,7 +485,7 @@
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div class="md:col-span-2">
                             <label class="block text-xs font-semibold mb-1">Presentation Topic (English or French)</label>
-                            <input type="text" id="ppt-topic" value="English Grammar Mastery: Advanced Tenses & Modals" class="w-full px-3 py-2 text-sm rounded-lg border bg-slate-50 dark:bg-slate-900 border-slate-300 dark:border-slate-700">
+                            <input type="text" id="ppt-topic" value="Future Simple: Form, Will vs Going To, and Practice" class="w-full px-3 py-2 text-sm rounded-lg border bg-slate-50 dark:bg-slate-900 border-slate-300 dark:border-slate-700">
                         </div>
                         <div>
                             <label class="block text-xs font-semibold mb-1">Target Audience</label>
@@ -612,11 +612,17 @@
                     <div class="space-y-1.5">
                         <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300">Quick Curriculum Presets / Thèmes Pédagogiques</label>
                         <div class="flex flex-wrap gap-2">
+                            <button onclick="setWorksheetPreset('English Language', 'Grade 8 / Intermediate', 'Future Simple & Tenses (will / won t / going to)', 'en')" class="px-3 py-1.5 rounded-xl border border-blue-200 dark:border-blue-800/60 bg-blue-50/70 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300 text-xs font-semibold hover:bg-blue-100 active:scale-95 transition-all">
+                                🇬🇧 English: Future Simple (Tenses)
+                            </button>
                             <button onclick="setWorksheetPreset('English Language', 'Grade 8 / Intermediate', 'Present Perfect vs Past Simple Tenses', 'en')" class="px-3 py-1.5 rounded-xl border border-blue-200 dark:border-blue-800/60 bg-blue-50/70 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300 text-xs font-semibold hover:bg-blue-100 active:scale-95 transition-all">
-                                🇬🇧 English: Tenses & Grammar
+                                🇬🇧 English: Past & Perfect Tenses
                             </button>
                             <button onclick="setWorksheetPreset('English Language', 'Grade 9 / Secondary', 'Reading Comprehension & Vocabulary Analysis', 'en')" class="px-3 py-1.5 rounded-xl border border-blue-200 dark:border-blue-800/60 bg-blue-50/70 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300 text-xs font-semibold hover:bg-blue-100 active:scale-95 transition-all">
                                 🇬🇧 English: Reading & Vocab
+                            </button>
+                            <button onclick="setWorksheetPreset('Langue Française', '4ème / Collège', 'Le Futur Simple: Règles, Verbes Irréguliers et Concordance', 'fr')" class="px-3 py-1.5 rounded-xl border border-blue-200 dark:border-blue-800/60 bg-blue-50/70 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300 text-xs font-semibold hover:bg-blue-100 active:scale-95 transition-all">
+                                🇫🇷 Français: Le Futur Simple
                             </button>
                             <button onclick="setWorksheetPreset('Langue Française', '4ème / Collège', 'L Accord du Participe Passé avec Avoir et Être', 'fr')" class="px-3 py-1.5 rounded-xl border border-blue-200 dark:border-blue-800/60 bg-blue-50/70 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300 text-xs font-semibold hover:bg-blue-100 active:scale-95 transition-all">
                                 🇫🇷 Français: Accord Participe Passé
@@ -645,7 +651,7 @@
                         </div>
                         <div>
                             <label class="block text-xs font-semibold mb-1">Topic / Sujet d'étude</label>
-                            <input type="text" id="ws-topic" value="Present Perfect vs Past Simple Tenses" class="w-full px-3 py-2 text-sm rounded-lg border bg-slate-50 dark:bg-slate-900 border-slate-300 dark:border-slate-700">
+                            <input type="text" id="ws-topic" value="Future Simple & Tenses" class="w-full px-3 py-2 text-sm rounded-lg border bg-slate-50 dark:bg-slate-900 border-slate-300 dark:border-slate-700">
                         </div>
                         <div>
                             <label class="block text-xs font-semibold mb-1">Questions Count</label>
@@ -1141,34 +1147,348 @@
             }
         };
 
+        // DEDICATED LANGUAGE GENERATOR FOR ENGLISH AND FRENCH (NO OTHER SUBJECTS)
+        function generateLanguageWorksheetData(topic, subject, grade, lang, count) {
+            const topicClean = (topic || "Future Simple & Tenses").trim();
+            const topicLower = topicClean.toLowerCase();
+            const isFrench = (lang === "fr" || (subject && subject.toLowerCase().includes("fran")));
+            const targetCount = Math.min(Math.max(parseInt(count) || 5, 2), 10);
+
+            const isFuture = topicLower.includes("future") || topicLower.includes("futur") || topicLower.includes("will") || topicLower.includes("going to");
+            const isPast = topicLower.includes("past") || topicLower.includes("passé") || topicLower.includes("imparfait") || topicLower.includes("perfect");
+            const isConditional = topicLower.includes("condition") || topicLower.includes("if");
+            const isPassive = topicLower.includes("passive") || topicLower.includes("passif") || topicLower.includes("voix");
+            const isPronoun = topicLower.includes("pronom") || topicLower.includes("pronoun") || topicLower.includes("cod") || topicLower.includes("coi") || topicLower.includes("relatif");
+            const isAgreement = topicLower.includes("accord") || topicLower.includes("participe") || topicLower.includes("agreement");
+            const isVocab = topicLower.includes("vocab") || topicLower.includes("word") || topicLower.includes("mot") || topicLower.includes("synonym");
+
+            let pool = [];
+
+            if (isFrench) {
+                if (isFuture) {
+                    pool = [
+                        "Conjugaison au Futur Simple : Conjuguez les verbes entre parenthèses au futur simple : 'Dès que nous (recevoir) les consignes du professeur, nous vous (envoyer) les documents et vous (pouvoir) vous entraîner.'",
+                        "Verbes irréguliers au Futur Simple : Donnez la forme au futur simple (1ère personne du singulier 'je' et 1ère personne du pluriel 'nous') des verbes suivants : avoir, être, aller, faire, voir, pouvoir, savoir, venir.",
+                        "Règle de concordance avec 'Si' : Complétez la phrase selon la règle Si + présent -> futur simple : 'Si les élèves révisent régulièrement leurs règles de conjugaison, ils (réussir) tous leurs exercices sans hésitation.'",
+                        "Nuance Futur Simple vs Futur Proche : Analysez la différence entre 'Le train va partir' (action imminente) et 'Le train partira à 14h' (action différée ou programmée). Rédigez un exemple illustrant chaque nuance.",
+                        "Terminaisons régulières : Rappelez les 6 terminaisons régulières du futur simple (-ai, -as, -a, -ons, -ez, -ont) et conjuguez intégralement les verbes 'finir' et 'apprendre'.",
+                        "Homophonie grammaticale (-ai vs -ais) : Choisissez la bonne graphie entre futur simple (-ai) et conditionnel présent (-ais) : 'Demain matin, je (prendrai / prendrais) le premier vol si l'horaire est confirmé.'",
+                        "Production de phrases au futur : Rédigez trois phrases distinctes au futur simple décrivant vos projets d'études ou de carrière pour l'année prochaine."
+                    ];
+                } else if (isPast) {
+                    pool = [
+                        "Passé Simple vs Imparfait : Dans le récit suivant, justifiez l'emploi de l'imparfait pour la description du décor et du passé simple pour les actions soudaines de premier plan.",
+                        "Conjugaison au Passé Simple : Conjuguez au passé simple (3ème personne du singulier et du pluriel) : prendre, vouloir, savoir, naître, courir.",
+                        "Accord du Participe Passé : Complétez les phrases en accordant avec soin : 'Elles sont (partir) à l'aube' et 'Les leçons qu'ils ont (réviser) sont très utiles.'",
+                        "Valeurs de l'Imparfait : Précisez si l'imparfait exprime une habitude, une description ou une action en cours d'accomplissement dans les phrases données.",
+                        "Récit au passé : Rédigez un court paragraphe de 5 lignes au passé en employant correctement le passé composé et l'imparfait."
+                    ];
+                } else if (isAgreement) {
+                    pool = [
+                        "Accord avec l'auxiliaire Être : Accordez le participe passé : 'Les candidates se sont (présenté) devant le jury et sont (reparti) avec les félicitations.'",
+                        "Accord avec l'auxiliaire Avoir : Justifiez l'accord ou l'absence d'accord : 'Quelles belles rédactions as-tu (écrit) ?' vs 'J'ai (écrit) ces rédactions avec soin.'",
+                        "Verbes pronominaux : Analysez si le pronom réfléchi est COD ou COI dans : 'Ils se sont (téléphoné)' et 'Ils se sont (rencontré)'.",
+                        "Participe passé suivi d'un infinitif : Justifiez l'accord : 'Les musiciens que j'ai (entendu / entendus) jouer.'",
+                        "Réécriture : Réécrivez le texte au féminin pluriel en appliquant rigoureusement les règles d'accord du participe passé."
+                    ];
+                } else if (isPronoun) {
+                    pool = [
+                        "Pronoms COD et COI : Remplacez les compléments soulignés par les pronoms appropriés (le, la, les, lui, leur) : 'Le professeur explique la leçon aux élèves.'",
+                        "Place des doubles pronoms : Réécrivez la phrase à la forme affirmative puis à la forme négative : 'Donne le livre à ton camarade.'",
+                        "Pronoms relatifs (qui, que, dont, où) : Reliez les deux propositions indépendantes en utilisant le pronom relatif adapté.",
+                        "Pronoms adverbiaux 'en' et 'y' : Répondez aux questions en remplaçant les groupes prépositionnels par 'en' ou 'y' : 'Participes-tu à ce projet ?' et 'Combien de livres as-tu ?'",
+                        "Identification syntaxique : Soulignez les pronoms personnels dans le texte et précisez la fonction grammaticale de chacun."
+                    ];
+                } else {
+                    pool = [
+                        `Analyse grammaticale de '${topicClean}' : Énoncez et expliquez les règles fondamentales régissant '${topicClean}' en langue française.`,
+                        `Exercice d'application : Rédigez trois phrases illustrant l'usage précis et rigoureux de '${topicClean}' dans un style académique.`,
+                        `Orthographe et pièges fréquents : Identifiez et corrigez les erreurs les plus courantes commises par les élèves au sujet de '${topicClean}'.`,
+                        `Enrichissement lexical : Proposez des synonymes soutenus, des antonymes et des connecteurs logiques liés à '${topicClean}'.`,
+                        `Production d'écrit : Rédigez un paragraphe argumentatif structuré de 6 lignes mettant en pratique les principes de '${topicClean}'.`
+                    ];
+                }
+            } else {
+                // English Language
+                if (isFuture) {
+                    pool = [
+                        "Future Simple (will + base verb): Complete the sentence with the correct future form of the verb: 'By this time next month, our school ________ (launch) the new language lab and students ________ (begin) their workshops.'",
+                        "Future Simple vs. 'Be Going To': Choose the correct form to express an intention/prior plan vs. a spontaneous offer or prediction: 'Look at those storm clouds! It ________ (rain).' vs. 'The phone is ringing. Don't worry, I ________ (answer) it!'",
+                        "Sentence Transformation: Rewrite the following sentence into both the Future Simple negative form and the interrogative (question) form: 'The delegates will ratify the international education agreement tomorrow.'",
+                        "Time Clauses with Future Meaning: Put the verb in parentheses into the correct tense (Present Simple in the time clause): 'We will send out the feedback reports as soon as the evaluation board ________ (complete) the assessments.'",
+                        "Modal Auxiliaries ('Will' vs. 'Shall'): Explain the stylistic and communicative difference between 'will' and 'shall' for first-person offers ('Shall we review the lesson?'). Provide two illustrative sentences.",
+                        "Future Continuous & Future Perfect: Fill in the blanks: 'At 10:00 AM tomorrow, the students ________ (take) their grammar test, and by noon they ________ (finish) all modules.'",
+                        "Short Composition: Write a short paragraph (4-6 sentences) describing your future academic goals, using at least two examples of 'will' and two examples of 'be going to'."
+                    ];
+                } else if (isPast) {
+                    pool = [
+                        "Past Simple vs. Present Perfect: Fill in the blanks: 'She ________ (live) in Montreal for three years before moving to London, but since 2023 she ________ (study) in Dublin.' Explain your choice of tenses.",
+                        "Past Continuous vs. Past Simple: Formulate an interrupted action sentence using 'while' or 'when': '(read the novel / hear the alarm) and (walk to campus / start to rain).'",
+                        "Irregular Past Verbs: Give both the Past Simple and Past Participle forms for: arise, choose, freeze, strive, undertake, shrink, and withdraw.",
+                        "'Used to' vs. 'Would': Discuss the grammatical difference between 'used to' and 'would' when describing past states versus repeated past actions.",
+                        "Past Narrative Writing: Write a 5-sentence coherent past narrative incorporating at least three irregular verbs and two descriptive adverbs."
+                    ];
+                } else if (isConditional) {
+                    pool = [
+                        "Zero & First Conditionals: Formulate two distinct sentences: one expressing an invariant universal fact (Zero) and one expressing a probable real future condition (First Conditional).",
+                        "Second Conditional (Hypothetical): Complete the sentence with correct verb forms: 'If educational institutions ________ (integrate) AI mentors responsibly, students ________ (benefit) from personalized feedback.'",
+                        "Third Conditional (Unreal Past): Express regret about a past situation: 'If we ________ (review) the syntax guidelines earlier, we ________ (not make) those mistakes on the essay.'",
+                        "Mixed Conditionals: Explain how a past event or condition can produce a continuing present result, with an illustrative example sentence.",
+                        "Inverted Conditionals without 'If': Rewrite using inversion: 'If you should require further assistance, please contact the coordinator.' -> 'Should you require...'"
+                    ];
+                } else if (isPassive) {
+                    pool = [
+                        "Active to Passive Voice Transformation: Transform the active sentence into the passive voice: 'Linguists conduct thorough empirical studies on second-language acquisition every year.'",
+                        "Passive with Modal Verbs: Rewrite using passive structures: 'Students must submit their literature portfolios prior to the deadline.'",
+                        "Omitting the Agent ('By' phrase): When is omitting the agent grammatically necessary or stylistically preferred? Give two concrete examples.",
+                        "Causative Structures ('Have / Get something done'): Construct two sentences demonstrating arranged services using causative structures.",
+                        "Stylistic Register: Rewrite an informal active sentence into formal passive academic prose suitable for an academic paper."
+                    ];
+                } else if (isVocab) {
+                    pool = [
+                        `Contextual Vocabulary Analysis on '${topicClean}': Identify and define three essential academic terms related to '${topicClean}', providing two precise synonyms and one antonym for each.`,
+                        `Collocations & Phrasal Verbs: Identify common prepositional collocations and verbs frequently paired in academic discussions of '${topicClean}'.`,
+                        "Morphology (Prefixes & Suffixes): Analyze how prefixes and suffixes alter the grammatical function and meaning of root words in English.",
+                        "Idioms & Figurative Language: Explain the meaning of two common idioms and construct sentences demonstrating appropriate conversational register.",
+                        "Sentence Crafting: Write a sophisticated compound-complex sentence incorporating two newly acquired vocabulary words from this lesson."
+                    ];
+                } else {
+                    pool = [
+                        `Grammar & Linguistic Rules for '${topicClean}': Formulate and explain the key grammatical principles governing '${topicClean}' in standard English.`,
+                        `Sentence Transformation & Syntax: Construct three distinct sentences (affirmative, negative, complex) that correctly apply the rules of '${topicClean}'.`,
+                        `Error Correction & Analysis: Identify two common grammatical or syntax errors students make when applying '${topicClean}', and provide full corrections.`,
+                        `Register & Context: In what communicative contexts (formal writing, academic presentation, daily conversation) is '${topicClean}' most effectively utilized?`,
+                        `Applied Writing Exercise: Write a well-structured paragraph (5-7 sentences) exploring an educational topic while intentionally incorporating '${topicClean}'.`
+                    ];
+                }
+            }
+
+            const questions = [];
+            for (let i = 0; i < targetCount; i++) {
+                questions.push({
+                    id: i + 1,
+                    question: pool[i % pool.length]
+                });
+            }
+            return questions;
+        }
+
+        // DEDICATED LANGUAGE SLIDE PRESENTATION GENERATOR (ENGLISH & FRENCH)
+        function generateLanguagePresentationData(topic, audience, count, lang) {
+            const topicClean = (topic || "Future Simple: Will, Won't & Going To").trim();
+            const topicLower = topicClean.toLowerCase();
+            const isFrench = (lang === "fr");
+            const targetCount = Math.min(Math.max(parseInt(count) || 5, 3), 10);
+            const isFuture = topicLower.includes("future") || topicLower.includes("futur") || topicLower.includes("will");
+
+            const gradients = [
+                "from-blue-600 to-indigo-800",
+                "from-purple-600 to-indigo-900",
+                "from-emerald-600 to-teal-900",
+                "from-amber-600 to-orange-800",
+                "from-fuchsia-600 to-pink-800"
+            ];
+
+            if (isFrench) {
+                if (isFuture) {
+                    const frenchFutureSlides = [
+                        {
+                            number: 1,
+                            tag: "INTRODUCTION & RÈGLES",
+                            title: "Le Futur Simple en Français",
+                            subtitle: `Formation, morphologie et emplois - Pour ${audience}`,
+                            bullets: [
+                                "Terminaisons régulières universelles : -ai, -as, -a, -ons, -ez, -ont",
+                                "Formation générale : Infinitif complet + terminaisons (ex: chanter-ai, finir-as)",
+                                "L'accent tonique et la prononciation du 'r' caractéristique"
+                            ],
+                            notes: "Bienvenue à tous. Présentez le futur simple comme le temps fondamental des projets et des actions à venir."
+                        },
+                        {
+                            number: 2,
+                            tag: "VERBES IRRÉGULIERS",
+                            title: "Les Radicaux Particuliers",
+                            subtitle: "Les verbes du 3ème groupe à mémoriser",
+                            bullets: [
+                                "Être (ser-), Avoir (aur-), Faire (fer-), Aller (ir-)",
+                                "Pouvoir (pourr-), Voir (verr-), Vouloir (voudr-), Venir (viendr-)",
+                                "Attention au redoublement du 'r' : courir (courr-), mourir (mourr-)"
+                            ],
+                            notes: "Attirez l'attention des élèves sur les verbes à double 'r' et faites répéter les formes orales."
+                        },
+                        {
+                            number: 3,
+                            tag: "SYNTAXE & CONCORDANCE",
+                            title: "Emplois et Concordance des Temps",
+                            subtitle: "Propositions conditionnelles et temporelles",
+                            bullets: [
+                                "Règle clé : Si + présent -> verbe principal au futur simple",
+                                "Propositions temporelles introduites par : dès que, quand, lorsque",
+                                "Différence essentielle entre Futur Simple et Futur Proche (aller + infinitif)"
+                            ],
+                            notes: "Insistez sur le fait qu'on ne met jamais de futur directement après 'si' de condition en français."
+                        },
+                        {
+                            number: 4,
+                            tag: "ORTHOGRAPHE & VIGILANCE",
+                            title: "Futur Simple vs Conditionnel Présent",
+                            subtitle: "Distinguer -ai (futur) et -ais (conditionnel)",
+                            bullets: [
+                                "À la 1ère personne du singulier : 'je prendrai' (futur) vs 'je prendrais' (conditionnel)",
+                                "Astuce de substitution : Remplacer par 'il' ('il prendra' vs 'il prendrait')",
+                                "Le futur affirme la certitude, le conditionnel exprime le doute ou le souhait"
+                            ],
+                            notes: "C'est l'erreur la plus fréquente chez les élèves : entraînez-les à remplacer par 'nous' ou 'il'."
+                        },
+                        {
+                            number: 5,
+                            tag: "EXERCICES & BILAN",
+                            title: "Mise en Pratique et Synthèse",
+                            subtitle: "Pratique guidée et révision en classe",
+                            bullets: [
+                                "Complétez les phrases à trous en direct",
+                                "Transformez un court récit du présent vers le futur simple",
+                                "Auto-évaluation et grille des compétences acquises"
+                            ],
+                            notes: "Invitez les apprenants à formuler chacun une phrase complète au futur pour valider l'assimilation."
+                        }
+                    ];
+                    return frenchFutureSlides.slice(0, targetCount).map((s, idx) => ({ ...s, bgGradient: gradients[idx % gradients.length] }));
+                } else {
+                    return Array.from({ length: targetCount }, (_, i) => ({
+                        number: i + 1,
+                        tag: i === 0 ? "APERÇU DE LA LEÇON" : `MODULE ${i}`,
+                        title: i === 0 ? topicClean : `${topicClean} : Notions Clés`,
+                        subtitle: `Langue Française - Conçu pour ${audience}`,
+                        bullets: [
+                            `Règle linguistique ${i + 1}.1 : Définition, morphologie et analyse grammaticale`,
+                            `Règle linguistique ${i + 1}.2 : Exercices d'application et pièges orthographiques`,
+                            `Règle linguistique ${i + 1}.3 : Emploi en contexte d'expression écrite et orale`
+                        ],
+                        bgGradient: gradients[i % gradients.length],
+                        notes: `Note de l'enseignant pour la diapositive ${i + 1} : Expliquez l'application de '${topicClean}'.`
+                    }));
+                }
+            } else {
+                // English
+                if (isFuture) {
+                    const englishFutureSlides = [
+                        {
+                            number: 1,
+                            tag: "INTRODUCTION & FORMULA",
+                            title: "Future Simple: Will & Won't",
+                            subtitle: `Form, structure, and basic rules - For ${audience}`,
+                            bullets: [
+                                "Affirmative: Subject + will + base form of the verb (infinitive without 'to')",
+                                "Negative: Subject + will not / won't + base verb",
+                                "Interrogative: Will + subject + base verb? (e.g., 'Will they attend?')"
+                            ],
+                            notes: "Welcome students. Clarify that 'will' never changes with he/she/it (no -s ending)."
+                        },
+                        {
+                            number: 2,
+                            tag: "CORE DISTINCTION",
+                            title: "Will vs. 'Be Going To'",
+                            subtitle: "Spontaneous choices vs. prior plans & evidence",
+                            bullets: [
+                                "Use 'will' for spontaneous decisions made at the moment of speaking",
+                                "Use 'will' for offers, promises, and general future predictions",
+                                "Use 'be going to' for planned intentions and predictions based on visible evidence"
+                            ],
+                            notes: "Emphasize contrasting examples: 'The phone is ringing, I'll get it' vs 'Look at the dark clouds, it is going to rain'."
+                        },
+                        {
+                            number: 3,
+                            tag: "TIME CLAUSES & SYNTAX",
+                            title: "Future Meaning in Time Clauses",
+                            subtitle: "When, as soon as, before, after, until",
+                            bullets: [
+                                "Rule: Never use 'will' inside the time clause itself",
+                                "Formula: Main clause (Future) + time conjunction + Time clause (Present Simple)",
+                                "Example: 'We will start the lesson as soon as the bell rings.'"
+                            ],
+                            notes: "Point out that this is a classic exam question where students mistakenly say 'as soon as the bell will ring'."
+                        },
+                        {
+                            number: 4,
+                            tag: "MODAL NUANCES",
+                            title: "The Modal 'Shall' & Formal Usage",
+                            subtitle: "Polite offers, suggestions, and official writing",
+                            bullets: [
+                                "Used with 'I' and 'We' for first-person offers: 'Shall I open the window?'",
+                                "Used for joint suggestions: 'Shall we begin our reading session?'",
+                                "In legal or formal British English: represents solemn obligations or declarations"
+                            ],
+                            notes: "Highlight the polite nature of 'Shall I...' in contrast to 'Do you want me to...'."
+                        },
+                        {
+                            number: 5,
+                            tag: "SUMMARY & MASTERY",
+                            title: "Interactive Review & Practice",
+                            subtitle: "Classroom exercises and diagnostic quiz",
+                            bullets: [
+                                "Sentence transformation challenge: from present to future forms",
+                                "Identify and correct erroneous time clauses",
+                                "Short communicative dialogue practice between partners"
+                            ],
+                            notes: "Wrap up the lesson by having each student generate one original future sentence using 'will' or 'won't'."
+                        }
+                    ];
+                    return englishFutureSlides.slice(0, targetCount).map((s, idx) => ({ ...s, bgGradient: gradients[idx % gradients.length] }));
+                } else {
+                    return Array.from({ length: targetCount }, (_, i) => ({
+                        number: i + 1,
+                        tag: i === 0 ? "EXECUTIVE OVERVIEW" : `MODULE ${i}`,
+                        title: i === 0 ? topicClean : `${topicClean}: Core Concepts`,
+                        subtitle: `English Language - Designed for ${audience}`,
+                        bullets: [
+                            `Key linguistic concept ${i + 1}.1: Structural framework and usage rules`,
+                            `Key linguistic concept ${i + 1}.2: Sentence construction and common pitfalls`,
+                            `Key linguistic concept ${i + 1}.3: Communicative application in reading and writing`
+                        ],
+                        bgGradient: gradients[i % gradients.length],
+                        notes: `Speaker note for slide ${i + 1}: Emphasize the practical application of '${topicClean}'.`
+                    }));
+                }
+            }
+        }
+
         async function executeGeminiPrompt(apiKey, promptText) {
             const effectiveKey = (apiKey && apiKey.trim() !== "MY_GEMINI_API_KEY") ? apiKey.trim() : getEffectiveApiKey();
             if (effectiveKey === 'DEMO_MODE_ACTIVE' || effectiveKey === 'DEMO_MODE_ACTIVE_KEY' || DEMO_AI_MODE || !effectiveKey) {
                 DEMO_AI_MODE = true;
                 await new Promise(r => setTimeout(r, 400));
+                
+                // Extract parameters from promptText
+                const topicMatch = promptText.match(/topic of:\s*'([^']+)'/i);
+                const topic = topicMatch ? topicMatch[1] : (promptText.includes('Future') ? 'Future Simple & Tenses' : 'English & French Grammar');
+                const isFr = promptText.includes('French (Français)') || promptText.includes("'fr'") || promptText.toLowerCase().includes('français');
+                const lang = isFr ? 'fr' : 'en';
+                const countMatch = promptText.match(/exactly\s*(\d+)/i);
+                const count = countMatch ? parseInt(countMatch[1]) : 5;
+
                 if (promptText.includes('JSON array of slide objects')) {
+                    const audienceMatch = promptText.match(/targeted for\s*'([^']+)'/i);
+                    const audience = audienceMatch ? audienceMatch[1] : (isFr ? "Élèves et Étudiants" : "Students & Learners");
+                    const slides = generateLanguagePresentationData(topic, audience, count, lang);
                     return {
-                        text: JSON.stringify([
-                            { number: 1, tag: "EXECUTIVE OVERVIEW", title: "Empowering Modern Education with AI", subtitle: "Interactive 3D Curriculum & Quizzes", bullets: ["Real-time AI content generation", "Seamless offline & online modes", "Engaging 3D visual card decks"], notes: "Welcome everyone to today's session." },
-                            { number: 2, tag: "CORE MODULE", title: "Adaptive Learning Pathways", subtitle: "Tailored to every student's pace", bullets: ["Personalized question difficulty", "Instant formative feedback", "Comprehensive progress tracking"], notes: "Emphasize personalization benefits." },
-                            { number: 3, tag: "ASSESSMENT", title: "Interactive Worksheet Quizzes", subtitle: "Automated grading and analytics", bullets: ["Multi-format question types", "Print-ready worksheet formatting", "Instant export capabilities"], notes: "Review quiz formats." },
-                            { number: 4, tag: "CONCLUSION", title: "The Future of Learning", subtitle: "Empowering educators worldwide", bullets: ["Streamlined lesson planning", "Zero friction deployment", "Continuous feedback loops"], notes: "Wrap up the presentation." }
-                        ]),
-                        model: "instant-ai-generator"
+                        text: JSON.stringify(slides),
+                        model: "instant-language-generator"
                     };
                 } else if (promptText.includes('JSON array') && (promptText.includes('question') || promptText.includes('worksheet'))) {
+                    const gradeMatch = promptText.match(/grade level\s*'([^']+)'/i);
+                    const grade = gradeMatch ? gradeMatch[1] : (isFr ? "Collège / Lycée" : "Grade 8 / Intermediate");
+                    const questions = generateLanguageWorksheetData(topic, isFr ? "Langue Française" : "English Language", grade, lang, count);
                     return {
-                        text: JSON.stringify([
-                            { type: "multiple-choice", question: "What is the primary benefit of adaptive learning?", options: ["One size fits all", "Personalized student pacing", "Increased testing time", "Eliminating teachers"], answer: "Personalized student pacing", explanation: "Adaptive learning adjusts to each student's unique needs." },
-                            { type: "true-false", question: "Formative assessments help evaluate student understanding during the learning process.", options: ["True", "False"], answer: "True", explanation: "Formative assessments provide ongoing feedback." },
-                            { type: "short-answer", question: "Describe how AI assists curriculum planning.", answer: "AI automates drafting structured lesson outlines and quiz questions.", explanation: "It saves time for educators." }
-                        ]),
-                        model: "instant-ai-generator"
+                        text: JSON.stringify(questions),
+                        model: "instant-language-generator"
                     };
                 } else {
                     return {
-                        text: "Hello! I am Sapphire AI, your intelligent assistant powered by Instant AI Mode. How can I help you today with your educational tasks or curriculum planning?",
-                        model: "instant-ai-generator"
+                        text: isFr 
+                            ? `Bonjour ! Je suis Sapphire AI, votre assistant spécialisé exclusivement en Langue Française et Langue Anglaise. Posez-moi vos questions sur le futur simple, la grammaire, la conjugaison ou le vocabulaire.`
+                            : `Hello! I am Sapphire AI, your dedicated assistant specializing strictly in English Language and French Language. Ask me anything about Future Simple, grammar, tenses, or language exercises!`,
+                        model: "instant-language-generator"
                     };
                 }
             }
@@ -1398,36 +1718,8 @@
                 console.error("PPT generation error", err);
             }
 
-            // Fallback generation (local)
-            if (lang === "fr") {
-                slidesData = Array.from({ length: count }, (_, i) => ({
-                    number: i + 1,
-                    tag: i === 0 ? "APERÇU EXÉCUTIF" : `MODULE ${i}`,
-                    title: i === 0 ? topic : `${topic} : Dimension Clé ${i}`,
-                    subtitle: `Conçu pour ${audience}`,
-                    bullets: [
-                        `Perspective Clé ${i + 1}.1 : Analyse stratégique et vue d'ensemble de la thématique`,
-                        `Perspective Clé ${i + 1}.2 : Optimisation automatisée des flux de travail et des processus`,
-                        `Perspective Clé ${i + 1}.3 : Indicateurs de performance clés exploitables pour la présentation`
-                    ],
-                    bgGradient: ["from-blue-600 to-indigo-800", "from-purple-600 to-indigo-900", "from-emerald-600 to-teal-900", "from-amber-600 to-orange-800", "from-fuchsia-600 to-pink-800"][i % 5],
-                    notes: `Note de l'orateur pour la diapositive ${i + 1} : Soulignez les applications pratiques de la thématique '${topic}'.`
-                }));
-            } else {
-                slidesData = Array.from({ length: count }, (_, i) => ({
-                    number: i + 1,
-                    tag: i === 0 ? "EXECUTIVE OVERVIEW" : `MODULE ${i}`,
-                    title: i === 0 ? topic : `${topic}: Key Dimension ${i}`,
-                    subtitle: `Tailored for ${audience}`,
-                    bullets: [
-                        `Key Insight ${i + 1}.1: Strategic analysis and overview of the topic`,
-                        `Key Insight ${i + 1}.2: Automated workflow optimization and process management`,
-                        `Key Insight ${i + 1}.3: Actionable metrics and key results for presentation`
-                    ],
-                    bgGradient: ["from-blue-600 to-indigo-800", "from-purple-600 to-indigo-900", "from-emerald-600 to-teal-900", "from-amber-600 to-orange-800", "from-fuchsia-600 to-pink-800"][i % 5],
-                    notes: `Speaker note for slide ${i + 1}: Emphasize practical applications of ${topic}.`
-                }));
-            }
+            // Fallback generation (local English and French Language generator)
+            slidesData = generateLanguagePresentationData(topic, audience, count, lang);
 
             currentSlideIndex = 0;
             render3DSlider();
@@ -1815,33 +2107,9 @@
                 console.error("Worksheet generation error", err);
             }
 
-            // Fallback templates if questions array is still empty (English and French Language focus)
+            // Fallback templates if questions array is still empty (Strictly English and French Language)
             if (questions.length === 0) {
-                const templatesEn = [
-                    "Grammar & Syntax: Identify the subject, verb, and direct/indirect objects in this complex sentence: 'Although the teacher had prepared the lesson diligently, the students asked several unexpected questions.'",
-                    "Tenses & Aspect: Conjugate the verb in brackets into the correct tense (Past Simple or Present Perfect): 'She (live) in London for three years before moving to Paris, but currently she (reside) in Lyon.' Explain your choice.",
-                    "Reading Comprehension & Inference: Read the excerpt and analyze how the author uses descriptive adjectives and metaphors to convey mood and atmosphere.",
-                    "Vocabulary & Semantics: Provide two synonyms and two antonyms for the academic terms 'Ambiguous' and 'Comprehensive', then write an illustrative sentence for each.",
-                    "Writing & Composition: Write a coherent, well-structured paragraph (5-7 sentences) arguing either for or against the integration of digital tools in foreign language acquisition. Use at least three formal transition words."
-                ];
-
-                const templatesFr = [
-                    "Grammaire & Syntaxe : Identifiez la fonction grammaticale des groupes de mots soulignés dans la phrase suivante : 'Chaque matin, les élèves révisent attentivement leurs leçons de grammaire.'",
-                    "Conjugaison & Temps : Conjuguez les verbes entre parenthèses au temps approprié (Imparfait ou Passé Simple) : 'Pendant qu'il (marcher) dans la forêt, il (apercevoir) soudain un cerf majestueux.' Justifiez l'emploi de chaque temps.",
-                    "Accord du Participe Passé : Justifiez l'accord ou l'absence d'accord des participes passés suivants : 'Elles se sont (rencontré / rencontrées) hier' et 'Les lettres que tu as (écrit / écrites) sont très claires.'",
-                    "Vocabulaire & Registres de Langue : Réécrivez les trois phrases familières suivantes en utilisant un registre soutenu et académique.",
-                    "Production Écrite : Rédigez un paragraphe argumentatif structuré (environ 80 à 100 mots) sur l'importance de la lecture dans le développement intellectuel. Utilisez des connecteurs logiques (d'une part, en outre, enfin)."
-                ];
-
-                const chosenList = lang === "fr" ? templatesFr : templatesEn;
-
-                for (let i = 0; i < count; i++) {
-                    const fallbackText = lang === "fr" 
-                        ? `Exercice d'analyse linguistique ${i + 1} : Expliquez et appliquez les règles clés de '${topic}' en langue française.`
-                        : `Linguistic analysis exercise ${i + 1}: Explain and apply the core principles of '${topic}' in English.`;
-                    const qText = chosenList[i % chosenList.length] || fallbackText;
-                    questions.push({ id: i + 1, question: qText });
-                }
+                questions = generateLanguageWorksheetData(topic, subject, grade, lang, count);
             }
 
             // Beautiful localized strings
@@ -2333,18 +2601,16 @@
                 } else if (currentActiveWorksheet) {
                     doc = currentActiveWorksheet;
                 } else {
-                    const subject = document.getElementById('ws-subject')?.value || "Mathematics";
-                    const grade = document.getElementById('ws-grade')?.value || "Grade 8";
-                    const topic = document.getElementById('ws-topic')?.value || "Classwork";
+                    const subject = document.getElementById('ws-subject')?.value || "English Language";
+                    const grade = document.getElementById('ws-grade')?.value || "Grade 8 / Intermediate";
+                    const topic = document.getElementById('ws-topic')?.value || "Future Simple & Tenses";
                     const count = parseInt(document.getElementById('ws-count')?.value) || 5;
+                    const lang = document.getElementById('ws-lang')?.value || "en";
                     doc = {
                         subject,
                         grade,
                         topic,
-                        questions: Array.from({ length: count }, (_, i) => ({
-                            id: i + 1,
-                            question: `Academic problem ${i + 1} regarding ${topic}.`
-                        })),
+                        questions: generateLanguageWorksheetData(topic, subject, grade, lang, count),
                         image: selectedWorksheetImage
                     };
                 }
