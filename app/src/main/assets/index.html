@@ -307,7 +307,7 @@
 
             <!-- API KEY BOX & TESTER -->
             <section class="glass-card rounded-2xl p-5 space-y-4">
-                <div class="flex items-center justify-between">
+                <div class="flex items-center justify-between flex-wrap gap-2">
                     <div class="flex items-center gap-3">
                         <div class="w-9 h-9 rounded-xl bg-blue-600/10 text-blue-600 flex items-center justify-center">
                             <i data-lucide="key" class="w-5 h-5"></i>
@@ -324,7 +324,7 @@
 
                 <div class="space-y-3">
                     <div class="relative">
-                        <input type="password" id="api-key-input" oninput="onApiKeyInputChanged()" placeholder="Enter your Google Gemini API Key (e.g., AIzaSy...)" 
+                        <input type="password" id="api-key-input" oninput="onApiKeyInputChanged()" placeholder="Paste Google Gemini Key (e.g. AIzaSy...)" 
                             class="w-full px-4 py-3 pl-10 pr-20 text-sm rounded-xl border bg-slate-50 dark:bg-slate-900 border-slate-300 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono">
                         <i data-lucide="key" class="w-4 h-4 absolute left-3 top-3.5 text-slate-400"></i>
                         <div class="absolute right-3 top-2.5 flex items-center gap-1.5">
@@ -337,6 +337,19 @@
                         </div>
                     </div>
 
+                    <div class="flex items-center justify-between gap-2 flex-wrap text-xs text-slate-500 dark:text-slate-400 bg-slate-100/60 dark:bg-slate-900/60 p-2.5 rounded-xl">
+                        <div class="flex items-center gap-1.5">
+                            <i data-lucide="cpu" class="w-4 h-4 text-blue-600"></i>
+                            <span class="font-medium">Active Model:</span>
+                        </div>
+                        <select id="gemini-model-select" onchange="onModelSelectChanged(this.value)" class="text-xs font-semibold bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-2.5 py-1 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                            <option value="gemini-3.5-flash" selected>gemini-3.5-flash (Fast & Recommended)</option>
+                            <option value="gemini-flash-latest">gemini-flash-latest</option>
+                            <option value="gemini-3.1-flash-lite-preview">gemini-3.1-flash-lite-preview (Ultra Fast)</option>
+                            <option value="gemini-3.1-pro-preview">gemini-3.1-pro-preview (Advanced Reasoning)</option>
+                        </select>
+                    </div>
+
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                         <button onclick="saveApiKeyManual()" class="py-2.5 px-4 rounded-xl bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold text-xs flex items-center justify-center gap-1.5 transition-all">
                             <i data-lucide="save" class="w-4 h-4 text-blue-600"></i> Save Key Locally
@@ -346,7 +359,7 @@
                         </button>
                     </div>
 
-                    <div id="api-key-result" class="hidden p-3 rounded-xl text-xs font-semibold flex items-center gap-2"></div>
+                    <div id="api-key-result" class="hidden p-3 rounded-xl text-xs font-medium space-y-1"></div>
                 </div>
             </section>
 
@@ -1002,13 +1015,12 @@
         }
 
         // Supported, modern Google Gemini Models
-        let activeGeminiModel = 'gemini-2.5-flash';
+        let activeGeminiModel = 'gemini-3.5-flash';
         const SUPPORTED_GEMINI_MODELS = [
-            'gemini-2.5-flash',
             'gemini-3.5-flash',
+            'gemini-flash-latest',
             'gemini-3.1-flash-lite-preview',
-            'gemini-3.1-pro-preview',
-            'gemini-flash-latest'
+            'gemini-3.1-pro-preview'
         ];
 
         function getEffectiveApiKey() {
@@ -1108,6 +1120,26 @@
                 throw new Error("No API key configured. Please enter your Gemini API key in Settings.");
             }
 
+            // Method 1: Use AndroidBridge native networking (bypasses any WebView CORS or origin limitations)
+            if (window.AndroidBridge && typeof window.AndroidBridge.executeGemini === 'function') {
+                try {
+                    const rawResult = window.AndroidBridge.executeGemini(effectiveKey, promptText, activeGeminiModel);
+                    if (rawResult) {
+                        const parsed = JSON.parse(rawResult);
+                        if (parsed.success && parsed.text) {
+                            if (parsed.model) activeGeminiModel = parsed.model;
+                            return { text: parsed.text, model: parsed.model || activeGeminiModel };
+                        } else if (parsed.error) {
+                            throw new Error(parsed.error);
+                        }
+                    }
+                } catch (e) {
+                    console.warn("AndroidBridge execution fallback to Web Fetch", e);
+                    // Fallthrough to fetch
+                }
+            }
+
+            // Method 2: Standard fetch fallback
             const modelsToTry = [activeGeminiModel, ...SUPPORTED_GEMINI_MODELS.filter(m => m !== activeGeminiModel)];
             let lastErr = null;
 
@@ -1141,6 +1173,11 @@
             throw new Error(lastErr || "Unable to communicate with Gemini API endpoints.");
         }
 
+        function onModelSelectChanged(modelName) {
+            activeGeminiModel = modelName;
+            showToast(`Active AI Model changed to ${modelName}`, "info");
+        }
+
         async function testApiKey() {
             const key = getEffectiveApiKey();
             const resDiv = document.getElementById('api-key-result');
@@ -1148,24 +1185,47 @@
 
             if (!key) {
                 resDiv.className = 'p-3 rounded-xl text-xs font-semibold bg-red-100 text-red-700 dark:bg-red-950/40 dark:text-red-300 flex items-center gap-2';
-                resDiv.innerHTML = '<i data-lucide="alert-circle" class="w-4 h-4 flex-shrink-0"></i> <span>Please enter a valid Gemini API Key above to test.</span>';
+                resDiv.innerHTML = '<i data-lucide="alert-circle" class="w-4 h-4 flex-shrink-0"></i> <span>Please paste your Google Gemini API Key into the field above and click Save or Test.</span>';
                 lucide.createIcons();
                 return;
             }
 
             resDiv.className = 'p-3 rounded-xl text-xs font-semibold bg-blue-100 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300 flex items-center gap-2';
-            resDiv.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin flex-shrink-0"></i> <span>Testing connection with Google Gemini API...</span>';
+            resDiv.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin flex-shrink-0"></i> <span>Testing connection with Google Gemini API endpoint...</span>';
             lucide.createIcons();
 
             try {
-                const result = await executeGeminiPrompt(key, "Say 'OK' if you can read this.");
-                resDiv.className = 'p-3 rounded-xl text-xs font-semibold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300 flex items-center gap-2';
-                resDiv.innerHTML = `<i data-lucide="check-circle-2" class="w-4 h-4 flex-shrink-0"></i> <span>API Key is verified and working! Connected via <strong>${result.model}</strong>.</span>`;
+                const result = await executeGeminiPrompt(key, "Say 'OK' if you can read this message.");
+                resDiv.className = 'p-3 rounded-xl text-xs font-semibold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300 flex flex-col gap-1';
+                resDiv.innerHTML = `
+                    <div class="flex items-center gap-2">
+                        <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-600 flex-shrink-0"></i>
+                        <span class="font-bold">Gemini API Key Verified & Active!</span>
+                    </div>
+                    <div class="text-[11px] opacity-90 pl-6">Successfully connected and generated text via <strong>${result.model}</strong>.</div>
+                `;
                 localStorage.setItem('gemini_api_key', key);
                 updateApiKeyUIStatus(true, "Verified & Active");
             } catch (err) {
-                resDiv.className = 'p-3 rounded-xl text-xs font-semibold bg-red-100 text-red-700 dark:bg-red-950/40 dark:text-red-300 flex items-center gap-2';
-                resDiv.innerHTML = `<i data-lucide="x-circle" class="w-4 h-4 flex-shrink-0"></i> <span>Verification Failed: ${err.message}</span>`;
+                const errMsg = err.message || "Unknown error";
+                let helpText = "Please verify your key in Google AI Studio or select a different model above.";
+                if (errMsg.includes("API_KEY_INVALID") || errMsg.includes("invalid") || errMsg.includes("400")) {
+                    helpText = "The API key provided appears invalid or incorrectly copied. Check that there are no extra spaces or quotes.";
+                } else if (errMsg.includes("RESOURCE_EXHAUSTED") || errMsg.includes("429")) {
+                    helpText = "Quota exceeded for this key. Try switching the model above to gemini-3.1-flash-lite-preview or try again in a moment.";
+                } else if (errMsg.includes("PERMISSION_DENIED") || errMsg.includes("403")) {
+                    helpText = "Permission denied. Ensure the Generative Language API is enabled for your Google Cloud project.";
+                }
+
+                resDiv.className = 'p-3 rounded-xl text-xs bg-red-100 text-red-700 dark:bg-red-950/40 dark:text-red-300 flex flex-col gap-1';
+                resDiv.innerHTML = `
+                    <div class="flex items-center gap-2 font-bold">
+                        <i data-lucide="x-circle" class="w-4 h-4 text-rose-600 flex-shrink-0"></i>
+                        <span>Verification Failed:</span>
+                    </div>
+                    <div class="font-mono text-[11px] pl-6">${errMsg}</div>
+                    <div class="text-[11px] font-normal pl-6 mt-1 text-slate-700 dark:text-slate-300 opacity-90">💡 <strong>Tip:</strong> ${helpText}</div>
+                `;
                 updateApiKeyUIStatus(false, "Verification Error");
             }
             lucide.createIcons();
