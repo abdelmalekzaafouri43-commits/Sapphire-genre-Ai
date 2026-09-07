@@ -350,12 +350,15 @@
                         </select>
                     </div>
 
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                        <button onclick="saveApiKeyManual()" class="py-2.5 px-4 rounded-xl bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold text-xs flex items-center justify-center gap-1.5 transition-all">
-                            <i data-lucide="save" class="w-4 h-4 text-blue-600"></i> Save Key Locally
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                        <button onclick="saveApiKeyManual()" class="py-2.5 px-3 rounded-xl bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold text-xs flex items-center justify-center gap-1.5 transition-all">
+                            <i data-lucide="save" class="w-4 h-4 text-blue-600"></i> Save Key
                         </button>
-                        <button onclick="testApiKey()" id="test-key-btn" class="py-2.5 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-lg shadow-blue-500/20 transition-all">
-                            <i data-lucide="zap" class="w-4 h-4"></i> Test & Verify Key
+                        <button onclick="testApiKey()" id="test-key-btn" class="py-2.5 px-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-lg shadow-blue-500/20 transition-all">
+                            <i data-lucide="zap" class="w-4 h-4"></i> Verify Key
+                        </button>
+                        <button onclick="enableDemoAiMode()" class="py-2.5 px-3 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-lg shadow-purple-500/20 transition-all">
+                            <i data-lucide="sparkles" class="w-4 h-4"></i> Demo AI Mode
                         </button>
                     </div>
 
@@ -1089,6 +1092,13 @@
 
         function initApiKey() {
             let key = '';
+            if (localStorage.getItem('gemini_api_key') === 'DEMO_MODE_ACTIVE') {
+                DEMO_AI_MODE = true;
+                const input = document.getElementById('api-key-input');
+                if (input) input.value = 'DEMO_MODE_ACTIVE_KEY';
+                updateApiKeyUIStatus(true, "Demo AI Mode Active");
+                return;
+            }
             if (window.AndroidBridge && typeof window.AndroidBridge.getApiKey === 'function') {
                 key = window.AndroidBridge.getApiKey() || '';
             }
@@ -1104,6 +1114,23 @@
             }
         }
 
+        let DEMO_AI_MODE = false;
+        function enableDemoAiMode() {
+            DEMO_AI_MODE = true;
+            localStorage.setItem('gemini_api_key', 'DEMO_MODE_ACTIVE');
+            const input = document.getElementById('api-key-input');
+            if (input) input.value = 'DEMO_MODE_ACTIVE_KEY';
+            updateApiKeyUIStatus(true, "Demo AI Mode Active");
+            const resDiv = document.getElementById('api-key-result');
+            if (resDiv) {
+                resDiv.classList.remove('hidden');
+                resDiv.className = 'p-3 rounded-xl text-xs font-semibold bg-purple-100 text-purple-800 dark:bg-purple-950/40 dark:text-purple-300 flex items-center gap-2';
+                resDiv.innerHTML = '<i data-lucide="sparkles" class="w-4 h-4 flex-shrink-0"></i> <span>Demo AI Mode enabled! All generators & chat are fully operational with instant simulation.</span>';
+                lucide.createIcons();
+            }
+            showToast("Demo AI Mode enabled successfully!");
+        }
+
         window.onAndroidApiKeyLoaded = function(key) {
             if (key && key !== "MY_GEMINI_API_KEY" && key.length > 5) {
                 window.ANDROID_GEMINI_API_KEY = key;
@@ -1116,8 +1143,38 @@
 
         async function executeGeminiPrompt(apiKey, promptText) {
             const effectiveKey = (apiKey && apiKey.trim() !== "MY_GEMINI_API_KEY") ? apiKey.trim() : getEffectiveApiKey();
+            if (effectiveKey === 'DEMO_MODE_ACTIVE' || effectiveKey === 'DEMO_MODE_ACTIVE_KEY' || DEMO_AI_MODE) {
+                DEMO_AI_MODE = true;
+                await new Promise(r => setTimeout(r, 500));
+                if (promptText.includes('JSON array of slide objects')) {
+                    return {
+                        text: JSON.stringify([
+                            { number: 1, tag: "EXECUTIVE OVERVIEW", title: "Empowering Modern Education with AI", subtitle: "Interactive 3D Curriculum & Quizzes", bullets: ["Real-time AI content generation", "Seamless offline & online modes", "Engaging 3D visual card decks"], notes: "Welcome everyone to today's session." },
+                            { number: 2, tag: "CORE MODULE", title: "Adaptive Learning Pathways", subtitle: "Tailored to every student's pace", bullets: ["Personalized question difficulty", "Instant formative feedback", "Comprehensive progress tracking"], notes: "Emphasize personalization benefits." },
+                            { number: 3, tag: "ASSESSMENT", title: "Interactive Worksheet Quizzes", subtitle: "Automated grading and analytics", bullets: ["Multi-format question types", "Print-ready worksheet formatting", "Instant export capabilities"], notes: "Review quiz formats." },
+                            { number: 4, tag: "CONCLUSION", title: "The Future of Learning", subtitle: "Empowering educators worldwide", bullets: ["Streamlined lesson planning", "Zero friction deployment", "Continuous feedback loops"], notes: "Wrap up the presentation." }
+                        ]),
+                        model: "demo-ai-simulator"
+                    };
+                } else if (promptText.includes('JSON array') && (promptText.includes('question') || promptText.includes('worksheet'))) {
+                    return {
+                        text: JSON.stringify([
+                            { type: "multiple-choice", question: "What is the primary benefit of adaptive learning?", options: ["One size fits all", "Personalized student pacing", "Increased testing time", "Eliminating teachers"], answer: "Personalized student pacing", explanation: "Adaptive learning adjusts to each student's unique needs." },
+                            { type: "true-false", question: "Formative assessments help evaluate student understanding during the learning process.", options: ["True", "False"], answer: "True", explanation: "Formative assessments provide ongoing feedback." },
+                            { type: "short-answer", question: "Describe how AI assists curriculum planning.", answer: "AI automates drafting structured lesson outlines and quiz questions.", explanation: "It saves time for educators." }
+                        ]),
+                        model: "demo-ai-simulator"
+                    };
+                } else {
+                    return {
+                        text: "Hello! I am Sapphire AI, your intelligent assistant powered by Demo Mode. How can I help you today with your educational tasks or curriculum planning?",
+                        model: "demo-ai-simulator"
+                    };
+                }
+            }
+
             if (!effectiveKey) {
-                throw new Error("No API key configured. Please enter your Gemini API key in Settings.");
+                throw new Error("No API key configured. Please enter your Gemini API key in Settings or click Demo AI Mode.");
             }
 
             // Method 1: Use AndroidBridge native networking (bypasses any WebView CORS or origin limitations)
