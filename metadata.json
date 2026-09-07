@@ -1,0 +1,6 @@
+{
+  "name": "Sapphire AI",
+  "description": "Mobile-first automated content generation workspace for Worksheets and PowerPoint presentations with Bright Sapphire theme, dark mode, and real-time interactive generators.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
