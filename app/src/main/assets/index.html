@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Automated Content Generator - Mr. Zaafouri Abdelmalek</title>
+    <!-- Tailwind CSS CDN & Lucide Icons -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --primary: #0F52BA;
+            --primary-hover: #0A3A86;
+            --bg-main: #F0F4FF;
+            --surface: #FFFFFF;
+            --surface-glass: rgba(255, 255, 255, 0.82);
+            --border-glass: rgba(15, 82, 186, 0.2);
+            --text-main: #0F172A;
+            --text-muted: #475569;
+        }
+
+        body.dark {
+            --bg-main: #0B1120;
+            --surface: #131C31;
+            --surface-glass: rgba(19, 28, 49, 0.82);
+            --border-glass: rgba(51, 65, 85, 0.4);
+            --text-main: #F8FAFC;
+            --text-muted: #94A3B8;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            transition: background-color 0.3s ease, color 0.3s ease;
+            user-select: none;
+        }
+
+        .glass-card {
+            background: var(--surface-glass);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--border-glass);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.08);
+        }
+
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(15, 82, 186, 0.25);
+            border-radius: 999px;
+        }
+
+        /* 3D CAROUSEL SLIDER CSS STYLES */
+        .slider-perspective {
+            perspective: 1200px;
+            perspective-origin: 50% 50%;
+        }
+
+        .slide-3d-card {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            transform-style: preserve-3d;
+            transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.5s, box-shadow 0.5s;
+            cursor: grab;
+            backface-visibility: hidden;
+        }
+
+        .slide-3d-card:active {
+            cursor: grabbing;
+        }
+
+        /* 3D Slide States */
+        .slide-3d-card.state-active {
+            transform: translateX(0%) scale(1) translateZ(0px) rotateY(0deg);
+            opacity: 1;
+            z-index: 30;
+            box-shadow: 0 25px 50px -12px rgba(15, 82, 186, 0.3);
+            pointer-events: auto;
+        }
+
+        .slide-3d-card.state-prev {
+            transform: translateX(-62%) scale(0.82) translateZ(-160px) rotateY(32deg);
+            opacity: 0.65;
+            z-index: 10;
+            filter: brightness(0.9);
+            pointer-events: auto;
+        }
+
+        .slide-3d-card.state-next {
+            transform: translateX(62%) scale(0.82) translateZ(-160px) rotateY(-32deg);
+            opacity: 0.65;
+            z-index: 10;
+            filter: brightness(0.9);
+            pointer-events: auto;
+        }
+
+        .slide-3d-card.state-far-prev {
+            transform: translateX(-120%) scale(0.6) translateZ(-320px) rotateY(50deg);
+            opacity: 0;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .slide-3d-card.state-far-next {
+            transform: translateX(120%) scale(0.6) translateZ(-320px) rotateY(-50deg);
+            opacity: 0;
+            z-index: 0;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body class="h-screen flex overflow-hidden">
+
+    <!-- LEFT NAVIGATION SIDEBAR -->
+    <aside class="w-72 glass-card border-r flex flex-col justify-between p-5 z-20">
+        <div>
+            <!-- Header Brand -->
+            <div class="flex items-center gap-3 mb-8">
+                <div class="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-lg shadow-blue-500/30">
+                    <i data-lucide="sparkles" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-lg leading-tight">Sapphire AI</h1>
+                    <span class="text-xs text-blue-600 dark:text-blue-400 font-semibold uppercase tracking-wider">Workspace</span>
+                </div>
+            </div>
+
+            <!-- Nav Links -->
+            <nav class="space-y-1.5" id="nav-menu">
+                <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition-all bg-blue-600 text-white shadow-md shadow-blue-600/20">
+                    <i data-lucide="layout-dashboard" class="w-4 h-4"></i> Dashboard
+                </button>
+                <button onclick="switchTab('ppt')" id="nav-ppt" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition-all text-slate-600 dark:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-800/50">
+                    <i data-lucide="presentation" class="w-4 h-4"></i> PPT 3D Deck AI
+                </button>
+                <button onclick="switchTab('worksheet')" id="nav-worksheet" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition-all text-slate-600 dark:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-800/50">
+                    <i data-lucide="file-text" class="w-4 h-4"></i> Worksheet AI
+                </button>
+                <button onclick="switchTab('documents')" id="nav-documents" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition-all text-slate-600 dark:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-800/50">
+                    <i data-lucide="folder" class="w-4 h-4"></i> My Documents
+                </button>
+                <button onclick="switchTab('analytics')" id="nav-analytics" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition-all text-slate-600 dark:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-800/50">
+                    <i data-lucide="bar-chart-3" class="w-4 h-4"></i> Analytics
+                </button>
+            </nav>
+        </div>
+
+        <!-- Sidebar Bottom Controls -->
+        <div class="space-y-4 pt-4 border-t border-slate-200/60 dark:border-slate-800/60">
+            <!-- Storage Meter -->
+            <div class="p-3 rounded-xl bg-slate-100/70 dark:bg-slate-800/50 text-xs">
+                <div class="flex justify-between font-semibold mb-1">
+                    <span>Storage Used</span>
+                    <span class="text-blue-600 dark:text-blue-400">8.5 GB / 10 GB</span>
+                </div>
+                <div class="w-full bg-slate-200 dark:bg-slate-700 h-1.5 rounded-full overflow-hidden">
+                    <div class="bg-blue-600 h-full w-[85%] rounded-full"></div>
+                </div>
+            </div>
+
+            <!-- Dark Mode Toggle -->
+            <div class="flex items-center justify-between p-2 rounded-xl bg-slate-100/70 dark:bg-slate-800/50">
+                <span class="text-xs font-semibold flex items-center gap-2">
+                    <i data-lucide="moon" class="w-4 h-4"></i> Theme Mode
+                </span>
+                <button onclick="toggleDarkMode()" class="w-11 h-6 rounded-full bg-slate-300 dark:bg-blue-600 p-1 flex items-center transition-colors">
+                    <div class="w-4 h-4 rounded-full bg-white transition-transform dark:translate-x-5 shadow"></div>
+                </button>
+            </div>
+
+            <!-- Creator Copyright Notice -->
+            <div class="text-center text-xs pt-1">
+                <div class="font-bold text-slate-800 dark:text-slate-100">Mr. Zaafouri Abdelmalek</div>
+                <div class="text-[10px] text-slate-500">© 2026 All rights reserved</div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- MAIN WORKSPACE -->
+    <main class="flex-1 flex flex-col h-screen overflow-hidden">
+        
+        <!-- Top Bar -->
+        <header class="h-16 border-b glass-card flex items-center justify-between px-6 z-10">
+            <h2 id="page-title" class="font-bold text-lg tracking-tight">Dashboard</h2>
+            <div class="flex items-center gap-3">
+                <span id="active-theme-badge" class="px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300 border border-blue-300/50">
+                    Bright Sapphire
+                </span>
+                <span class="px-3 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300 border border-emerald-300/50 flex items-center gap-1">
+                    <i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i> AI Ready
+                </span>
+            </div>
+        </header>
+
+        <!-- Dynamic Content Scroll Container -->
+        <div class="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar" id="main-content">
+
+            <!-- THEME SELECTOR CARD -->
+            <section class="glass-card rounded-2xl p-5 space-y-4">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="w-9 h-9 rounded-xl bg-blue-600/10 text-blue-600 flex items-center justify-center font-bold">
+                            <i data-lucide="palette" class="w-5 h-5"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-base">Color Themes & Visual Identity</h3>
+                            <p class="text-xs text-slate-500">Select any of the 8 dynamic custom themes</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-3 overflow-x-auto pb-2 custom-scrollbar" id="theme-options">
+                    <!-- Dynamic Theme Buttons rendered via JS -->
+                </div>
+            </section>
+
+            <!-- API KEY BOX & TESTER -->
+            <section class="glass-card rounded-2xl p-5 space-y-4">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="w-9 h-9 rounded-xl bg-blue-600/10 text-blue-600 flex items-center justify-center">
+                            <i data-lucide="key" class="w-5 h-5"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-base">Gemini API Key Settings</h3>
+                            <p class="text-xs text-slate-500">Enter or test your API key for live AI generation</p>
+                        </div>
+                    </div>
+                    <span class="px-2.5 py-1 rounded-md text-[10px] font-bold bg-slate-200 dark:bg-slate-800">CONFIG</span>
+                </div>
+
+                <div class="space-y-3">
+                    <div class="relative">
+                        <input type="password" id="api-key-input" placeholder="AI Studio Key or Custom Gemini Key..." 
+                            class="w-full px-4 py-3 pl-10 pr-10 text-sm rounded-xl border bg-slate-50 dark:bg-slate-900 border-slate-300 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <i data-lucide="key" class="w-4 h-4 absolute left-3 top-3.5 text-slate-400"></i>
+                        <button onclick="toggleKeyVisibility()" class="absolute right-3 top-3.5 text-slate-400 hover:text-slate-600">
+                            <i data-lucide="eye" id="eye-icon" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+
+                    <button onclick="testApiKey()" id="test-key-btn" class="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm flex items-center justify-center gap-2 shadow-lg shadow-blue-500/20 transition-all">
+                        <i data-lucide="wand-2" class="w-4 h-4"></i> Test & Verify API Key
+                    </button>
+
+                    <div id="api-key-result" class="hidden p-3 rounded-xl text-xs font-semibold flex items-center gap-2"></div>
+                </div>
+            </section>
+
+            <!-- TAB 1: DASHBOARD CONTENT -->
+            <div id="tab-dashboard" class="space-y-6">
+                <!-- Hero Banner -->
+                <div class="glass-card rounded-3xl p-6 bg-gradient-to-r from-blue-600/10 via-indigo-600/10 to-purple-600/10 space-y-4">
+                    <span class="px-3 py-1 rounded-full text-xs font-bold bg-blue-600 text-white">AUTOMATED CONTENT GENERATOR</span>
+                    <h2 class="text-2xl font-bold">Create Worksheets & 3D Interactive PPT Decks with Gemini AI</h2>
+                    <p class="text-sm text-slate-600 dark:text-slate-300 max-w-2xl">
+                        Generate structured educational quizzes, lesson plans, and multi-slide PowerPoint decks with interactive 3D swipe slider previews.
+                    </p>
+                    <div class="flex gap-3 pt-2">
+                        <button onclick="switchTab('ppt')" class="px-5 py-2.5 rounded-xl bg-purple-600 text-white text-xs font-bold flex items-center gap-2 shadow-md">
+                            <i data-lucide="presentation" class="w-4 h-4"></i> Launch 3D PPT Deck AI
+                        </button>
+                        <button onclick="switchTab('worksheet')" class="px-5 py-2.5 rounded-xl bg-blue-600 text-white text-xs font-bold flex items-center gap-2 shadow-md">
+                            <i data-lucide="file-text" class="w-4 h-4"></i> New Worksheet
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 3: PPT DECK AI GENERATOR WITH 3D INTERACTIVE SWIPE SLIDER -->
+            <div id="tab-ppt" class="space-y-6">
+                
+                <!-- Generator Config Card -->
+                <div class="glass-card rounded-2xl p-6 space-y-4">
+                    <div class="flex items-center justify-between">
+                        <h3 class="font-bold text-lg flex items-center gap-2">
+                            <i data-lucide="presentation" class="w-5 h-5 text-purple-600"></i> PowerPoint 3D Deck AI Generator
+                        </h3>
+                        <span class="px-3 py-1 rounded-full text-xs font-bold bg-purple-100 text-purple-700 dark:bg-purple-900/50 dark:text-purple-300 flex items-center gap-1">
+                            <i data-lucide="box" class="w-3.5 h-3.5"></i> Interactive 3D Touch Enabled
+                        </span>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold mb-1">Presentation Topic</label>
+                            <input type="text" id="ppt-topic" value="Artificial Intelligence & Modern EdTech" class="w-full px-3 py-2 text-sm rounded-lg border bg-slate-50 dark:bg-slate-900 border-slate-300 dark:border-slate-700">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold mb-1">Target Audience</label>
+                            <input type="text" id="ppt-audience" value="Educators & University Faculty" class="w-full px-3 py-2 text-sm rounded-lg border bg-slate-50 dark:bg-slate-900 border-slate-300 dark:border-slate-700">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold mb-1">Slide Count</label>
+                            <input type="number" id="ppt-count" value="5" min="3" max="10" class="w-full px-3 py-2 text-sm rounded-lg border bg-slate-50 dark:bg-slate-900 border-slate-300 dark:border-slate-700">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold mb-1">Visual Theme</label>
+                            <select id="ppt-style" class="w-full px-3 py-2 text-sm rounded-lg border bg-slate-50 dark:bg-slate-900 border-slate-300 dark:border-slate-700">
+                                <option>3D Glassmorphism Sapphire</option>
+                                <option>Cyberpunk Midnight Dark</option>
+                                <option>Minimalist Academic Clean</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <button onclick="generatePPTDeck()" class="w-full py-3 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-sm shadow-lg shadow-purple-500/25 flex items-center justify-center gap-2 transition-all">
+                        <i data-lucide="sparkles" class="w-4 h-4"></i> Generate PowerPoint Deck with 3D Preview
+                    </button>
+                </div>
+
+                <!-- 3D INTERACTIVE SWIPE SLIDER CONTAINER -->
+                <div class="glass-card rounded-3xl p-6 space-y-6">
+                    <div class="flex items-center justify-between border-b pb-4 border-slate-200/60 dark:border-slate-800/60">
+                        <div>
+                            <h4 class="font-bold text-base flex items-center gap-2">
+                                <i data-lucide="layers" class="w-5 h-5 text-purple-600"></i> Interactive 3D Slide Carousel
+                            </h4>
+                            <p class="text-xs text-slate-500">Swipe left/right or click arrow controls to navigate in 3D space</p>
+                        </div>
+
+                        <div class="flex items-center gap-2">
+                            <span id="slide-counter-badge" class="px-3 py-1 rounded-full text-xs font-bold bg-slate-200 dark:bg-slate-800">
+                                Slide 1 of 5
+                            </span>
+                            <button onclick="toggleSpeakerNotes()" class="p-2 rounded-xl border hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-semibold flex items-center gap-1">
+                                <i data-lucide="message-square" class="w-4 h-4 text-purple-600"></i> Notes
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 3D SLIDE DISPLAY STAGE -->
+                    <div class="relative w-full h-[360px] slider-perspective flex items-center justify-center overflow-hidden py-4" id="slider-stage">
+                        <!-- Dynamic 3D Slide Cards Container -->
+                        <div class="relative w-[85%] max-w-[580px] h-[310px]" id="slide-cards-container">
+                            <!-- Cards inserted via JS -->
+                        </div>
+                    </div>
+
+                    <!-- CONTROLS & DOTS -->
+                    <div class="flex items-center justify-between pt-2">
+                        <!-- Left Prev Arrow -->
+                        <button onclick="prevSlide()" class="w-12 h-12 rounded-2xl glass-card flex items-center justify-center text-slate-700 dark:text-slate-200 hover:bg-purple-600 hover:text-white transition-all shadow-md">
+                            <i data-lucide="chevron-left" class="w-6 h-6"></i>
+                        </button>
+
+                        <!-- Slide Dots Indicator -->
+                        <div class="flex items-center gap-2" id="dots-container">
+                            <!-- Dots rendered via JS -->
+                        </div>
+
+                        <!-- Right Next Arrow -->
+                        <button onclick="nextSlide()" class="w-12 h-12 rounded-2xl glass-card flex items-center justify-center text-slate-700 dark:text-slate-200 hover:bg-purple-600 hover:text-white transition-all shadow-md">
+                            <i data-lucide="chevron-right" class="w-6 h-6"></i>
+                        </button>
+                    </div>
+
+                    <!-- Speaker Notes Drawer -->
+                    <div id="speaker-notes-box" class="hidden p-4 rounded-2xl bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800/50 text-xs space-y-1">
+                        <div class="font-bold text-purple-700 dark:text-purple-300 flex items-center gap-1.5">
+                            <i data-lucide="user-check" class="w-4 h-4"></i> Speaker Notes & Delivery Prompt:
+                        </div>
+                        <p id="speaker-notes-text" class="text-slate-600 dark:text-slate-300">
+                            Welcome your audience by emphasizing the transformative impact of Artificial Intelligence on modern learning.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 2: WORKSHEET AI GENERATOR -->
+            <div id="tab-worksheet" class="hidden space-y-6">
+                <div class="glass-card rounded-2xl p-6 space-y-4">
+                    <h3 class="font-bold text-lg flex items-center gap-2">
+                        <i data-lucide="file-text" class="w-5 h-5 text-blue-600"></i> Worksheet AI Generator
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold mb-1">Subject</label>
+                            <input type="text" id="ws-subject" value="Mathematics" class="w-full px-3 py-2 text-sm rounded-lg border bg-slate-50 dark:bg-slate-900 border-slate-300 dark:border-slate-700">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold mb-1">Grade Level</label>
+                            <input type="text" id="ws-grade" value="Grade 8" class="w-full px-3 py-2 text-sm rounded-lg border bg-slate-50 dark:bg-slate-900 border-slate-300 dark:border-slate-700">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold mb-1">Topic</label>
+                            <input type="text" id="ws-topic" value="Linear Equations & Functions" class="w-full px-3 py-2 text-sm rounded-lg border bg-slate-50 dark:bg-slate-900 border-slate-300 dark:border-slate-700">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold mb-1">Questions Count</label>
+                            <input type="number" id="ws-count" value="5" class="w-full px-3 py-2 text-sm rounded-lg border bg-slate-50 dark:bg-slate-900 border-slate-300 dark:border-slate-700">
+                        </div>
+                    </div>
+                    <button onclick="generateWorksheet()" class="w-full py-3 rounded-xl bg-blue-600 text-white font-bold text-sm shadow-md">
+                        Generate Worksheet
+                    </button>
+                    <div id="ws-output" class="hidden glass-card rounded-xl p-4 text-xs font-mono space-y-2 max-h-60 overflow-y-auto"></div>
+                </div>
+            </div>
+
+            <!-- TAB 4: MY DOCUMENTS -->
+            <div id="tab-documents" class="hidden space-y-6">
+                <div class="glass-card rounded-2xl p-6 space-y-4">
+                    <h3 class="font-bold text-lg flex items-center gap-2">
+                        <i data-lucide="folder" class="w-5 h-5 text-blue-600"></i> My Generated Documents
+                    </h3>
+                    <div class="space-y-3" id="docs-list">
+                        <!-- Dynamic Docs List -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 5: ANALYTICS -->
+            <div id="tab-analytics" class="hidden space-y-6">
+                <div class="glass-card rounded-2xl p-6 space-y-4">
+                    <h3 class="font-bold text-lg flex items-center gap-2">
+                        <i data-lucide="bar-chart-3" class="w-5 h-5 text-blue-600"></i> System Storage & Analytics
+                    </h3>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="p-4 rounded-xl bg-slate-100 dark:bg-slate-800/60">
+                            <span class="text-xs text-slate-500">Worksheets Generated</span>
+                            <div class="text-2xl font-bold text-blue-600">14</div>
+                        </div>
+                        <div class="p-4 rounded-xl bg-slate-100 dark:bg-slate-800/60">
+                            <span class="text-xs text-slate-500">PPT Decks Created</span>
+                            <div class="text-2xl font-bold text-purple-600">8</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- COPYRIGHT FOOTER -->
+            <footer class="text-center py-6 border-t border-slate-200/50 dark:border-slate-800/50 space-y-1">
+                <div class="font-bold text-sm">Mr. Zaafouri Abdelmalek</div>
+                <div class="text-xs text-slate-500">© 2026 All rights reserved</div>
+            </footer>
+
+        </div>
+    </main>
+
+    <!-- JS SCRIPT -->
+    <script>
+        const themes = [
+            { id: 'bright-sapphire', title: 'Bright Sapphire', primary: '#0F52BA', bg: '#F0F4FF' },
+            { id: 'midnight-cobalt', title: 'Midnight Cobalt', primary: '#2563EB', bg: '#0F172A' },
+            { id: 'golden-taupe', title: 'Golden Taupe', primary: '#D97706', bg: '#FDFBF7' },
+            { id: 'mossy-hollow', title: 'Mossy Hollow', primary: '#15803D', bg: '#F4F7F4' },
+            { id: 'periwinkle-dream', title: 'Periwinkle Dream', primary: '#7C3AED', bg: '#F5F3FF' },
+            { id: 'creme-brulee', title: 'Creme Brulee', primary: '#EA580C', bg: '#FFFBEB' },
+            { id: 'neon-glam', title: 'Neon Glam', primary: '#EC4899', bg: '#09090B' },
+            { id: 'carbon-dusk', title: 'Carbon Dusk', primary: '#38BDF8', bg: '#18181B' }
+        ];
+
+        let activeTheme = themes[0];
+
+        // PPT SLIDE DECK DATA
+        let slidesData = [
+            {
+                number: 1,
+                tag: "EXECUTIVE OVERVIEW",
+                title: "Artificial Intelligence in Education",
+                subtitle: "Transforming Learning, Pedagogy & Assessment",
+                bullets: [
+                    "Personalized adaptive learning pathways for every student",
+                    "Automated grading & instant formative feedback loops",
+                    "AI-assisted lesson planning & presentation generation"
+                ],
+                bgGradient: "from-blue-600 to-indigo-800",
+                notes: "Welcome your faculty members and outline the key promises of AI-driven pedagogy."
+            },
+            {
+                number: 2,
+                tag: "KEY PILLARS",
+                title: "Core Educational Capabilities",
+                subtitle: "Three Fundamental Innovation Vectors",
+                bullets: [
+                    "Vector 1: Real-time intelligent tutoring systems (ITS)",
+                    "Vector 2: Multimodal content creation (Worksheets & PPTs)",
+                    "Vector 3: Automated analytics & predictive student support"
+                ],
+                bgGradient: "from-purple-600 to-indigo-900",
+                notes: "Highlight how AI acts as an assistant to human educators rather than a replacement."
+            },
+            {
+                number: 3,
+                tag: "DATA INSIGHTS",
+                title: "Student Engagement Analytics",
+                subtitle: "Measurable Impact Across Academic Cohorts",
+                bullets: [
+                    "+42% Increase in concept retention speed",
+                    "-65% Reduction in teacher administrative grading time",
+                    "98% Satisfaction rating among early adopter faculty"
+                ],
+                bgGradient: "from-emerald-600 to-teal-900",
+                notes: "Reference empirical metrics to substantiate the value proposition of Sapphire AI."
+            },
+            {
+                number: 4,
+                tag: "ROADMAP",
+                title: "Implementation Strategy",
+                subtitle: "4-Phase Institutional Deployment Model",
+                bullets: [
+                    "Phase 1: Faculty orientation & Gemini API setup",
+                    "Phase 2: Curriculum integration & pilot testing",
+                    "Phase 3: Automated worksheet & deck generation scaling",
+                    "Phase 4: Full institutional analytics evaluation"
+                ],
+                bgGradient: "from-amber-600 to-orange-800",
+                notes: "Walk through the four practical steps for institutional onboarding."
+            },
+            {
+                number: 5,
+                tag: "CONCLUSION",
+                title: "Embracing the AI Horizon",
+                subtitle: "Empowering Educators & Inspiring Students",
+                bullets: [
+                    "Seamless AI integration tailored for every classroom",
+                    "Safe, controlled, and verifiable LLM execution",
+                    "Join the Sapphire AI workspace today"
+                ],
+                bgGradient: "from-fuchsia-600 to-pink-800",
+                notes: "Conclude with an inspiring call to action and open the floor for Q&A."
+            }
+        ];
+
+        let currentSlideIndex = 0;
+
+        function renderThemeOptions() {
+            const container = document.getElementById('theme-options');
+            container.innerHTML = themes.map(t => `
+                <button onclick="setTheme('${t.id}')" class="flex-shrink-0 flex items-center gap-2.5 px-3.5 py-2 rounded-xl border text-xs font-semibold transition-all ${t.id === activeTheme.id ? 'border-blue-600 bg-blue-50 dark:bg-blue-950/40 text-blue-600' : 'border-slate-200 dark:border-slate-800 hover:bg-slate-100/50'}">
+                    <span class="w-3.5 h-3.5 rounded-full" style="background:${t.primary}"></span>
+                    <span>${t.title}</span>
+                </button>
+            `).join('');
+        }
+
+        function setTheme(themeId) {
+            activeTheme = themes.find(t => t.id === themeId) || themes[0];
+            document.getElementById('active-theme-badge').innerText = activeTheme.title;
+            renderThemeOptions();
+        }
+
+        function switchTab(tabId) {
+            ['dashboard', 'worksheet', 'ppt', 'documents', 'analytics'].forEach(id => {
+                const el = document.getElementById(`tab-${id}`);
+                const navEl = document.getElementById(`nav-${id}`);
+                if (el) el.classList.add('hidden');
+                if (navEl) navEl.className = 'nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition-all text-slate-600 dark:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-800/50';
+            });
+
+            const activeEl = document.getElementById(`tab-${tabId}`);
+            const activeNavEl = document.getElementById(`nav-${tabId}`);
+            if (activeEl) activeEl.classList.remove('hidden');
+            if (activeNavEl) activeNavEl.className = 'nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition-all bg-blue-600 text-white shadow-md shadow-blue-600/20';
+            document.getElementById('page-title').innerText = tabId.toUpperCase();
+        }
+
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark');
+        }
+
+        let keyVisible = false;
+        function toggleKeyVisibility() {
+            keyVisible = !keyVisible;
+            document.getElementById('api-key-input').type = keyVisible ? 'text' : 'password';
+        }
+
+        async function testApiKey() {
+            const key = document.getElementById('api-key-input').value.trim();
+            const resDiv = document.getElementById('api-key-result');
+            resDiv.classList.remove('hidden');
+
+            if (!key) {
+                resDiv.className = 'p-3 rounded-xl text-xs font-semibold bg-red-100 text-red-700 flex items-center gap-2';
+                resDiv.innerHTML = '<i data-lucide="alert-circle" class="w-4 h-4"></i> Please enter an API Key to test.';
+                lucide.createIcons();
+                return;
+            }
+
+            resDiv.className = 'p-3 rounded-xl text-xs font-semibold bg-blue-100 text-blue-700 flex items-center gap-2';
+            resDiv.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Contacting Google Gemini API...';
+            lucide.createIcons();
+
+            try {
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ contents: [{ parts: [{ text: "Respond with 'OK'" }] }] })
+                });
+
+                if (response.ok) {
+                    resDiv.className = 'p-3 rounded-xl text-xs font-semibold bg-emerald-100 text-emerald-800 flex items-center gap-2';
+                    resDiv.innerHTML = '<i data-lucide="check-circle-2" class="w-4 h-4"></i> API Key is valid! Gemini 2.5 Flash operational.';
+                } else {
+                    resDiv.className = 'p-3 rounded-xl text-xs font-semibold bg-red-100 text-red-700 flex items-center gap-2';
+                    resDiv.innerHTML = `<i data-lucide="x-circle" class="w-4 h-4"></i> API Verification Error (${response.status})`;
+                }
+            } catch (err) {
+                resDiv.className = 'p-3 rounded-xl text-xs font-semibold bg-red-100 text-red-700 flex items-center gap-2';
+                resDiv.innerHTML = '<i data-lucide="x-circle" class="w-4 h-4"></i> Network or connection failed.';
+            }
+            lucide.createIcons();
+        }
+
+        // =========================================
+        // 3D CAROUSEL SLIDER RENDERER & TOUCH DRAG ENGINE
+        // =========================================
+        function render3DSlider() {
+            const container = document.getElementById('slide-cards-container');
+            const dotsContainer = document.getElementById('dots-container');
+            if (!container) return;
+
+            container.innerHTML = slidesData.map((slide, idx) => {
+                let stateClass = "state-far-next";
+                if (idx === currentSlideIndex) stateClass = "state-active";
+                else if (idx === currentSlideIndex - 1) stateClass = "state-prev";
+                else if (idx === currentSlideIndex + 1) stateClass = "state-next";
+                else if (idx < currentSlideIndex - 1) stateClass = "state-far-prev";
+
+                return `
+                    <div class="slide-3d-card ${stateClass} glass-card rounded-2xl p-6 text-white bg-gradient-to-br ${slide.bgGradient} flex flex-col justify-between" onclick="selectSlide(${idx})">
+                        <div>
+                            <div class="flex items-center justify-between mb-3">
+                                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-white/20 backdrop-blur-md uppercase tracking-wider">${slide.tag}</span>
+                                <span class="text-xs font-bold text-white/80">Slide ${slide.number} / ${slidesData.length}</span>
+                            </div>
+                            <h3 class="text-xl font-bold tracking-tight mb-1 text-white">${slide.title}</h3>
+                            <p class="text-xs text-white/80 font-medium mb-4">${slide.subtitle}</p>
+                            
+                            <ul class="space-y-2">
+                                ${slide.bullets.map(b => `
+                                    <li class="flex items-center gap-2 text-xs font-medium text-white/95">
+                                        <div class="w-1.5 h-1.5 rounded-full bg-white flex-shrink-0"></div>
+                                        <span>${b}</span>
+                                    </li>
+                                `).join('')}
+                            </ul>
+                        </div>
+
+                        <div class="flex items-center justify-between pt-3 border-t border-white/20 text-[10px] text-white/70">
+                            <span>Sapphire AI Presentation Deck</span>
+                            <span>Mr. Zaafouri Abdelmalek</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            // Render Dots
+            if (dotsContainer) {
+                dotsContainer.innerHTML = slidesData.map((_, idx) => `
+                    <button onclick="selectSlide(${idx})" class="h-2.5 rounded-full transition-all ${idx === currentSlideIndex ? 'w-8 bg-purple-600' : 'w-2.5 bg-slate-300 dark:bg-slate-700'}"></button>
+                `).join('');
+            }
+
+            // Update Header & Speaker Notes
+            document.getElementById('slide-counter-badge').innerText = `Slide ${currentSlideIndex + 1} of ${slidesData.length}`;
+            document.getElementById('speaker-notes-text').innerText = slidesData[currentSlideIndex].notes;
+
+            lucide.createIcons();
+        }
+
+        function selectSlide(idx) {
+            currentSlideIndex = idx;
+            render3DSlider();
+        }
+
+        function prevSlide() {
+            if (currentSlideIndex > 0) {
+                currentSlideIndex--;
+                render3DSlider();
+            }
+        }
+
+        function nextSlide() {
+            if (currentSlideIndex < slidesData.length - 1) {
+                currentSlideIndex++;
+                render3DSlider();
+            }
+        }
+
+        function toggleSpeakerNotes() {
+            const box = document.getElementById('speaker-notes-box');
+            box.classList.toggle('hidden');
+        }
+
+        function generatePPTDeck() {
+            const topic = document.getElementById('ppt-topic').value || "AI Innovations";
+            const audience = document.getElementById('ppt-audience').value || "General Audience";
+            const count = parseInt(document.getElementById('ppt-count').value) || 5;
+
+            slidesData = Array.from({ length: count }, (_, i) => ({
+                number: i + 1,
+                tag: i === 0 ? "EXECUTIVE OVERVIEW" : `MODULE ${i}`,
+                title: i === 0 ? topic : `${topic}: Key Dimension ${i}`,
+                subtitle: `Tailored for ${audience}`,
+                bullets: [
+                    `Key Insight ${i + 1}.1: Strategic analysis and overview`,
+                    `Key Insight ${i + 1}.2: Automated workflow optimization`,
+                    `Key Insight ${i + 1}.3: Actionable metrics for presentation`
+                ],
+                bgGradient: ["from-blue-600 to-indigo-800", "from-purple-600 to-indigo-900", "from-emerald-600 to-teal-900", "from-amber-600 to-orange-800", "from-fuchsia-600 to-pink-800"][i % 5],
+                notes: `Speaker note for slide ${i + 1}: Emphasize practical applications of ${topic}.`
+            }));
+
+            currentSlideIndex = 0;
+            render3DSlider();
+        }
+
+        // SWIPE / MOUSE DRAG GESTURE HANDLER FOR 3D STAGE
+        let startX = 0;
+        let isDragging = false;
+
+        function attachGestureListeners() {
+            const stage = document.getElementById('slider-stage');
+            if (!stage) return;
+
+            // Touch
+            stage.addEventListener('touchstart', (e) => {
+                startX = e.touches[0].clientX;
+                isDragging = true;
+            }, { passive: true });
+
+            stage.addEventListener('touchend', (e) => {
+                if (!isDragging) return;
+                const endX = e.changedTouches[0].clientX;
+                handleSwipe(startX, endX);
+                isDragging = false;
+            }, { passive: true });
+
+            // Mouse
+            stage.addEventListener('mousedown', (e) => {
+                startX = e.clientX;
+                isDragging = true;
+            });
+
+            stage.addEventListener('mouseup', (e) => {
+                if (!isDragging) return;
+                const endX = e.clientX;
+                handleSwipe(startX, endX);
+                isDragging = false;
+            });
+        }
+
+        function handleSwipe(start, end) {
+            const diff = start - end;
+            if (Math.abs(diff) > 40) {
+                if (diff > 0) nextSlide();
+                else prevSlide();
+            }
+        }
+
+        function generateWorksheet() {
+            const out = document.getElementById('ws-output');
+            out.classList.remove('hidden');
+            out.innerText = 'Generating Worksheet...';
+            setTimeout(() => {
+                out.innerText = JSON.stringify({
+                    title: document.getElementById('ws-subject').value + ' Worksheet',
+                    topic: document.getElementById('ws-topic').value,
+                    questions: [
+                        { id: 1, question: "Sample question 1?", answer: "Option A" },
+                        { id: 2, question: "Sample question 2?", answer: "Option B" }
+                    ]
+                }, null, 2);
+            }, 800);
+        }
+
+        // Init
+        renderThemeOptions();
+        render3DSlider();
+        attachGestureListeners();
+        lucide.createIcons();
+    </script>
+</body>
+</html>
