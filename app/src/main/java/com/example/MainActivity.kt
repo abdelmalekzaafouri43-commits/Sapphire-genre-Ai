@@ -30,6 +30,11 @@ import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONArray
 import org.json.JSONObject
+import android.content.Intent
+import android.util.Base64
+import androidx.core.content.FileProvider
+import java.io.File
+import java.io.FileOutputStream
 import java.util.concurrent.TimeUnit
 
 class MainActivity : ComponentActivity() {
@@ -379,5 +384,49 @@ class WebAppInterface(private val context: Context) {
         errObj.put("success", false)
         errObj.put("error", lastError)
         return errObj.toString()
+    }
+
+    @JavascriptInterface
+    fun shareVideo(base64Data: String, fileName: String, title: String): Boolean {
+        return try {
+            val cleanBase64 = if (base64Data.contains(",")) {
+                base64Data.substringAfter(",")
+            } else {
+                base64Data
+            }
+            val videoBytes = Base64.decode(cleanBase64, Base64.DEFAULT)
+            val videoDir = File(context.cacheDir, "videos").apply {
+                if (!exists()) mkdirs()
+            }
+            val videoFile = File(videoDir, fileName)
+            FileOutputStream(videoFile).use { fos ->
+                fos.write(videoBytes)
+                fos.flush()
+            }
+
+            val uri = FileProvider.getUriForFile(
+                context,
+                "${context.packageName}.fileprovider",
+                videoFile
+            )
+
+            val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                type = "video/webm"
+                putExtra(Intent.EXTRA_STREAM, uri)
+                putExtra(Intent.EXTRA_SUBJECT, title)
+                putExtra(Intent.EXTRA_TEXT, "✨ Check out this presentation: $title")
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+
+            val chooser = Intent.createChooser(shareIntent, "Share Presentation Video to Social Media").apply {
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+            context.startActivity(chooser)
+            true
+        } catch (e: Exception) {
+            e.printStackTrace()
+            false
+        }
     }
 }

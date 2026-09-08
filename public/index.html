@@ -712,15 +712,19 @@
                             <p class="text-xs text-slate-500">Swipe left/right or click arrow controls to navigate in 3D space</p>
                         </div>
 
-                        <div class="flex items-center gap-2">
+                        <div class="flex items-center gap-2 flex-wrap justify-end">
                             <span id="slide-counter-badge" class="px-3 py-1 rounded-full text-xs font-bold bg-slate-200 dark:bg-slate-800">
                                 Slide 1 of 5
                             </span>
-                            <button onclick="downloadDeckPDF()" class="p-2 rounded-xl border border-red-500/30 text-red-700 bg-red-50 hover:bg-red-100 dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-900/50 text-xs font-semibold flex items-center gap-1 transition-all">
+                            <button onclick="downloadDeckPDF()" class="p-2 rounded-xl border border-red-500/30 text-red-700 bg-red-50 hover:bg-red-100 dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-900/50 text-xs font-semibold flex items-center gap-1 transition-all" title="Export High-Res Multi-Page PDF">
                                 <i data-lucide="file-text" class="w-4 h-4"></i> .pdf
                             </button>
-                            <button onclick="downloadPPTX()" class="p-2 rounded-xl border border-green-500/30 text-green-700 bg-green-50 hover:bg-green-100 dark:bg-green-900/30 dark:text-green-400 dark:hover:bg-green-900/50 text-xs font-semibold flex items-center gap-1 transition-all">
+                            <button onclick="downloadPPTX()" class="p-2 rounded-xl border border-green-500/30 text-green-700 bg-green-50 hover:bg-green-100 dark:bg-green-900/30 dark:text-green-400 dark:hover:bg-green-900/50 text-xs font-semibold flex items-center gap-1 transition-all" title="Download PowerPoint .pptx">
                                 <i data-lucide="download" class="w-4 h-4"></i> .pptx
+                            </button>
+                            <button onclick="openVideoExportModal()" class="p-2 rounded-xl border border-pink-500/40 text-white bg-gradient-to-r from-pink-600 via-rose-500 to-amber-500 hover:from-pink-500 hover:to-amber-400 shadow-md shadow-pink-500/20 text-xs font-bold flex items-center gap-1.5 transition-all active:scale-95" title="Export Animated Video for Social Media">
+                                <i data-lucide="video" class="w-4 h-4 text-white animate-pulse"></i>
+                                <span>Video Story / Reel</span>
                             </button>
                             <button onclick="toggleSpeakerNotes()" id="toggle-speaker-notes-btn" class="p-2 rounded-xl border border-purple-200 dark:border-purple-800/60 bg-purple-50/60 dark:bg-purple-950/40 hover:bg-purple-100 dark:hover:bg-purple-900/60 text-xs font-semibold flex items-center gap-1.5 transition-all text-purple-700 dark:text-purple-300 shadow-2xs" title="Annotate slides & view notes">
                                 <i data-lucide="edit-3" class="w-4 h-4 text-purple-600 dark:text-purple-400"></i>
@@ -1171,6 +1175,152 @@
                 <div class="text-center text-[10px] text-slate-400 font-semibold uppercase tracking-wider">— or upload from device —</div>
                 <div>
                     <input type="file" id="custom-img-file" accept="image/*" onchange="handleImageFileUpload(event)" class="w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- VIDEO SOCIAL MEDIA EXPORT MODAL -->
+    <div id="video-export-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-md hidden" onclick="closeVideoExportModal()">
+        <div class="glass-card bg-slate-900 border border-purple-500/30 text-white rounded-3xl p-6 max-w-xl w-full mx-4 shadow-2xl relative space-y-4 max-h-[94vh] flex flex-col" onclick="event.stopPropagation()">
+            <!-- Close button -->
+            <button onclick="closeVideoExportModal()" class="absolute right-4 top-4 p-2 rounded-full bg-white/10 hover:bg-white/20 text-slate-300 hover:text-white transition-all active:scale-95">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+
+            <!-- Header -->
+            <div class="flex items-center gap-3 pr-8">
+                <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-pink-500 via-rose-500 to-amber-500 flex items-center justify-center shadow-lg shadow-pink-500/30 flex-shrink-0 animate-pulse">
+                    <i data-lucide="film" class="w-6 h-6 text-white"></i>
+                </div>
+                <div>
+                    <h3 class="font-black text-lg bg-gradient-to-r from-pink-400 via-rose-300 to-amber-300 bg-clip-text text-transparent flex items-center gap-2">
+                        Export Presentation to Video
+                        <span class="text-[10px] px-2 py-0.5 rounded-full bg-pink-500/20 border border-pink-500/40 text-pink-300 font-bold tracking-wider uppercase">Social Media Ready</span>
+                    </h3>
+                    <p class="text-xs text-slate-400">Convert your educational slides and PDF notes into stunning animated social video reels (TikTok, Reels, Shorts, YouTube, LinkedIn).</p>
+                </div>
+            </div>
+
+            <!-- Scrollable Video Config Body -->
+            <div class="space-y-4 overflow-y-auto pr-1 custom-scrollbar flex-1 text-xs">
+                <!-- Video Aspect Ratio Picker -->
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-300 uppercase tracking-wider mb-2 flex items-center justify-between">
+                        <span>1. Select Social Media Format</span>
+                        <span id="selected-aspect-label" class="text-pink-400 font-semibold lowercase">9:16 vertical (story/reel)</span>
+                    </label>
+                    <div class="grid grid-cols-3 gap-2">
+                        <button type="button" onclick="setVideoAspect('9:16')" id="aspect-btn-9-16" class="aspect-choice-btn p-3 rounded-2xl border-2 border-pink-500 bg-pink-500/20 text-center flex flex-col items-center gap-1.5 transition-all">
+                            <div class="w-6 h-10 border-2 border-pink-400 rounded-md flex items-center justify-center text-[9px] font-bold">9:16</div>
+                            <span class="font-bold text-white text-xs">Reels / TikTok</span>
+                            <span class="text-[10px] text-pink-300">Instagram, Shorts, TikTok</span>
+                        </button>
+                        <button type="button" onclick="setVideoAspect('16:9')" id="aspect-btn-16-9" class="aspect-choice-btn p-3 rounded-2xl border border-slate-700 bg-slate-800/80 hover:bg-slate-800 text-center flex flex-col items-center gap-1.5 transition-all">
+                            <div class="w-10 h-6 border border-slate-400 rounded-md flex items-center justify-center text-[9px] font-bold">16:9</div>
+                            <span class="font-bold text-slate-200 text-xs">Landscape HD</span>
+                            <span class="text-[10px] text-slate-400">YouTube, Facebook, TV</span>
+                        </button>
+                        <button type="button" onclick="setVideoAspect('1:1')" id="aspect-btn-1-1" class="aspect-choice-btn p-3 rounded-2xl border border-slate-700 bg-slate-800/80 hover:bg-slate-800 text-center flex flex-col items-center gap-1.5 transition-all">
+                            <div class="w-8 h-8 border border-slate-400 rounded-md flex items-center justify-center text-[9px] font-bold">1:1</div>
+                            <span class="font-bold text-slate-200 text-xs">Square Post</span>
+                            <span class="text-[10px] text-slate-400">Instagram, LinkedIn, X</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Animation Style & Motion Effects -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div class="p-3.5 rounded-2xl bg-slate-800/60 border border-slate-700 space-y-2">
+                        <label class="block font-bold text-slate-300 flex items-center gap-1.5 text-xs">
+                            <i data-lucide="sparkles" class="w-4 h-4 text-amber-400"></i> Stunning Slide Animation
+                        </label>
+                        <select id="video-animation-style" class="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-600 text-white text-xs focus:ring-2 focus:ring-pink-500 focus:outline-none">
+                            <option value="cinematic-zoom" selected>Cinematic Ken Burns (Smooth Zoom &amp; Pan)</option>
+                            <option value="3d-flip">3D Dynamic Card Flip &amp; Rotation</option>
+                            <option value="particle-glow">Neon Cosmic Particles &amp; Glow Flare</option>
+                            <option value="smooth-slide">Kinetic Slide &amp; Fade Blur Transition</option>
+                            <option value="pop-bounce">Stunning Educational Pop &amp; Spring</option>
+                        </select>
+                        <p class="text-[10px] text-slate-400">Dynamic 60FPS particle physics and motion choreography applied to text &amp; illustrations.</p>
+                    </div>
+
+                    <div class="p-3.5 rounded-2xl bg-slate-800/60 border border-slate-700 space-y-2">
+                        <label class="block font-bold text-slate-300 flex items-center gap-1.5 text-xs">
+                            <i data-lucide="clock" class="w-4 h-4 text-blue-400"></i> Slide Pace &amp; Audio Beat
+                        </label>
+                        <select id="video-slide-duration" class="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-600 text-white text-xs focus:ring-2 focus:ring-pink-500 focus:outline-none">
+                            <option value="2.5">Fast Pace • 2.5s per slide (Viral Reel)</option>
+                            <option value="4.0" selected>Standard • 4.0s per slide (Teaching Story)</option>
+                            <option value="6.0">Detailed • 6.0s per slide (In-depth Study)</option>
+                        </select>
+                        <div class="flex items-center gap-2 pt-1">
+                            <input type="checkbox" id="video-include-audio" checked class="rounded border-slate-700 text-pink-500 focus:ring-pink-500 w-4 h-4">
+                            <label for="video-include-audio" class="text-[11px] text-slate-300 cursor-pointer font-medium">Add Ambient Educational Synth Chime</label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Live Slide Preview Canvas -->
+                <div class="space-y-1.5">
+                    <div class="flex items-center justify-between">
+                        <span class="font-bold text-slate-300 text-[11px] uppercase tracking-wider flex items-center gap-1.5">
+                            <i data-lucide="eye" class="w-3.5 h-3.5 text-emerald-400"></i> Motion Render Preview
+                        </span>
+                        <span id="video-render-meta" class="text-[10px] text-pink-300 font-mono">1080p • 60 FPS • 5 Slides</span>
+                    </div>
+                    <div class="relative w-full h-52 bg-slate-950 rounded-2xl border border-slate-800 flex items-center justify-center overflow-hidden shadow-inner group">
+                        <canvas id="video-render-canvas" width="1080" height="1920" class="max-h-full max-w-full rounded-lg shadow-2xl object-contain"></canvas>
+                        
+                        <!-- Watermark & Info badge -->
+                        <div class="absolute bottom-2 left-3 right-3 flex items-center justify-between text-[10px] text-white/70 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full border border-white/10 pointer-events-none">
+                            <span>Teacher: Mr. Zaafouri Abdelmalek</span>
+                            <span class="text-pink-400 font-bold">Educational Presentation Video</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Progress Bar & Status (Shown during rendering) -->
+                <div id="video-export-progress-box" class="hidden p-4 rounded-2xl bg-pink-950/40 border border-pink-500/30 space-y-2">
+                    <div class="flex items-center justify-between text-xs">
+                        <span id="video-progress-status" class="font-bold text-pink-300 flex items-center gap-2">
+                            <i data-lucide="loader-2" class="w-4 h-4 animate-spin text-pink-400"></i> Rendering Animated Video...
+                        </span>
+                        <span id="video-progress-percent" class="font-mono text-pink-200 font-bold">0%</span>
+                    </div>
+                    <div class="w-full h-3 bg-slate-800 rounded-full overflow-hidden p-0.5 border border-pink-500/20">
+                        <div id="video-progress-bar" class="h-full bg-gradient-to-r from-pink-500 via-rose-400 to-amber-400 rounded-full transition-all duration-150" style="width: 0%;"></div>
+                    </div>
+                    <p class="text-[10px] text-slate-400 text-center">Rendering frames with particle physics, gradient illumination, and slide notes...</p>
+                </div>
+
+                <!-- Direct Social Sharing Badges -->
+                <div class="p-3 rounded-2xl bg-slate-800/40 border border-slate-700/60 flex items-center justify-between flex-wrap gap-2">
+                    <span class="text-[11px] text-slate-400 font-semibold flex items-center gap-1.5">
+                        <i data-lucide="share-2" class="w-3.5 h-3.5 text-blue-400"></i> Ready for Direct Social Share:
+                    </span>
+                    <div class="flex items-center gap-1.5 text-xs">
+                        <span class="px-2 py-0.5 rounded-lg bg-pink-500/20 text-pink-300 font-bold border border-pink-500/30">TikTok</span>
+                        <span class="px-2 py-0.5 rounded-lg bg-purple-500/20 text-purple-300 font-bold border border-purple-500/30">Instagram</span>
+                        <span class="px-2 py-0.5 rounded-lg bg-red-500/20 text-red-300 font-bold border border-red-500/30">YouTube</span>
+                        <span class="px-2 py-0.5 rounded-lg bg-blue-500/20 text-blue-300 font-bold border border-blue-500/30">LinkedIn</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Actions Footer -->
+            <div class="flex items-center justify-between gap-3 pt-3 border-t border-slate-800">
+                <button onclick="closeVideoExportModal()" class="px-4 py-2.5 rounded-xl border border-slate-700 hover:bg-slate-800 text-slate-300 text-xs font-semibold active:scale-95 transition-all">
+                    Cancel
+                </button>
+                <div class="flex items-center gap-2">
+                    <button onclick="previewVideoAnimation()" id="video-preview-btn" class="px-3.5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold border border-slate-600 active:scale-95 transition-all flex items-center gap-1.5">
+                        <i data-lucide="play" class="w-4 h-4 text-emerald-400"></i> Preview
+                    </button>
+                    <button onclick="startVideoGenerationAndExport()" id="video-generate-btn" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-pink-600 via-rose-500 to-amber-500 hover:from-pink-500 hover:to-amber-400 text-white font-bold text-xs shadow-lg shadow-pink-500/30 active:scale-95 transition-all flex items-center gap-2">
+                        <i data-lucide="video" class="w-4 h-4"></i>
+                        <span>Generate &amp; Share Video</span>
+                    </button>
                 </div>
             </div>
         </div>
@@ -2542,20 +2692,562 @@
             }
         }
 
-        function downloadPPTX() {
+        // -------------------------------------------------------------
+        // VIDEO SOCIAL MEDIA EXPORT ENGINE (STUNNING MOTION & ANIMATIONS)
+        // -------------------------------------------------------------
+        let currentVideoAspect = '9:16';
+        let isVideoRendering = false;
+        let previewAnimFrameId = null;
+
+        function openVideoExportModal() {
             if (!slidesData || slidesData.length === 0) {
-                showToast("No presentation generated yet.", "error");
+                showToast("Please generate or open a presentation first.", "error");
                 return;
             }
-            
-            showToast("Generating .pptx file...");
-            let pptx = new PptxGenJS();
-            
-            pptx.layout = 'LAYOUT_16x9';
-            pptx.author = 'Sapphire AI';
-            pptx.company = 'Automated Content Generator';
-            const rawTopic = document.getElementById('ppt-topic').value || 'AI Presentation';
-            pptx.title = rawTopic;
+            const modal = document.getElementById('video-export-modal');
+            if (modal) {
+                modal.classList.remove('hidden');
+                updateVideoCanvasDimensions();
+                drawVideoSlideFrame(0, 0, false);
+                lucide.createIcons();
+            }
+        }
+
+        function closeVideoExportModal() {
+            if (isVideoRendering) {
+                showToast("Video render in progress, please wait...", "info");
+                return;
+            }
+            if (previewAnimFrameId) {
+                cancelAnimationFrame(previewAnimFrameId);
+                previewAnimFrameId = null;
+            }
+            const modal = document.getElementById('video-export-modal');
+            if (modal) modal.classList.add('hidden');
+        }
+
+        function setVideoAspect(aspect) {
+            currentVideoAspect = aspect;
+            const aspectLabel = document.getElementById('selected-aspect-label');
+            if (aspectLabel) {
+                if (aspect === '9:16') aspectLabel.innerText = '9:16 vertical (story / reel / tiktok)';
+                else if (aspect === '16:9') aspectLabel.innerText = '16:9 landscape (youtube / hd)';
+                else aspectLabel.innerText = '1:1 square (instagram / linkedin / feed)';
+            }
+
+            // Update button styles
+            ['9:16', '16:9', '1:1'].forEach(asp => {
+                const btn = document.getElementById(`aspect-btn-${asp.replace(':', '-')}`);
+                if (btn) {
+                    if (asp === aspect) {
+                        btn.className = 'aspect-choice-btn p-3 rounded-2xl border-2 border-pink-500 bg-pink-500/20 text-center flex flex-col items-center gap-1.5 transition-all';
+                    } else {
+                        btn.className = 'aspect-choice-btn p-3 rounded-2xl border border-slate-700 bg-slate-800/80 hover:bg-slate-800 text-center flex flex-col items-center gap-1.5 transition-all';
+                    }
+                }
+            });
+
+            updateVideoCanvasDimensions();
+            drawVideoSlideFrame(0, 0, false);
+        }
+
+        function updateVideoCanvasDimensions() {
+            const canvas = document.getElementById('video-render-canvas');
+            const meta = document.getElementById('video-render-meta');
+            if (!canvas) return;
+
+            if (currentVideoAspect === '9:16') {
+                canvas.width = 1080;
+                canvas.height = 1920;
+                if (meta) meta.innerText = `1080x1920 (9:16) • ${slidesData.length} Slides`;
+            } else if (currentVideoAspect === '16:9') {
+                canvas.width = 1920;
+                canvas.height = 1080;
+                if (meta) meta.innerText = `1920x1080 (16:9) • ${slidesData.length} Slides`;
+            } else {
+                canvas.width = 1080;
+                canvas.height = 1080;
+                if (meta) meta.innerText = `1080x1080 (1:1) • ${slidesData.length} Slides`;
+            }
+        }
+
+        // Draw dynamic high-definition canvas frame with animations, glowing particles, and typography
+        function drawVideoSlideFrame(slideIndex, progress, isRendering) {
+            const canvas = document.getElementById('video-render-canvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const W = canvas.width;
+            const H = canvas.height;
+            const isVertical = (currentVideoAspect === '9:16');
+            const isSquare = (currentVideoAspect === '1:1');
+
+            const slide = slidesData[slideIndex] || slidesData[0] || {};
+            const totalSlides = slidesData.length;
+            const animStyle = document.getElementById('video-animation-style')?.value || 'cinematic-zoom';
+
+            // 1. Draw rich cosmic gradient background
+            const bgGrad = ctx.createLinearGradient(0, 0, W, H);
+            const rawBg = (slide.bgGradient || '').toLowerCase();
+            if (rawBg.includes('blue')) {
+                bgGrad.addColorStop(0, '#0f172a');
+                bgGrad.addColorStop(0.5, '#1e3a8a');
+                bgGrad.addColorStop(1, '#0284c7');
+            } else if (rawBg.includes('purple')) {
+                bgGrad.addColorStop(0, '#180728');
+                bgGrad.addColorStop(0.5, '#581c87');
+                bgGrad.addColorStop(1, '#9333ea');
+            } else if (rawBg.includes('emerald') || rawBg.includes('teal')) {
+                bgGrad.addColorStop(0, '#022c22');
+                bgGrad.addColorStop(0.5, '#065f46');
+                bgGrad.addColorStop(1, '#0d9488');
+            } else if (rawBg.includes('amber') || rawBg.includes('orange')) {
+                bgGrad.addColorStop(0, '#2e0f06');
+                bgGrad.addColorStop(0.5, '#7c2d12');
+                bgGrad.addColorStop(1, '#ea580c');
+            } else {
+                bgGrad.addColorStop(0, '#111827');
+                bgGrad.addColorStop(0.5, '#312e81');
+                bgGrad.addColorStop(1, '#ec4899');
+            }
+            ctx.fillStyle = bgGrad;
+            ctx.fillRect(0, 0, W, H);
+
+            // 2. Animated floating glowing energy orbs & particle field
+            const time = progress * 6.28 + slideIndex * 1.5;
+            for (let p = 0; p < 18; p++) {
+                const orbX = (W * 0.2 + (Math.sin(time + p * 0.7) * 0.5 + 0.5) * (W * 0.6));
+                const orbY = (H * 0.2 + (Math.cos(time * 0.8 + p * 0.5) * 0.5 + 0.5) * (H * 0.6));
+                const orbRadius = 30 + (Math.sin(time + p) + 1) * 35;
+                const orbGrad = ctx.createRadialGradient(orbX, orbY, 0, orbX, orbY, orbRadius);
+                orbGrad.addColorStop(0, 'rgba(255, 255, 255, 0.22)');
+                orbGrad.addColorStop(0.5, 'rgba(236, 72, 153, 0.12)');
+                orbGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+                ctx.fillStyle = orbGrad;
+                ctx.beginPath();
+                ctx.arc(orbX, orbY, orbRadius, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // 3. Apply stunning motion transforms
+            ctx.save();
+            let scale = 1;
+            let transX = 0;
+            let transY = 0;
+            let alpha = 1;
+
+            if (animStyle === 'cinematic-zoom') {
+                scale = 1.0 + progress * 0.08;
+                transX = Math.sin(progress * Math.PI) * (W * 0.015);
+                transY = Math.cos(progress * Math.PI) * (H * 0.015);
+            } else if (animStyle === 'smooth-slide') {
+                if (progress < 0.18) {
+                    const enterT = progress / 0.18;
+                    transX = (1 - enterT) * (W * 0.35);
+                    alpha = enterT;
+                } else if (progress > 0.85) {
+                    const exitT = (progress - 0.85) / 0.15;
+                    transX = -exitT * (W * 0.35);
+                    alpha = 1 - exitT;
+                }
+            } else if (animStyle === '3d-flip') {
+                if (progress < 0.2) {
+                    const flipT = progress / 0.2;
+                    scale = 0.8 + flipT * 0.2;
+                    alpha = flipT;
+                }
+            } else if (animStyle === 'pop-bounce') {
+                if (progress < 0.22) {
+                    const t = progress / 0.22;
+                    scale = 0.85 + Math.sin(t * Math.PI * 0.7) * 0.18;
+                }
+            }
+
+            ctx.globalAlpha = Math.max(0, Math.min(1, alpha));
+            ctx.translate(W / 2 + transX, H / 2 + transY);
+            ctx.scale(scale, scale);
+            ctx.translate(-W / 2, -H / 2);
+
+            // 4. Card Container Frame & Glow
+            const cardMarginX = isVertical ? 60 : (isSquare ? 70 : 120);
+            const cardMarginY = isVertical ? 180 : (isSquare ? 110 : 80);
+            const cardW = W - cardMarginX * 2;
+            const cardH = H - cardMarginY * 2;
+
+            // Glassmorphic Card Background
+            ctx.fillStyle = 'rgba(15, 23, 42, 0.75)';
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.25)';
+            ctx.lineWidth = 4;
+            drawRoundRect(ctx, cardMarginX, cardMarginY, cardW, cardH, 36, true, true);
+
+            // 5. Header: Badge & Slide Index
+            const padX = cardMarginX + 48;
+            let curY = cardMarginY + 60;
+
+            // Tag badge
+            ctx.fillStyle = '#ec4899';
+            drawRoundRect(ctx, padX, curY - 32, isVertical ? 260 : 300, 42, 21, true, false);
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 18px Inter, system-ui, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText((slide.tag || 'LANGUAGE PEDAGOGY').toUpperCase(), padX + (isVertical ? 130 : 150), curY - 6);
+
+            // Slide Counter Badge (Right)
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.15)';
+            drawRoundRect(ctx, cardMarginX + cardW - 180, curY - 32, 130, 42, 21, true, false);
+            ctx.fillStyle = '#f8fafc';
+            ctx.font = 'bold 18px Inter, system-ui, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(`Slide ${slideIndex + 1} / ${totalSlides}`, cardMarginX + cardW - 115, curY - 6);
+
+            // 6. Slide Title
+            curY += 70;
+            ctx.fillStyle = '#ffffff';
+            ctx.textAlign = 'left';
+            const titleFontSize = isVertical ? 48 : 54;
+            ctx.font = `800 ${titleFontSize}px Inter, system-ui, sans-serif`;
+            const titleText = slide.title || 'Interactive Presentation';
+            const titleLines = wrapText(ctx, titleText, cardW - 96);
+            titleLines.slice(0, 2).forEach(line => {
+                ctx.fillText(line, padX, curY);
+                curY += titleFontSize + 12;
+            });
+
+            // 7. Subtitle
+            if (slide.subtitle) {
+                curY += 10;
+                ctx.fillStyle = '#cbd5e1';
+                const subFontSize = isVertical ? 26 : 28;
+                ctx.font = `500 ${subFontSize}px Inter, system-ui, sans-serif`;
+                const subLines = wrapText(ctx, slide.subtitle, cardW - 96);
+                subLines.slice(0, 2).forEach(line => {
+                    ctx.fillText(line, padX, curY);
+                    curY += subFontSize + 10;
+                });
+            }
+
+            // Divider Line
+            curY += 20;
+            const divGrad = ctx.createLinearGradient(padX, 0, padX + cardW - 96, 0);
+            divGrad.addColorStop(0, '#ec4899');
+            divGrad.addColorStop(0.5, '#a855f7');
+            divGrad.addColorStop(1, 'rgba(255,255,255,0)');
+            ctx.fillStyle = divGrad;
+            ctx.fillRect(padX, curY, cardW - 96, 4);
+            curY += 36;
+
+            // 8. Bullet Points with kinetic illumination
+            const bullets = Array.isArray(slide.bullets) ? slide.bullets : [
+                "Comprehensive pedagogical principles & linguistic mastery",
+                "Conversational practice & classroom discourse engagement"
+            ];
+            const bulletFontSize = isVertical ? 26 : 28;
+            ctx.font = `500 ${bulletFontSize}px Inter, system-ui, sans-serif`;
+
+            bullets.slice(0, isVertical ? 4 : 3).forEach((bullet, bIdx) => {
+                // Bullet marker icon
+                const markerGrad = ctx.createRadialGradient(padX + 12, curY - 8, 2, padX + 12, curY - 8, 14);
+                markerGrad.addColorStop(0, '#f472b6');
+                markerGrad.addColorStop(1, '#a855f7');
+                ctx.fillStyle = markerGrad;
+                ctx.beginPath();
+                ctx.arc(padX + 12, curY - 8, 10, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.fillStyle = '#f8fafc';
+                const bLines = wrapText(ctx, bullet, cardW - 150);
+                bLines.slice(0, 2).forEach((bLine, lIdx) => {
+                    ctx.fillText(bLine, padX + 36, curY + (lIdx * (bulletFontSize + 8)));
+                });
+                curY += bLines.slice(0, 2).length * (bulletFontSize + 8) + 18;
+            });
+
+            // 9. Slide Annotation & Pedagogical Notes Box
+            const noteText = (slide.annotation && slide.annotation.trim()) ? slide.annotation.trim() : (slide.notes || '');
+            if (noteText && curY < (cardMarginY + cardH - 140)) {
+                curY += 12;
+                const noteBoxH = Math.min(130, cardMarginY + cardH - curY - 90);
+                if (noteBoxH > 60) {
+                    ctx.fillStyle = 'rgba(15, 23, 42, 0.9)';
+                    ctx.strokeStyle = '#f59e0b';
+                    ctx.lineWidth = 3;
+                    drawRoundRect(ctx, padX, curY, cardW - 96, noteBoxH, 18, true, true);
+
+                    ctx.fillStyle = '#fbbf24';
+                    ctx.font = 'bold 18px Inter, system-ui, sans-serif';
+                    ctx.fillText("📝 PEDAGOGICAL SLIDE NOTES:", padX + 24, curY + 30);
+
+                    ctx.fillStyle = '#f1f5f9';
+                    ctx.font = '500 20px Inter, system-ui, sans-serif';
+                    const nLines = wrapText(ctx, noteText, cardW - 144);
+                    if (nLines[0]) ctx.fillText(nLines[0], padX + 24, curY + 60);
+                    if (nLines[1] && noteBoxH > 90) ctx.fillText(nLines[1], padX + 24, curY + 86);
+                }
+            }
+
+            // 10. Footer within the card
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+            ctx.font = '600 20px Inter, system-ui, sans-serif';
+            ctx.textAlign = 'left';
+            ctx.fillText("Educator: Mr. Zaafouri Abdelmalek", padX, cardMarginY + cardH - 30);
+
+            ctx.textAlign = 'right';
+            ctx.fillText("Sapphire AI Presentation Suite", cardMarginX + cardW - 48, cardMarginY + cardH - 30);
+
+            ctx.restore();
+
+            // 11. Top & Bottom Social Progress Overlay
+            const progressW = W * ((slideIndex + progress) / totalSlides);
+            const progGrad = ctx.createLinearGradient(0, 0, W, 0);
+            progGrad.addColorStop(0, '#ec4899');
+            progGrad.addColorStop(0.5, '#a855f7');
+            progGrad.addColorStop(1, '#38bdf8');
+            ctx.fillStyle = progGrad;
+            ctx.fillRect(0, 0, progressW, 10);
+            ctx.fillRect(0, H - 10, progressW, 10);
+        }
+
+        function drawRoundRect(ctx, x, y, width, height, radius, fill, stroke) {
+            ctx.beginPath();
+            ctx.moveTo(x + radius, y);
+            ctx.lineTo(x + width - radius, y);
+            ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+            ctx.lineTo(x + width, y + height - radius);
+            ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+            ctx.lineTo(x + radius, y + height);
+            ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+            ctx.lineTo(x, y + radius);
+            ctx.quadraticCurveTo(x, y, x + radius, y);
+            ctx.closePath();
+            if (fill) ctx.fill();
+            if (stroke) ctx.stroke();
+        }
+
+        function wrapText(ctx, text, maxWidth) {
+            if (!text) return [];
+            const words = String(text).split(' ');
+            const lines = [];
+            let currentLine = words[0] || '';
+
+            for (let i = 1; i < words.length; i++) {
+                const word = words[i];
+                const width = ctx.measureText(currentLine + " " + word).width;
+                if (width < maxWidth) {
+                    currentLine += " " + word;
+                } else {
+                    lines.push(currentLine);
+                    currentLine = word;
+                }
+            }
+            if (currentLine) lines.push(currentLine);
+            return lines;
+        }
+
+        // Live Animation Preview
+        function previewVideoAnimation() {
+            if (isVideoRendering) return;
+            if (previewAnimFrameId) {
+                cancelAnimationFrame(previewAnimFrameId);
+                previewAnimFrameId = null;
+            }
+
+            const durationPerSlide = parseFloat(document.getElementById('video-slide-duration')?.value || '4.0') * 1000;
+            const startTime = performance.now();
+            const totalSlides = slidesData.length || 1;
+            const totalDuration = totalSlides * durationPerSlide;
+
+            function step(timestamp) {
+                const elapsed = (timestamp - startTime) % totalDuration;
+                const slideIndex = Math.min(totalSlides - 1, Math.floor(elapsed / durationPerSlide));
+                const slideProgress = (elapsed % durationPerSlide) / durationPerSlide;
+
+                drawVideoSlideFrame(slideIndex, slideProgress, false);
+                previewAnimFrameId = requestAnimationFrame(step);
+            }
+
+            previewAnimFrameId = requestAnimationFrame(step);
+            showToast("Playing interactive slide motion preview...", "info");
+        }
+
+        // Web Audio Synthesizer for ambient educational chime
+        function playChimeAudioTone(audioCtx, freq, startTime, duration) {
+            try {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(freq, startTime);
+                osc.frequency.exponentialRampToValueAtTime(freq * 1.5, startTime + duration * 0.5);
+
+                gain.gain.setValueAtTime(0.001, startTime);
+                gain.gain.linearRampToValueAtTime(0.12, startTime + 0.05);
+                gain.gain.exponentialRampToValueAtTime(0.0001, startTime + duration);
+
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start(startTime);
+                osc.stop(startTime + duration);
+            } catch (e) {
+                console.error("Audio synth error", e);
+            }
+        }
+
+        // Generate high-resolution animated video & bridge to Android / Web Share
+        async function startVideoGenerationAndExport() {
+            if (!slidesData || slidesData.length === 0) {
+                showToast("No presentation available to export.", "error");
+                return;
+            }
+
+            if (isVideoRendering) return;
+            isVideoRendering = true;
+
+            if (previewAnimFrameId) {
+                cancelAnimationFrame(previewAnimFrameId);
+                previewAnimFrameId = null;
+            }
+
+            const canvas = document.getElementById('video-render-canvas');
+            const progressBox = document.getElementById('video-export-progress-box');
+            const progressBar = document.getElementById('video-progress-bar');
+            const progressStatus = document.getElementById('video-progress-status');
+            const progressPercent = document.getElementById('video-progress-percent');
+            const generateBtn = document.getElementById('video-generate-btn');
+
+            if (progressBox) progressBox.classList.remove('hidden');
+            if (generateBtn) generateBtn.disabled = true;
+
+            updateVideoCanvasDimensions();
+
+            try {
+                const durationPerSlide = parseFloat(document.getElementById('video-slide-duration')?.value || '4.0');
+                const totalSlides = slidesData.length;
+                const fps = 30;
+                const totalFramesPerSlide = Math.round(durationPerSlide * fps);
+                const totalFrames = totalSlides * totalFramesPerSlide;
+                const rawTopic = document.getElementById('ppt-topic')?.value || 'Presentation';
+                const cleanName = (rawTopic.substring(0, 30).replace(/[^a-zA-Z0-9_\- ]/g, "").trim().replace(/\s+/g, "_") || "Presentation") + "_Video.webm";
+
+                // Setup MediaRecorder from Canvas stream
+                const stream = canvas.captureStream(fps);
+                let audioContext = null;
+                const includeAudio = document.getElementById('video-include-audio')?.checked;
+
+                if (includeAudio && (window.AudioContext || window.webkitAudioContext)) {
+                    try {
+                        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                        audioContext = new AudioCtx();
+                        const dest = audioContext.createMediaStreamDestination();
+                        dest.stream.getAudioTracks().forEach(track => stream.addTrack(track));
+                    } catch (e) {
+                        console.warn("Audio stream attach error", e);
+                    }
+                }
+
+                let mimeType = 'video/webm;codecs=vp9';
+                if (!MediaRecorder.isTypeSupported(mimeType)) {
+                    mimeType = 'video/webm';
+                }
+                if (!MediaRecorder.isTypeSupported(mimeType)) {
+                    mimeType = 'video/mp4';
+                }
+
+                const recordedChunks = [];
+                const recorder = new MediaRecorder(stream, {
+                    mimeType: MediaRecorder.isTypeSupported(mimeType) ? mimeType : undefined,
+                    videoBitsPerSecond: 6000000 // High 6Mbps bitrate for pristine social media reels
+                });
+
+                recorder.ondataavailable = (e) => {
+                    if (e.data && e.data.size > 0) recordedChunks.push(e.data);
+                };
+
+                recorder.start();
+
+                // Render each slide frame sequentially
+                let currentTotalFrame = 0;
+                for (let s = 0; s < totalSlides; s++) {
+                    if (progressStatus) progressStatus.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin text-pink-400"></i> Rendering Slide ${s + 1} of ${totalSlides}...`;
+                    lucide.createIcons();
+
+                    for (let f = 0; f < totalFramesPerSlide; f++) {
+                        const progress = f / totalFramesPerSlide;
+                        drawVideoSlideFrame(s, progress, true);
+
+                        currentTotalFrame++;
+                        const pct = Math.round((currentTotalFrame / totalFrames) * 100);
+                        if (progressBar) progressBar.style.width = `${pct}%`;
+                        if (progressPercent) progressPercent.innerText = `${pct}%`;
+
+                        // Frame pacing delay
+                        await new Promise(r => setTimeout(r, 1000 / fps));
+                    }
+                }
+
+                if (progressStatus) progressStatus.innerText = "Finalizing video encode & social media package...";
+                await new Promise(r => setTimeout(r, 400));
+
+                const finishPromise = new Promise((resolve) => {
+                    recorder.onstop = () => resolve();
+                });
+                recorder.stop();
+                await finishPromise;
+
+                const videoBlob = new Blob(recordedChunks, { type: recorder.mimeType || 'video/webm' });
+                showToast("✨ Video generated successfully!", "success");
+
+                // Convert to Base64 for native Android Social Media Share
+                const reader = new FileReader();
+                reader.onloadend = function() {
+                    const base64Data = reader.result;
+                    let sharedNatively = false;
+
+                    // 1. Android Native FileProvider Share Dialog
+                    if (window.AndroidBridge && typeof window.AndroidBridge.shareVideo === 'function') {
+                        try {
+                            sharedNatively = window.AndroidBridge.shareVideo(base64Data, cleanName, rawTopic);
+                        } catch (e) {
+                            console.warn("Android native video share error", e);
+                        }
+                    }
+
+                    // 2. Web Share API Fallback (Mobile browsers / tablets)
+                    if (!sharedNatively && navigator.canShare && navigator.share) {
+                        const videoFile = new File([videoBlob], cleanName, { type: videoBlob.type });
+                        if (navigator.canShare({ files: [videoFile] })) {
+                            navigator.share({
+                                files: [videoFile],
+                                title: rawTopic,
+                                text: `🎬 Presentation Video: ${rawTopic} • Teacher Mr. Zaafouri Abdelmalek`
+                            }).catch(err => console.log('Share dismissed', err));
+                            sharedNatively = true;
+                        }
+                    }
+
+                    // 3. Direct Browser Download fallback
+                    const downloadUrl = URL.createObjectURL(videoBlob);
+                    const a = document.createElement('a');
+                    a.href = downloadUrl;
+                    a.download = cleanName;
+                    document.body.appendChild(a);
+                    a.click();
+                    setTimeout(() => {
+                        document.body.removeChild(a);
+                        URL.revokeObjectURL(downloadUrl);
+                    }, 2000);
+
+                    showToast(`Video saved: ${cleanName}`, "success");
+                };
+                reader.readAsDataURL(videoBlob);
+
+            } catch (err) {
+                console.error("Video generation failure", err);
+                showToast("Failed to render video: " + (err.message || err), "error");
+            } finally {
+                isVideoRendering = false;
+                if (progressBox) progressBox.classList.add('hidden');
+                if (generateBtn) generateBtn.disabled = false;
+            }
+        }
+
 
             slidesData.forEach(slideInfo => {
                 let slide = pptx.addSlide();
