@@ -121,10 +121,11 @@ class MainActivity : ComponentActivity() {
                 loadWithOverviewMode = true
                 allowFileAccess = true
                 allowContentAccess = true
-                cacheMode = if (isNetworkAvailable) WebSettings.LOAD_DEFAULT else WebSettings.LOAD_CACHE_ELSE_NETWORK
+                cacheMode = WebSettings.LOAD_NO_CACHE
                 mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
                 mediaPlaybackRequiresUserGesture = false
             }
+            clearCache(true)
             loadUrl("file:///android_asset/index.html")
         }
 
