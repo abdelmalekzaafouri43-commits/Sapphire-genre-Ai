@@ -222,7 +222,7 @@
 <body class="h-screen flex overflow-hidden">
 
     <!-- PERSISTENT LEFT SIDEBAR / DASHBOARD (ALWAYS ON THE LEFT OF THE SCREEN) -->
-    <aside id="sidebar-container" class="static inset-y-0 left-0 w-60 sm:w-64 md:w-72 glass-card border-r flex flex-col justify-between p-3.5 sm:p-5 z-40 transition-all duration-300 shadow-sm flex-shrink-0 select-none overflow-y-auto custom-scrollbar">
+    <aside id="sidebar-container" class="sidebar-collapsed static inset-y-0 left-0 w-60 sm:w-64 md:w-72 glass-card border-r flex flex-col justify-between p-3.5 sm:p-5 z-40 transition-all duration-300 shadow-sm flex-shrink-0 select-none overflow-y-auto custom-scrollbar">
         <div>
             <!-- Header Brand -->
             <div class="flex items-center justify-between mb-6 sm:mb-8">
@@ -237,7 +237,7 @@
                 </div>
                 <!-- Toggle menu width button inside sidebar -->
                 <button onclick="toggleSidebar()" class="p-1.5 rounded-lg hover:bg-slate-200/50 dark:hover:bg-slate-800/50 text-slate-500 active:scale-95 transition-transform flex-shrink-0" aria-label="Toggle Sidebar Size" title="Toggle Sidebar Width">
-                    <i data-lucide="panel-left-close" id="sidebar-toggle-icon" class="w-4 h-4"></i>
+                    <i data-lucide="panel-left-open" id="sidebar-toggle-icon" class="w-4 h-4"></i>
                 </button>
             </div>
 
