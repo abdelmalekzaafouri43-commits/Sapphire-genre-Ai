@@ -172,6 +172,25 @@
             pointer-events: none;
         }
 
+        /* Sidebar responsive and compact styles */
+        .sidebar-collapsed {
+            width: 4.5rem !important;
+            padding-left: 0.5rem !important;
+            padding-right: 0.5rem !important;
+        }
+        .sidebar-collapsed .sidebar-brand-text,
+        .sidebar-collapsed .nav-label,
+        .sidebar-collapsed .sidebar-bottom-panel .sidebar-label,
+        .sidebar-collapsed .sidebar-bottom-panel .sidebar-copyright,
+        .sidebar-collapsed .sidebar-bottom-panel > div:first-child {
+            display: none !important;
+        }
+        .sidebar-collapsed .nav-btn {
+            justify-content: center !important;
+            padding-left: 0.5rem !important;
+            padding-right: 0.5rem !important;
+        }
+
         #print-worksheet-area {
             display: none;
         }
@@ -202,57 +221,54 @@
 </head>
 <body class="h-screen flex overflow-hidden">
 
-    <!-- SIDEBAR MOBILE & FULLSCREEN OVERLAY -->
-    <div id="sidebar-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black/40 backdrop-blur-xs z-30 hidden md:hidden"></div>
-
-    <!-- PERSISTENT LEFT SIDEBAR / DASHBOARD NAVIGATION -->
-    <aside id="sidebar-container" class="fixed md:static inset-y-0 left-0 w-72 glass-card border-r flex flex-col justify-between p-5 z-40 transform -translate-x-full md:translate-x-0 transition-transform duration-300 shadow-2xl md:shadow-none flex-shrink-0">
+    <!-- PERSISTENT LEFT SIDEBAR / DASHBOARD (ALWAYS ON THE LEFT OF THE SCREEN) -->
+    <aside id="sidebar-container" class="static inset-y-0 left-0 w-60 sm:w-64 md:w-72 glass-card border-r flex flex-col justify-between p-3.5 sm:p-5 z-40 transition-all duration-300 shadow-sm flex-shrink-0 select-none overflow-y-auto custom-scrollbar">
         <div>
             <!-- Header Brand -->
-            <div class="flex items-center justify-between mb-8">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-lg shadow-blue-500/30">
-                        <i data-lucide="sparkles" class="w-6 h-6"></i>
+            <div class="flex items-center justify-between mb-6 sm:mb-8">
+                <div class="flex items-center gap-2.5 sm:gap-3 overflow-hidden">
+                    <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-lg shadow-blue-500/30 flex-shrink-0">
+                        <i data-lucide="sparkles" class="w-5 h-5 sm:w-6 sm:h-6"></i>
                     </div>
-                    <div>
-                        <h1 class="font-bold text-lg leading-tight">Sapphire AI</h1>
-                        <span class="text-xs text-blue-600 dark:text-blue-400 font-semibold uppercase tracking-wider">Workspace</span>
+                    <div class="sidebar-brand-text truncate">
+                        <h1 class="font-bold text-base sm:text-lg leading-tight truncate">Sapphire AI</h1>
+                        <span class="text-[10px] sm:text-xs text-blue-600 dark:text-blue-400 font-semibold uppercase tracking-wider">Workspace</span>
                     </div>
                 </div>
-                <!-- Close menu button inside sidebar (visible on mobile only) -->
-                <button onclick="toggleSidebar()" class="md:hidden p-1.5 rounded-lg hover:bg-slate-200/50 dark:hover:bg-slate-800/50 text-slate-500 active:scale-95 transition-transform" aria-label="Close Sidebar">
-                    <i data-lucide="chevron-left" class="w-5 h-5"></i>
+                <!-- Toggle menu width button inside sidebar -->
+                <button onclick="toggleSidebar()" class="p-1.5 rounded-lg hover:bg-slate-200/50 dark:hover:bg-slate-800/50 text-slate-500 active:scale-95 transition-transform flex-shrink-0" aria-label="Toggle Sidebar Size" title="Toggle Sidebar Width">
+                    <i data-lucide="panel-left-close" id="sidebar-toggle-icon" class="w-4 h-4"></i>
                 </button>
             </div>
 
             <!-- Nav Links -->
             <nav class="space-y-1.5" id="nav-menu">
-                <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition-all bg-blue-600 text-white shadow-md shadow-blue-600/20">
-                    <i data-lucide="layout-dashboard" class="w-4 h-4"></i> Dashboard
+                <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-btn w-full flex items-center gap-3 px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-xl font-semibold text-xs sm:text-sm transition-all bg-blue-600 text-white shadow-md shadow-blue-600/20" title="Dashboard">
+                    <i data-lucide="layout-dashboard" class="w-4 h-4 flex-shrink-0"></i> <span class="nav-label truncate">Dashboard</span>
                 </button>
-                <button onclick="switchTab('ppt')" id="nav-ppt" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition-all text-slate-600 dark:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-800/50">
-                    <i data-lucide="presentation" class="w-4 h-4"></i> PPT 3D Deck AI
+                <button onclick="switchTab('ppt')" id="nav-ppt" class="nav-btn w-full flex items-center gap-3 px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-xl font-semibold text-xs sm:text-sm transition-all text-slate-600 dark:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-800/50" title="PowerPoint 3D Deck AI">
+                    <i data-lucide="presentation" class="w-4 h-4 flex-shrink-0 text-purple-500"></i> <span class="nav-label truncate">PPT 3D Deck AI</span>
                 </button>
-                <button onclick="switchTab('worksheet')" id="nav-worksheet" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition-all text-slate-600 dark:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-800/50">
-                    <i data-lucide="file-text" class="w-4 h-4"></i> Worksheet AI
+                <button onclick="switchTab('worksheet')" id="nav-worksheet" class="nav-btn w-full flex items-center gap-3 px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-xl font-semibold text-xs sm:text-sm transition-all text-slate-600 dark:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-800/50" title="Worksheet AI Generator">
+                    <i data-lucide="file-text" class="w-4 h-4 flex-shrink-0 text-blue-500"></i> <span class="nav-label truncate">Worksheet AI</span>
                 </button>
-                <button onclick="switchTab('documents')" id="nav-documents" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition-all text-slate-600 dark:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-800/50">
-                    <i data-lucide="folder" class="w-4 h-4"></i> My Documents
+                <button onclick="switchTab('documents')" id="nav-documents" class="nav-btn w-full flex items-center gap-3 px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-xl font-semibold text-xs sm:text-sm transition-all text-slate-600 dark:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-800/50" title="My Saved Documents">
+                    <i data-lucide="folder" class="w-4 h-4 flex-shrink-0 text-amber-500"></i> <span class="nav-label truncate">My Documents</span>
                 </button>
-                <button onclick="switchTab('analytics')" id="nav-analytics" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition-all text-slate-600 dark:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-800/50">
-                    <i data-lucide="bar-chart-3" class="w-4 h-4"></i> Analytics
+                <button onclick="switchTab('analytics')" id="nav-analytics" class="nav-btn w-full flex items-center gap-3 px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-xl font-semibold text-xs sm:text-sm transition-all text-slate-600 dark:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-800/50" title="Analytics & Storage">
+                    <i data-lucide="bar-chart-3" class="w-4 h-4 flex-shrink-0 text-emerald-500"></i> <span class="nav-label truncate">Analytics</span>
                 </button>
             </nav>
         </div>
 
         <!-- Sidebar Bottom Controls -->
-        <div class="space-y-4 pt-4 border-t border-slate-200/60 dark:border-slate-800/60">
+        <div class="sidebar-bottom-panel space-y-3 pt-3 border-t border-slate-200/60 dark:border-slate-800/60">
             
             <!-- Storage Meter -->
-            <div class="p-3 rounded-xl bg-slate-100/70 dark:bg-slate-800/50 text-xs">
-                <div class="flex justify-between font-semibold mb-1">
-                    <span>Storage Used</span>
-                    <span class="text-blue-600 dark:text-blue-400">8.5 GB / 10 GB</span>
+            <div class="p-2.5 sm:p-3 rounded-xl bg-slate-100/70 dark:bg-slate-800/50 text-xs">
+                <div class="flex justify-between font-semibold mb-1 text-[11px]">
+                    <span class="truncate">Storage</span>
+                    <span class="text-blue-600 dark:text-blue-400 font-bold">8.5 / 10 GB</span>
                 </div>
                 <div class="w-full bg-slate-200 dark:bg-slate-700 h-1.5 rounded-full overflow-hidden">
                     <div class="bg-blue-600 h-full w-[85%] rounded-full"></div>
@@ -261,18 +277,18 @@
 
             <!-- Dark Mode Toggle -->
             <div class="flex items-center justify-between p-2 rounded-xl bg-slate-100/70 dark:bg-slate-800/50">
-                <span class="text-xs font-semibold flex items-center gap-2">
-                    <i data-lucide="moon" class="w-4 h-4"></i> Theme Mode
+                <span class="text-xs font-semibold flex items-center gap-1.5 truncate">
+                    <i data-lucide="moon" class="w-4 h-4 flex-shrink-0"></i> <span class="sidebar-label">Theme</span>
                 </span>
-                <button onclick="toggleDarkMode()" class="w-11 h-6 rounded-full bg-slate-300 dark:bg-blue-600 p-1 flex items-center transition-colors">
+                <button onclick="toggleDarkMode()" class="w-10 h-5 rounded-full bg-slate-300 dark:bg-blue-600 p-0.5 flex items-center transition-colors flex-shrink-0" aria-label="Toggle Theme Mode">
                     <div class="w-4 h-4 rounded-full bg-white transition-transform dark:translate-x-5 shadow"></div>
                 </button>
             </div>
 
             <!-- Creator Copyright Notice -->
-            <div class="text-center text-xs pt-1">
-                <div class="font-bold text-slate-800 dark:text-slate-100">Mr. Zaafouri Abdelmalek</div>
-                <div class="text-[10px] text-slate-500">© 2026 All rights reserved</div>
+            <div class="text-center text-xs pt-1 sidebar-copyright">
+                <div class="font-bold text-[11px] text-slate-800 dark:text-slate-100 truncate">Mr. Zaafouri Abdelmalek</div>
+                <div class="text-[9px] text-slate-500">© 2026 All rights reserved</div>
             </div>
         </div>
     </aside>
@@ -1358,6 +1374,16 @@
 
     <!-- JS SCRIPT -->
     <script>
+        function escapeHtml(str) {
+            if (str === null || str === undefined) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
         const themes = [
             { id: 'bright-sapphire', title: 'Bright Sapphire', primary: '#0F52BA', bg: '#F0F4FF', isDark: false },
             { id: 'eclipse-solstice', title: 'Eclipse & Solstice', primary: '#F59E0B', bg: '#1E1B4B', isDark: true },
@@ -1561,16 +1587,24 @@
                 const navEl = document.getElementById(`nav-${id}`);
                 const topTabEl = document.getElementById(`top-tab-${id}`);
                 if (el) el.classList.add('hidden');
-                if (navEl) navEl.className = 'nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition-all text-slate-600 dark:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-800/50';
-                if (topTabEl) topTabEl.className = 'top-tab-btn flex-shrink-0 flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-200/60 dark:hover:bg-slate-800/60 active:scale-95 transition-all';
+                if (navEl) {
+                    navEl.className = 'nav-btn w-full flex items-center gap-3 px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-xl font-semibold text-xs sm:text-sm transition-all text-slate-600 dark:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-800/50';
+                }
+                if (topTabEl) {
+                    topTabEl.className = 'top-tab-btn flex-shrink-0 flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-200/60 dark:hover:bg-slate-800/60 active:scale-95 transition-all';
+                }
             });
 
             const activeEl = document.getElementById(`tab-${tabId}`);
             const activeNavEl = document.getElementById(`nav-${tabId}`);
             const activeTopTabEl = document.getElementById(`top-tab-${tabId}`);
             if (activeEl) activeEl.classList.remove('hidden');
-            if (activeNavEl) activeNavEl.className = 'nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition-all bg-blue-600 text-white shadow-md shadow-blue-600/20';
-            if (activeTopTabEl) activeTopTabEl.className = 'top-tab-btn flex-shrink-0 flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all bg-blue-600 text-white shadow-md shadow-blue-600/20 active:scale-95';
+            if (activeNavEl) {
+                activeNavEl.className = 'nav-btn w-full flex items-center gap-3 px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-xl font-semibold text-xs sm:text-sm transition-all bg-blue-600 text-white shadow-md shadow-blue-600/20';
+            }
+            if (activeTopTabEl) {
+                activeTopTabEl.className = 'top-tab-btn flex-shrink-0 flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all bg-blue-600 text-white shadow-md shadow-blue-600/20 active:scale-95';
+            }
             
             const titleEl = document.getElementById('page-title');
             if (titleEl) titleEl.innerText = tabTitles[tabId] || tabId.toUpperCase();
@@ -1588,30 +1622,23 @@
             // Scroll to top smoothly
             const mainContent = document.getElementById('main-content');
             if (mainContent) mainContent.scrollTop = 0;
-
-            // Auto-collapse sidebar on mobile screens only after navigating
-            if (window.innerWidth < 768) {
-                const sidebar = document.getElementById('sidebar-container');
-                const overlay = document.getElementById('sidebar-overlay');
-                if (sidebar) sidebar.classList.add('-translate-x-full');
-                if (overlay) overlay.classList.add('hidden');
-            }
             
             lucide.createIcons();
         }
 
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar-container');
-            const overlay = document.getElementById('sidebar-overlay');
+            const toggleIcon = document.getElementById('sidebar-toggle-icon');
             if (!sidebar) return;
-
-            if (sidebar.classList.contains('-translate-x-full')) {
-                sidebar.classList.remove('-translate-x-full');
-                if (overlay) overlay.classList.remove('hidden');
-            } else {
-                sidebar.classList.add('-translate-x-full');
-                if (overlay) overlay.classList.add('hidden');
+            sidebar.classList.toggle('sidebar-collapsed');
+            if (toggleIcon) {
+                if (sidebar.classList.contains('sidebar-collapsed')) {
+                    toggleIcon.setAttribute('data-lucide', 'panel-left-open');
+                } else {
+                    toggleIcon.setAttribute('data-lucide', 'panel-left-close');
+                }
             }
+            lucide.createIcons();
         }
 
         function toggleDarkMode() {
