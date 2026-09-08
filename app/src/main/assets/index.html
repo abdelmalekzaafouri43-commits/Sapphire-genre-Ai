@@ -1011,6 +1011,17 @@
             </footer>
 
         </div>
+
+        <!-- FLOATING ACTION BUTTON (DASHBOARD USAGE STATS QR) -->
+        <button id="fab-usage-stats" onclick="generateUsageStatsQR()" 
+            class="fixed bottom-6 right-6 z-40 flex items-center gap-2.5 px-4 py-3.5 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs shadow-2xl shadow-emerald-600/40 border border-white/20 active:scale-95 transition-all duration-300 group"
+            title="Quick access to usage statistics QR code"
+            aria-label="Generate Usage Statistics QR Code">
+            <div class="w-8 h-8 rounded-xl bg-white/20 flex items-center justify-center flex-shrink-0 group-hover:rotate-12 transition-transform">
+                <i data-lucide="qr-code" class="w-4 h-4 text-white"></i>
+            </div>
+            <span class="hidden sm:inline font-semibold tracking-wide">Usage Stats QR</span>
+        </button>
     </main>
 
     <!-- QR SHARE MODAL -->
@@ -1386,6 +1397,16 @@
             
             const titleEl = document.getElementById('page-title');
             if (titleEl) titleEl.innerText = tabTitles[tabId] || tabId.toUpperCase();
+
+            // Toggle Floating Action Button visibility (primarily for the dashboard)
+            const fab = document.getElementById('fab-usage-stats');
+            if (fab) {
+                if (tabId === 'dashboard') {
+                    fab.classList.remove('hidden');
+                } else {
+                    fab.classList.add('hidden');
+                }
+            }
 
             // Scroll to top smoothly
             const mainContent = document.getElementById('main-content');

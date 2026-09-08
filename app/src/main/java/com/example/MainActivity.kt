@@ -56,15 +56,23 @@ class MainActivity : ComponentActivity() {
         insetsController.systemBarsBehavior =
             WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
 
-        // Pre-create WebView cache directories to prevent Chromium index / directory enumeration warnings
+        // Ensure clean cache structure for Chromium HTTP & Code cache without stale/conflicting index files
         try {
-            val wasmDir = java.io.File(cacheDir, "WebView/Default/HTTP Cache/Code Cache/wasm")
+            val cacheBase = java.io.File(cacheDir, "WebView/Default/HTTP Cache")
+            if (!cacheBase.exists()) {
+                cacheBase.mkdirs()
+            }
+            val indexDir = java.io.File(cacheBase, "index-dir")
+            if (!indexDir.exists()) {
+                indexDir.mkdirs()
+            }
+            val codeCacheDir = java.io.File(cacheBase, "Code Cache/js")
+            if (!codeCacheDir.exists()) {
+                codeCacheDir.mkdirs()
+            }
+            val wasmDir = java.io.File(cacheBase, "Code Cache/wasm")
             if (!wasmDir.exists()) {
                 wasmDir.mkdirs()
-            }
-            val jsDir = java.io.File(cacheDir, "WebView/Default/HTTP Cache/Code Cache/js")
-            if (!jsDir.exists()) {
-                jsDir.mkdirs()
             }
         } catch (_: Exception) {}
 
@@ -78,8 +86,9 @@ class MainActivity : ComponentActivity() {
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT
             )
-            // Use software layer rendering to completely bypass Mesa DRI render node queries and eliminate Mesa errors
-            setLayerType(android.view.View.LAYER_TYPE_SOFTWARE, null)
+            // Set layer type to NONE so the WebView relies on system view hierarchy without triggering Mesa DRI render node probing
+            setLayerType(android.view.View.LAYER_TYPE_NONE, null)
+            setBackgroundColor(android.graphics.Color.TRANSPARENT)
             addJavascriptInterface(WebAppInterface(this@MainActivity), "AndroidBridge")
             
             webViewClient = object : WebViewClient() {
@@ -132,11 +141,10 @@ class MainActivity : ComponentActivity() {
                 loadWithOverviewMode = true
                 allowFileAccess = true
                 allowContentAccess = true
-                cacheMode = WebSettings.LOAD_NO_CACHE
+                cacheMode = WebSettings.LOAD_DEFAULT
                 mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
                 mediaPlaybackRequiresUserGesture = false
             }
-            clearCache(true)
             loadUrl("file:///android_asset/index.html")
         }
 

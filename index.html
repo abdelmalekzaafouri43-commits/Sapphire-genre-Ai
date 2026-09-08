@@ -290,6 +290,27 @@
         <!-- Dynamic Content Scroll Container -->
         <div class="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar" id="main-content">
 
+            <!-- QUICK TAB NAVIGATION PILL BAR (ONE-CLICK OPEN & SWITCH) -->
+            <div class="sticky top-0 z-20 pb-2 -mt-2">
+                <div class="glass-card rounded-2xl p-1.5 flex items-center gap-1.5 overflow-x-auto custom-scrollbar shadow-md">
+                    <button onclick="switchTab('dashboard')" id="top-tab-dashboard" class="top-tab-btn flex-shrink-0 flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all bg-blue-600 text-white shadow-md shadow-blue-600/20 active:scale-95">
+                        <i data-lucide="layout-dashboard" class="w-4 h-4"></i> Dashboard
+                    </button>
+                    <button onclick="switchTab('ppt')" id="top-tab-ppt" class="top-tab-btn flex-shrink-0 flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-200/60 dark:hover:bg-slate-800/60 active:scale-95 transition-all">
+                        <i data-lucide="presentation" class="w-4 h-4 text-purple-500"></i> PPT 3D Deck AI
+                    </button>
+                    <button onclick="switchTab('worksheet')" id="top-tab-worksheet" class="top-tab-btn flex-shrink-0 flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-200/60 dark:hover:bg-slate-800/60 active:scale-95 transition-all">
+                        <i data-lucide="file-text" class="w-4 h-4 text-blue-500"></i> Worksheet AI
+                    </button>
+                    <button onclick="switchTab('documents')" id="top-tab-documents" class="top-tab-btn flex-shrink-0 flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-200/60 dark:hover:bg-slate-800/60 active:scale-95 transition-all">
+                        <i data-lucide="folder" class="w-4 h-4 text-amber-500"></i> My Documents
+                    </button>
+                    <button onclick="switchTab('analytics')" id="top-tab-analytics" class="top-tab-btn flex-shrink-0 flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-200/60 dark:hover:bg-slate-800/60 active:scale-95 transition-all">
+                        <i data-lucide="bar-chart-3" class="w-4 h-4 text-emerald-500"></i> Analytics
+                    </button>
+                </div>
+            </div>
+
             <!-- THEME SELECTOR CARD -->
             <section class="glass-card rounded-2xl p-5">
                 <button onclick="toggleThemeAccordion()" class="w-full flex items-center justify-between text-left focus:outline-none">
@@ -299,7 +320,7 @@
                         </div>
                         <div>
                             <h3 class="font-bold text-base">Color Themes & Visual Identity</h3>
-                            <p class="text-xs text-slate-500">Select any of the 11 dynamic custom themes</p>
+                            <p class="text-xs text-slate-500">Click to customize theme colors (11 dynamic options)</p>
                         </div>
                     </div>
                     <i data-lucide="chevron-down" id="theme-accordion-icon" class="w-5 h-5 text-slate-400 transition-transform duration-300"></i>
@@ -311,64 +332,68 @@
                 </div>
             </section>
 
-            <!-- API KEY BOX & TESTER -->
-            <section class="glass-card rounded-2xl p-5 space-y-4">
-                <div class="flex items-center justify-between flex-wrap gap-2">
+            <!-- API KEY BOX & TESTER (COLLAPSIBLE ACCORDION) -->
+            <section class="glass-card rounded-2xl p-5">
+                <button onclick="toggleApiKeyAccordion()" class="w-full flex items-center justify-between text-left focus:outline-none">
                     <div class="flex items-center gap-3">
-                        <div class="w-9 h-9 rounded-xl bg-blue-600/10 text-blue-600 flex items-center justify-center">
+                        <div class="w-9 h-9 rounded-xl bg-blue-600/10 text-blue-600 flex items-center justify-center font-bold">
                             <i data-lucide="key" class="w-5 h-5"></i>
                         </div>
                         <div>
-                            <h3 class="font-bold text-base">Gemini API Key Settings</h3>
-                            <p class="text-xs text-slate-500">Auto-detected from Secrets or enter custom key</p>
+                            <h3 class="font-bold text-base">Gemini API Key & Model Settings</h3>
+                            <p class="text-xs text-slate-500">Click to configure API key or switch AI model</p>
                         </div>
                     </div>
-                    <span id="api-status-badge" class="px-2.5 py-1 rounded-md text-[10px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300 flex items-center gap-1">
-                        <i data-lucide="shield-alert" class="w-3 h-3"></i> Checking Key...
-                    </span>
-                </div>
+                    <div class="flex items-center gap-2">
+                        <span id="api-status-badge" class="px-2.5 py-1 rounded-md text-[10px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300 flex items-center gap-1">
+                            <i data-lucide="shield-alert" class="w-3 h-3"></i> Checking Key...
+                        </span>
+                        <i data-lucide="chevron-down" id="api-accordion-icon" class="w-5 h-5 text-slate-400 transition-transform duration-300"></i>
+                    </div>
+                </button>
+                <div id="api-accordion-content" class="hidden mt-4 pt-4 border-t border-slate-200 dark:border-slate-800 space-y-4">
+                    <div class="space-y-3">
+                        <div class="relative">
+                            <input type="password" id="api-key-input" oninput="onApiKeyInputChanged()" placeholder="Paste Google Gemini Key (e.g. AIzaSy...)" 
+                                class="w-full px-4 py-3 pl-10 pr-20 text-sm rounded-xl border bg-slate-50 dark:bg-slate-900 border-slate-300 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono">
+                            <i data-lucide="key" class="w-4 h-4 absolute left-3 top-3.5 text-slate-400"></i>
+                            <div class="absolute right-3 top-2.5 flex items-center gap-1.5">
+                                <button onclick="toggleKeyVisibility()" class="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200" title="Toggle visibility">
+                                    <i data-lucide="eye" id="eye-icon" class="w-4 h-4"></i>
+                                </button>
+                                <button onclick="clearSavedApiKey()" class="p-1 text-slate-400 hover:text-rose-600" title="Clear key">
+                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                </button>
+                            </div>
+                        </div>
 
-                <div class="space-y-3">
-                    <div class="relative">
-                        <input type="password" id="api-key-input" oninput="onApiKeyInputChanged()" placeholder="Paste Google Gemini Key (e.g. AIzaSy...)" 
-                            class="w-full px-4 py-3 pl-10 pr-20 text-sm rounded-xl border bg-slate-50 dark:bg-slate-900 border-slate-300 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono">
-                        <i data-lucide="key" class="w-4 h-4 absolute left-3 top-3.5 text-slate-400"></i>
-                        <div class="absolute right-3 top-2.5 flex items-center gap-1.5">
-                            <button onclick="toggleKeyVisibility()" class="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200" title="Toggle visibility">
-                                <i data-lucide="eye" id="eye-icon" class="w-4 h-4"></i>
+                        <div class="flex items-center justify-between gap-2 flex-wrap text-xs text-slate-500 dark:text-slate-400 bg-slate-100/60 dark:bg-slate-900/60 p-2.5 rounded-xl">
+                            <div class="flex items-center gap-1.5">
+                                <i data-lucide="cpu" class="w-4 h-4 text-blue-600"></i>
+                                <span class="font-medium">Active Model:</span>
+                            </div>
+                            <select id="gemini-model-select" onchange="onModelSelectChanged(this.value)" class="text-xs font-semibold bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-2.5 py-1 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                <option value="gemini-3.5-flash" selected>gemini-3.5-flash (Fast & Recommended)</option>
+                                <option value="gemini-flash-latest">gemini-flash-latest</option>
+                                <option value="gemini-3.1-flash-lite-preview">gemini-3.1-flash-lite-preview (Ultra Fast)</option>
+                                <option value="gemini-3.1-pro-preview">gemini-3.1-pro-preview (Advanced Reasoning)</option>
+                            </select>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                            <button onclick="saveApiKeyManual()" class="py-2.5 px-3 rounded-xl bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold text-xs flex items-center justify-center gap-1.5 transition-all">
+                                <i data-lucide="save" class="w-4 h-4 text-blue-600"></i> Save Key
                             </button>
-                            <button onclick="clearSavedApiKey()" class="p-1 text-slate-400 hover:text-rose-600" title="Clear key">
-                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                            <button onclick="testApiKey()" id="test-key-btn" class="py-2.5 px-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-lg shadow-blue-500/20 transition-all">
+                                <i data-lucide="zap" class="w-4 h-4"></i> Verify Key
+                            </button>
+                            <button onclick="enableDemoAiMode()" class="py-2.5 px-3 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-lg shadow-purple-500/20 transition-all">
+                                <i data-lucide="sparkles" class="w-4 h-4"></i> Demo AI Mode
                             </button>
                         </div>
-                    </div>
 
-                    <div class="flex items-center justify-between gap-2 flex-wrap text-xs text-slate-500 dark:text-slate-400 bg-slate-100/60 dark:bg-slate-900/60 p-2.5 rounded-xl">
-                        <div class="flex items-center gap-1.5">
-                            <i data-lucide="cpu" class="w-4 h-4 text-blue-600"></i>
-                            <span class="font-medium">Active Model:</span>
-                        </div>
-                        <select id="gemini-model-select" onchange="onModelSelectChanged(this.value)" class="text-xs font-semibold bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-2.5 py-1 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-blue-500">
-                            <option value="gemini-3.5-flash" selected>gemini-3.5-flash (Fast & Recommended)</option>
-                            <option value="gemini-flash-latest">gemini-flash-latest</option>
-                            <option value="gemini-3.1-flash-lite-preview">gemini-3.1-flash-lite-preview (Ultra Fast)</option>
-                            <option value="gemini-3.1-pro-preview">gemini-3.1-pro-preview (Advanced Reasoning)</option>
-                        </select>
+                        <div id="api-key-result" class="hidden p-3 rounded-xl text-xs font-medium space-y-1"></div>
                     </div>
-
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                        <button onclick="saveApiKeyManual()" class="py-2.5 px-3 rounded-xl bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold text-xs flex items-center justify-center gap-1.5 transition-all">
-                            <i data-lucide="save" class="w-4 h-4 text-blue-600"></i> Save Key
-                        </button>
-                        <button onclick="testApiKey()" id="test-key-btn" class="py-2.5 px-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-lg shadow-blue-500/20 transition-all">
-                            <i data-lucide="zap" class="w-4 h-4"></i> Verify Key
-                        </button>
-                        <button onclick="enableDemoAiMode()" class="py-2.5 px-3 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-lg shadow-purple-500/20 transition-all">
-                            <i data-lucide="sparkles" class="w-4 h-4"></i> Demo AI Mode
-                        </button>
-                    </div>
-
-                    <div id="api-key-result" class="hidden p-3 rounded-xl text-xs font-medium space-y-1"></div>
                 </div>
             </section>
 
@@ -450,7 +475,80 @@
                     </div>
                 </div>
 
-                <!-- GLASSMORPHIC AI AGENT CHAT PANEL -->
+                <!-- DIRECT CLICK-TO-OPEN FEATURE LAUNCHERS -->
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between">
+                        <h3 class="font-bold text-sm text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                            <i data-lucide="sparkles" class="w-4 h-4 text-blue-600"></i>
+                            Select a Tool to Open (One Click)
+                        </h3>
+                        <span class="text-[11px] text-slate-400">Click to switch views</span>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div onclick="switchTab('ppt')" class="glass-card rounded-2xl p-5 hover:border-purple-500/50 cursor-pointer active:scale-[0.98] transition-all group space-y-3 border border-slate-200/80 dark:border-slate-800/80 hover:shadow-lg">
+                            <div class="flex items-center justify-between">
+                                <div class="w-10 h-10 rounded-xl bg-purple-100 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 flex items-center justify-center group-hover:scale-110 transition-transform">
+                                    <i data-lucide="presentation" class="w-5 h-5"></i>
+                                </div>
+                                <span class="text-xs font-bold text-purple-600 flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+                                    Open Workspace <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+                                </span>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-sm text-slate-800 dark:text-slate-100">PowerPoint 3D Deck AI</h4>
+                                <p class="text-xs text-slate-500 mt-1">Generate multi-slide presentations with interactive 3D swipe previews, notes &amp; exports.</p>
+                            </div>
+                        </div>
+
+                        <div onclick="switchTab('worksheet')" class="glass-card rounded-2xl p-5 hover:border-blue-500/50 cursor-pointer active:scale-[0.98] transition-all group space-y-3 border border-slate-200/80 dark:border-slate-800/80 hover:shadow-lg">
+                            <div class="flex items-center justify-between">
+                                <div class="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center group-hover:scale-110 transition-transform">
+                                    <i data-lucide="file-text" class="w-5 h-5"></i>
+                                </div>
+                                <span class="text-xs font-bold text-blue-600 flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+                                    Open Workspace <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+                                </span>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-sm text-slate-800 dark:text-slate-100">Worksheet AI Generator</h4>
+                                <p class="text-xs text-slate-500 mt-1">Create curriculum-aligned printable A4 worksheets with exercises, grammar rules &amp; visuals.</p>
+                            </div>
+                        </div>
+
+                        <div onclick="switchTab('documents')" class="glass-card rounded-2xl p-5 hover:border-amber-500/50 cursor-pointer active:scale-[0.98] transition-all group space-y-3 border border-slate-200/80 dark:border-slate-800/80 hover:shadow-lg">
+                            <div class="flex items-center justify-between">
+                                <div class="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center group-hover:scale-110 transition-transform">
+                                    <i data-lucide="folder" class="w-5 h-5"></i>
+                                </div>
+                                <span class="text-xs font-bold text-amber-600 flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+                                    Open Workspace <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+                                </span>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-sm text-slate-800 dark:text-slate-100">My Saved Documents</h4>
+                                <p class="text-xs text-slate-500 mt-1">Review bookmarked worksheets, re-open past decks, and export PDF/DOCX files.</p>
+                            </div>
+                        </div>
+
+                        <div onclick="switchTab('analytics')" class="glass-card rounded-2xl p-5 hover:border-emerald-500/50 cursor-pointer active:scale-[0.98] transition-all group space-y-3 border border-slate-200/80 dark:border-slate-800/80 hover:shadow-lg">
+                            <div class="flex items-center justify-between">
+                                <div class="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center group-hover:scale-110 transition-transform">
+                                    <i data-lucide="bar-chart-3" class="w-5 h-5"></i>
+                                </div>
+                                <span class="text-xs font-bold text-emerald-600 flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+                                    Open Workspace <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+                                </span>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-sm text-slate-800 dark:text-slate-100">Analytics &amp; Storage</h4>
+                                <p class="text-xs text-slate-500 mt-1">Inspect storage quota, system telemetry, and export usage statistics QR codes.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- GLASSMORPHIC AI AGENT CHAT PANEL (COLLAPSIBLE) -->
                 <div class="backdrop-blur-xl bg-white/20 dark:bg-slate-900/25 border border-white/30 dark:border-slate-800/40 rounded-3xl p-6 shadow-xl relative overflow-hidden space-y-4">
                     <!-- Glass floating light accents -->
                     <div class="absolute -right-12 -top-12 w-32 h-32 rounded-full bg-blue-500/10 blur-2xl pointer-events-none"></div>
@@ -467,55 +565,71 @@
                                 <h3 class="font-bold text-base text-slate-800 dark:text-slate-100 flex items-center gap-1.5">
                                     Sapphire AI Agent
                                 </h3>
-                                <p class="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider">Ready to Generate Content</p>
+                                <p class="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider">Ready to Assist &amp; Generate</p>
                             </div>
                         </div>
-                        <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-white/50 dark:bg-slate-800/50 border border-white/20 dark:border-slate-700/40 text-slate-600 dark:text-slate-300">GLASS CORE v2.5</span>
-                    </div>
-
-                    <!-- Chat Message Feed -->
-                    <div id="agent-chat-feed" class="space-y-4 max-h-[320px] overflow-y-auto pr-1.5 custom-scrollbar relative z-10 text-xs">
-                        <!-- Default messages -->
-                        <div class="flex gap-2.5 items-start">
-                            <div class="w-7 h-7 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center flex-shrink-0 font-bold text-[10px]">AI</div>
-                            <div class="bg-slate-100/70 dark:bg-slate-800/60 text-slate-800 dark:text-slate-200 p-3 rounded-2xl rounded-tl-none max-w-[85%] leading-relaxed">
-                                Hello! I am your <strong>Sapphire Co-Pilot Agent</strong>. I can assist you with planning lesson worksheets, outline interactive 3D presentations, or write custom educational topics in real-time.
-                                <br><br>
-                                How can I help you customize your classroom slides or worksheet templates today?
-                            </div>
+                        <div class="flex items-center gap-2">
+                            <button onclick="toggleAgentChatAccordion()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/50 dark:bg-slate-800/50 border border-white/20 dark:border-slate-700/40 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-white/80 dark:hover:bg-slate-800 transition-all active:scale-95">
+                                <span id="agent-chat-toggle-text">Minimize Chat</span>
+                                <i data-lucide="chevron-up" id="agent-chat-toggle-icon" class="w-3.5 h-3.5 transition-transform duration-300"></i>
+                            </button>
+                            <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-white/50 dark:bg-slate-800/50 border border-white/20 dark:border-slate-700/40 text-slate-600 dark:text-slate-300">v2.5</span>
                         </div>
                     </div>
 
-                    <!-- Suggestion chips -->
-                    <div class="flex items-center gap-2 overflow-x-auto pb-1.5 custom-scrollbar relative z-10 scroll-smooth">
-                        <button onclick="sendAgentSuggestion('Create an English grammar worksheet on Present Perfect vs Past Simple with 5 exercises')" class="flex-shrink-0 px-3 py-1.5 rounded-full border border-slate-200/60 dark:border-slate-800/60 hover:bg-white/50 dark:hover:bg-slate-800/40 text-[10px] font-semibold text-slate-600 dark:text-slate-300 transition-all active:scale-95">
-                            🇬🇧 English: Present Perfect vs Past Simple
-                        </button>
-                        <button onclick="sendAgentSuggestion('Créer une feuille d exercices de français sur l accord du participe passé avec 5 questions')" class="flex-shrink-0 px-3 py-1.5 rounded-full border border-slate-200/60 dark:border-slate-800/60 hover:bg-white/50 dark:hover:bg-slate-800/40 text-[10px] font-semibold text-slate-600 dark:text-slate-300 transition-all active:scale-95">
-                            🇫🇷 Français: Accord du Participe Passé
-                        </button>
-                        <button onclick="sendAgentSuggestion('Draft an outline for a PowerPoint presentation on English Academic Writing and Essay Structure')" class="flex-shrink-0 px-3 py-1.5 rounded-full border border-slate-200/60 dark:border-slate-800/60 hover:bg-white/50 dark:hover:bg-slate-800/40 text-[10px] font-semibold text-slate-600 dark:text-slate-300 transition-all active:scale-95">
-                            📖 English Essay Structure PPT
-                        </button>
-                        <button onclick="sendAgentSuggestion('Préparer une présentation PowerPoint sur les figures de style en littérature française')" class="flex-shrink-0 px-3 py-1.5 rounded-full border border-slate-200/60 dark:border-slate-800/60 hover:bg-white/50 dark:hover:bg-slate-800/40 text-[10px] font-semibold text-slate-600 dark:text-slate-300 transition-all active:scale-95">
-                            🎭 Présentation: Figures de Style en Français
-                        </button>
-                    </div>
+                    <!-- Collapsible Chat Body -->
+                    <div id="agent-chat-body" class="space-y-4">
+                        <!-- Chat Message Feed -->
+                        <div id="agent-chat-feed" class="space-y-4 max-h-[320px] overflow-y-auto pr-1.5 custom-scrollbar relative z-10 text-xs">
+                            <!-- Default messages -->
+                            <div class="flex gap-2.5 items-start">
+                                <div class="w-7 h-7 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center flex-shrink-0 font-bold text-[10px]">AI</div>
+                                <div class="bg-slate-100/70 dark:bg-slate-800/60 text-slate-800 dark:text-slate-200 p-3 rounded-2xl rounded-tl-none max-w-[85%] leading-relaxed">
+                                    Hello! I am your <strong>Sapphire Co-Pilot Agent</strong>. I can assist you with planning lesson worksheets, outline interactive 3D presentations, or write custom educational topics in real-time.
+                                    <br><br>
+                                    How can I help you customize your classroom slides or worksheet templates today?
+                                </div>
+                            </div>
+                        </div>
 
-                    <!-- Input Bar -->
-                    <div class="flex items-center gap-2 relative z-10">
-                        <input type="text" id="agent-input" placeholder="Ask Sapphire AI Agent for English or French lessons..." 
-                            class="flex-1 px-4 py-3 text-xs rounded-xl border bg-white/40 dark:bg-slate-950/40 border-slate-300 dark:border-slate-700/60 focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-slate-400"
-                            onkeydown="if(event.key === 'Enter') sendAgentMessage()">
-                        <button onclick="sendAgentMessage()" class="w-10 h-10 rounded-xl bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center shadow-lg shadow-blue-500/20 active:scale-95 transition-all">
-                            <i data-lucide="send" class="w-4 h-4"></i>
-                        </button>
+                        <!-- Suggestion chips -->
+                        <div class="flex items-center gap-2 overflow-x-auto pb-1.5 custom-scrollbar relative z-10 scroll-smooth">
+                            <button onclick="sendAgentSuggestion('Create an English grammar worksheet on Present Perfect vs Past Simple with 5 exercises')" class="flex-shrink-0 px-3 py-1.5 rounded-full border border-slate-200/60 dark:border-slate-800/60 hover:bg-white/50 dark:hover:bg-slate-800/40 text-[10px] font-semibold text-slate-600 dark:text-slate-300 transition-all active:scale-95">
+                                🇬🇧 English: Present Perfect vs Past Simple
+                            </button>
+                            <button onclick="sendAgentSuggestion('Créer une feuille d exercices de français sur l accord du participe passé avec 5 questions')" class="flex-shrink-0 px-3 py-1.5 rounded-full border border-slate-200/60 dark:border-slate-800/60 hover:bg-white/50 dark:hover:bg-slate-800/40 text-[10px] font-semibold text-slate-600 dark:text-slate-300 transition-all active:scale-95">
+                                🇫🇷 Français: Accord du Participe Passé
+                            </button>
+                            <button onclick="sendAgentSuggestion('Draft an outline for a PowerPoint presentation on English Academic Writing and Essay Structure')" class="flex-shrink-0 px-3 py-1.5 rounded-full border border-slate-200/60 dark:border-slate-800/60 hover:bg-white/50 dark:hover:bg-slate-800/40 text-[10px] font-semibold text-slate-600 dark:text-slate-300 transition-all active:scale-95">
+                                📖 English Essay Structure PPT
+                            </button>
+                            <button onclick="sendAgentSuggestion('Préparer une présentation PowerPoint sur les figures de style en littérature française')" class="flex-shrink-0 px-3 py-1.5 rounded-full border border-slate-200/60 dark:border-slate-800/60 hover:bg-white/50 dark:hover:bg-slate-800/40 text-[10px] font-semibold text-slate-600 dark:text-slate-300 transition-all active:scale-95">
+                                🎭 Présentation: Figures de Style en Français
+                            </button>
+                        </div>
+
+                        <!-- Input Bar -->
+                        <div class="flex items-center gap-2 relative z-10">
+                            <input type="text" id="agent-input" placeholder="Ask Sapphire AI Agent for English or French lessons..." 
+                                class="flex-1 px-4 py-3 text-xs rounded-xl border bg-white/40 dark:bg-slate-950/40 border-slate-300 dark:border-slate-700/60 focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-slate-400"
+                                onkeydown="if(event.key === 'Enter') sendAgentMessage()">
+                            <button onclick="sendAgentMessage()" class="w-10 h-10 rounded-xl bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center shadow-lg shadow-blue-500/20 active:scale-95 transition-all">
+                                <i data-lucide="send" class="w-4 h-4"></i>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
 
             <!-- TAB 3: PPT DECK AI GENERATOR WITH 3D INTERACTIVE SWIPE SLIDER (ENGLISH & FRENCH ONLY) -->
-            <div id="tab-ppt" class="space-y-6">
+            <div id="tab-ppt" class="hidden space-y-6">
+                
+                <div class="flex items-center justify-between">
+                    <button onclick="switchTab('dashboard')" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-slate-200/70 hover:bg-slate-300 dark:bg-slate-800/80 dark:hover:bg-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-300 transition-all active:scale-95 shadow-sm">
+                        <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i> Back to Dashboard
+                    </button>
+                    <span class="text-xs text-purple-600 dark:text-purple-400 font-medium">PowerPoint 3D Deck AI</span>
+                </div>
                 
                 <!-- Generator Config Card -->
                 <div class="glass-card rounded-2xl p-6 space-y-4">
@@ -731,6 +845,14 @@
 
             <!-- TAB 2: WORKSHEET AI GENERATOR (ENGLISH & FRENCH ONLY) -->
             <div id="tab-worksheet" class="hidden space-y-6">
+                
+                <div class="flex items-center justify-between">
+                    <button onclick="switchTab('dashboard')" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-slate-200/70 hover:bg-slate-300 dark:bg-slate-800/80 dark:hover:bg-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-300 transition-all active:scale-95 shadow-sm">
+                        <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i> Back to Dashboard
+                    </button>
+                    <span class="text-xs text-blue-600 dark:text-blue-400 font-medium">Worksheet Creator</span>
+                </div>
+
                 <div class="glass-card rounded-2xl p-6 space-y-4">
                     <div class="flex items-center justify-between">
                         <h3 class="font-bold text-lg flex items-center gap-2">
@@ -834,6 +956,13 @@
 
             <!-- TAB 4: MY DOCUMENTS -->
             <div id="tab-documents" class="hidden space-y-6">
+                <div class="flex items-center justify-between">
+                    <button onclick="switchTab('dashboard')" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-slate-200/70 hover:bg-slate-300 dark:bg-slate-800/80 dark:hover:bg-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-300 transition-all active:scale-95 shadow-sm">
+                        <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i> Back to Dashboard
+                    </button>
+                    <span class="text-xs text-amber-600 dark:text-amber-400 font-medium">Saved Documents</span>
+                </div>
+
                 <div class="glass-card rounded-2xl p-6 space-y-4">
                     <h3 class="font-bold text-lg flex items-center gap-2">
                         <i data-lucide="folder" class="w-5 h-5 text-blue-600"></i> My Generated Documents
@@ -846,6 +975,13 @@
 
             <!-- TAB 5: ANALYTICS -->
             <div id="tab-analytics" class="hidden space-y-6">
+                <div class="flex items-center justify-between">
+                    <button onclick="switchTab('dashboard')" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-slate-200/70 hover:bg-slate-300 dark:bg-slate-800/80 dark:hover:bg-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-300 transition-all active:scale-95 shadow-sm">
+                        <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i> Back to Dashboard
+                    </button>
+                    <span class="text-xs text-emerald-600 dark:text-emerald-400 font-medium">System Telemetry</span>
+                </div>
+
                 <div class="glass-card rounded-2xl p-6 space-y-4">
                     <div class="flex items-center justify-between">
                         <h3 class="font-bold text-lg flex items-center gap-2">
@@ -875,6 +1011,17 @@
             </footer>
 
         </div>
+
+        <!-- FLOATING ACTION BUTTON (DASHBOARD USAGE STATS QR) -->
+        <button id="fab-usage-stats" onclick="generateUsageStatsQR()" 
+            class="fixed bottom-6 right-6 z-40 flex items-center gap-2.5 px-4 py-3.5 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs shadow-2xl shadow-emerald-600/40 border border-white/20 active:scale-95 transition-all duration-300 group"
+            title="Quick access to usage statistics QR code"
+            aria-label="Generate Usage Statistics QR Code">
+            <div class="w-8 h-8 rounded-xl bg-white/20 flex items-center justify-center flex-shrink-0 group-hover:rotate-12 transition-transform">
+                <i data-lucide="qr-code" class="w-4 h-4 text-white"></i>
+            </div>
+            <span class="hidden sm:inline font-semibold tracking-wide">Usage Stats QR</span>
+        </button>
     </main>
 
     <!-- QR SHARE MODAL -->
@@ -1125,12 +1272,42 @@
         function toggleThemeAccordion() {
             const content = document.getElementById('theme-accordion-content');
             const icon = document.getElementById('theme-accordion-icon');
+            if (!content) return;
             if (content.classList.contains('hidden')) {
                 content.classList.remove('hidden');
-                icon.style.transform = 'rotate(180deg)';
+                if (icon) icon.style.transform = 'rotate(180deg)';
             } else {
                 content.classList.add('hidden');
-                icon.style.transform = 'rotate(0deg)';
+                if (icon) icon.style.transform = 'rotate(0deg)';
+            }
+        }
+
+        function toggleApiKeyAccordion() {
+            const content = document.getElementById('api-accordion-content');
+            const icon = document.getElementById('api-accordion-icon');
+            if (!content) return;
+            if (content.classList.contains('hidden')) {
+                content.classList.remove('hidden');
+                if (icon) icon.style.transform = 'rotate(180deg)';
+            } else {
+                content.classList.add('hidden');
+                if (icon) icon.style.transform = 'rotate(0deg)';
+            }
+        }
+
+        function toggleAgentChatAccordion() {
+            const body = document.getElementById('agent-chat-body');
+            const icon = document.getElementById('agent-chat-toggle-icon');
+            const text = document.getElementById('agent-chat-toggle-text');
+            if (!body) return;
+            if (body.classList.contains('hidden')) {
+                body.classList.remove('hidden');
+                if (icon) icon.style.transform = 'rotate(0deg)';
+                if (text) text.innerText = 'Minimize Chat';
+            } else {
+                body.classList.add('hidden');
+                if (icon) icon.style.transform = 'rotate(180deg)';
+                if (text) text.innerText = 'Open Chat';
             }
         }
 
@@ -1194,24 +1371,54 @@
         }
 
         function switchTab(tabId) {
+            const tabTitles = {
+                'dashboard': 'Dashboard',
+                'ppt': 'PowerPoint 3D Deck AI',
+                'worksheet': 'Worksheet AI Generator',
+                'documents': 'My Documents',
+                'analytics': 'App Analytics'
+            };
+
             ['dashboard', 'worksheet', 'ppt', 'documents', 'analytics'].forEach(id => {
                 const el = document.getElementById(`tab-${id}`);
                 const navEl = document.getElementById(`nav-${id}`);
+                const topTabEl = document.getElementById(`top-tab-${id}`);
                 if (el) el.classList.add('hidden');
                 if (navEl) navEl.className = 'nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition-all text-slate-600 dark:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-800/50';
+                if (topTabEl) topTabEl.className = 'top-tab-btn flex-shrink-0 flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-200/60 dark:hover:bg-slate-800/60 active:scale-95 transition-all';
             });
 
             const activeEl = document.getElementById(`tab-${tabId}`);
             const activeNavEl = document.getElementById(`nav-${tabId}`);
+            const activeTopTabEl = document.getElementById(`top-tab-${tabId}`);
             if (activeEl) activeEl.classList.remove('hidden');
             if (activeNavEl) activeNavEl.className = 'nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition-all bg-blue-600 text-white shadow-md shadow-blue-600/20';
-            document.getElementById('page-title').innerText = tabId.toUpperCase();
+            if (activeTopTabEl) activeTopTabEl.className = 'top-tab-btn flex-shrink-0 flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all bg-blue-600 text-white shadow-md shadow-blue-600/20 active:scale-95';
+            
+            const titleEl = document.getElementById('page-title');
+            if (titleEl) titleEl.innerText = tabTitles[tabId] || tabId.toUpperCase();
+
+            // Toggle Floating Action Button visibility (primarily for the dashboard)
+            const fab = document.getElementById('fab-usage-stats');
+            if (fab) {
+                if (tabId === 'dashboard') {
+                    fab.classList.remove('hidden');
+                } else {
+                    fab.classList.add('hidden');
+                }
+            }
+
+            // Scroll to top smoothly
+            const mainContent = document.getElementById('main-content');
+            if (mainContent) mainContent.scrollTop = 0;
 
             // Auto-collapse sidebar after navigating for unobstructed full-screen experience
             const sidebar = document.getElementById('sidebar-container');
             const overlay = document.getElementById('sidebar-overlay');
             if (sidebar) sidebar.classList.add('-translate-x-full');
             if (overlay) overlay.classList.add('hidden');
+            
+            lucide.createIcons();
         }
 
         function toggleSidebar() {
@@ -1240,8 +1447,6 @@
             if (icon) {
                 icon.setAttribute('data-lucide', keyVisible ? 'eye-off' : 'eye');
                 lucide.createIcons();
-        // Periodically refresh icons to catch dynamic additions like PDF/PPTX buttons
-        setInterval(() => lucide.createIcons(), 2000);
             }
         }
 
