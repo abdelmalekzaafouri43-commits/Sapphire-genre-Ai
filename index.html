@@ -287,21 +287,23 @@
         <div class="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar" id="main-content">
 
             <!-- THEME SELECTOR CARD -->
-            <section class="glass-card rounded-2xl p-5 space-y-4">
-                <div class="flex items-center justify-between">
+            <section class="glass-card rounded-2xl p-5">
+                <button onclick="toggleThemeAccordion()" class="w-full flex items-center justify-between text-left focus:outline-none">
                     <div class="flex items-center gap-3">
                         <div class="w-9 h-9 rounded-xl bg-blue-600/10 text-blue-600 flex items-center justify-center font-bold">
                             <i data-lucide="palette" class="w-5 h-5"></i>
                         </div>
                         <div>
                             <h3 class="font-bold text-base">Color Themes & Visual Identity</h3>
-                            <p class="text-xs text-slate-500">Select any of the 8 dynamic custom themes</p>
+                            <p class="text-xs text-slate-500">Select any of the 11 dynamic custom themes</p>
                         </div>
                     </div>
-                </div>
-
-                <div class="flex flex-wrap items-center gap-3" id="theme-options">
-                    <!-- Dynamic Theme Buttons rendered via JS -->
+                    <i data-lucide="chevron-down" id="theme-accordion-icon" class="w-5 h-5 text-slate-400 transition-transform duration-300"></i>
+                </button>
+                <div id="theme-accordion-content" class="hidden mt-4 pt-4 border-t border-slate-200 dark:border-slate-800">
+                    <div class="flex flex-wrap items-center gap-3" id="theme-options">
+                        <!-- Dynamic Theme Buttons rendered via JS -->
+                    </div>
                 </div>
             </section>
 
@@ -904,6 +906,18 @@
         ];
 
         let currentSlideIndex = 0;
+
+        function toggleThemeAccordion() {
+            const content = document.getElementById('theme-accordion-content');
+            const icon = document.getElementById('theme-accordion-icon');
+            if (content.classList.contains('hidden')) {
+                content.classList.remove('hidden');
+                icon.style.transform = 'rotate(180deg)';
+            } else {
+                content.classList.add('hidden');
+                icon.style.transform = 'rotate(0deg)';
+            }
+        }
 
         function renderThemeOptions() {
             const container = document.getElementById('theme-options');
