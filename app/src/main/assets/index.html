@@ -126,12 +126,12 @@
             cursor: grabbing;
         }
 
-        /* 3D Slide States */
+        /* 3D Slide States (Default 3D Carousel) */
         .slide-3d-card.state-active {
             transform: translateX(0%) scale(1) translateZ(0px) rotateY(0deg);
             opacity: 1;
             z-index: 30;
-            box-shadow: 0 25px 50px -12px rgba(15, 82, 186, 0.3);
+            box-shadow: 0 25px 50px -12px rgba(15, 82, 186, 0.35);
             pointer-events: auto;
         }
 
@@ -163,6 +163,106 @@
             opacity: 0;
             z-index: 0;
             pointer-events: none;
+        }
+
+        /* CUBE 3D TRANSITION MODE */
+        .mode-cube .slide-3d-card.state-prev {
+            transform: translateX(-100%) rotateY(90deg);
+            transform-origin: right center;
+            opacity: 0;
+        }
+        .mode-cube .slide-3d-card.state-next {
+            transform: translateX(100%) rotateY(-90deg);
+            transform-origin: left center;
+            opacity: 0;
+        }
+
+        /* ZOOM & FADE TRANSITION MODE */
+        .mode-zoom .slide-3d-card.state-prev {
+            transform: scale(1.4) translateZ(80px);
+            opacity: 0;
+        }
+        .mode-zoom .slide-3d-card.state-next {
+            transform: scale(0.7) translateZ(-120px);
+            opacity: 0;
+        }
+
+        /* SLIDE SMOOTH HORIZONTAL MODE */
+        .mode-slide .slide-3d-card.state-prev {
+            transform: translateX(-105%) scale(0.95);
+            opacity: 0;
+        }
+        .mode-slide .slide-3d-card.state-next {
+            transform: translateX(105%) scale(0.95);
+            opacity: 0;
+        }
+
+        /* STAGGERED ENTRANCE ANIMATIONS FOR ACTIVE SLIDE CONTENT */
+        .state-active .slide-anim-tag {
+            animation: slideFadeDown 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+        .state-active .slide-anim-title {
+            animation: slideFadeDown 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.08s both;
+        }
+        .state-active .slide-anim-subtitle {
+            animation: slideFadeDown 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.14s both;
+        }
+        .state-active .slide-anim-bullet-1 {
+            animation: slideFadeRight 0.55s cubic-bezier(0.16, 1, 0.3, 1) 0.22s both;
+        }
+        .state-active .slide-anim-bullet-2 {
+            animation: slideFadeRight 0.55s cubic-bezier(0.16, 1, 0.3, 1) 0.32s both;
+        }
+        .state-active .slide-anim-bullet-3 {
+            animation: slideFadeRight 0.55s cubic-bezier(0.16, 1, 0.3, 1) 0.42s both;
+        }
+        .state-active .slide-anim-illustration {
+            animation: slideFloatPop 0.65s cubic-bezier(0.34, 1.56, 0.64, 1) 0.18s both;
+        }
+
+        @keyframes slideFadeDown {
+            from {
+                opacity: 0;
+                transform: translateY(-14px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideFadeRight {
+            from {
+                opacity: 0;
+                transform: translateX(-18px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes slideFloatPop {
+            0% {
+                opacity: 0;
+                transform: scale(0.82) rotate(-3deg);
+            }
+            70% {
+                transform: scale(1.04) rotate(1deg);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1) rotate(0deg);
+            }
+        }
+
+        /* Subtle idle float for active slide illustration */
+        .state-active .slide-illustration-inner {
+            animation: subtleIllustrationFloat 4s ease-in-out infinite alternate;
+        }
+        @keyframes subtleIllustrationFloat {
+            0% { transform: translateY(0px) scale(1); }
+            100% { transform: translateY(-4px) scale(1.02); }
         }
 
         #print-worksheet-area {
@@ -470,25 +570,6 @@
                         </span>
                     </div>
 
-                    <!-- Quick Language Topic Presets -->
-                    <div class="space-y-1.5">
-                        <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300">Quick Language Presets / Sujets Recommandés</label>
-                        <div class="flex flex-wrap gap-2">
-                            <button onclick="setPPTTopicPreset('Future Simple: Form, Will vs Going To, and Practice', 'Secondary & High School Students', 5, 'en')" class="px-3 py-1.5 rounded-xl border border-purple-200 dark:border-purple-800/60 bg-purple-50/70 dark:bg-purple-950/30 text-purple-700 dark:text-purple-300 text-xs font-semibold hover:bg-purple-100 active:scale-95 transition-all">
-                                🇬🇧 English: Future Simple Mastery
-                            </button>
-                            <button onclick="setPPTTopicPreset('English Grammar Mastery: Advanced Tenses & Modals', 'Secondary & High School Students', 5, 'en')" class="px-3 py-1.5 rounded-xl border border-purple-200 dark:border-purple-800/60 bg-purple-50/70 dark:bg-purple-950/30 text-purple-700 dark:text-purple-300 text-xs font-semibold hover:bg-purple-100 active:scale-95 transition-all">
-                                🇬🇧 English: Advanced Tenses
-                            </button>
-                            <button onclick="setPPTTopicPreset('Le Futur Simple en Français: Règles, Radicaux et Concordance', 'Élèves de Collège et Lycée', 5, 'fr')" class="px-3 py-1.5 rounded-xl border border-purple-200 dark:border-purple-800/60 bg-purple-50/70 dark:bg-purple-950/30 text-purple-700 dark:text-purple-300 text-xs font-semibold hover:bg-purple-100 active:scale-95 transition-all">
-                                🇫🇷 Français: Le Futur Simple
-                            </button>
-                            <button onclick="setPPTTopicPreset('Grammaire Française: Le Passé Composé et l Imparfait', 'Élèves de Collège et Lycée', 5, 'fr')" class="px-3 py-1.5 rounded-xl border border-purple-200 dark:border-purple-800/60 bg-purple-50/70 dark:bg-purple-950/30 text-purple-700 dark:text-purple-300 text-xs font-semibold hover:bg-purple-100 active:scale-95 transition-all">
-                                🇫🇷 Français: Passé Composé vs Imparfait
-                            </button>
-                        </div>
-                    </div>
-
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div class="md:col-span-2">
                             <label class="block text-xs font-semibold mb-1">Presentation Topic (English or French)</label>
@@ -538,6 +619,9 @@
                             <span id="slide-counter-badge" class="px-3 py-1 rounded-full text-xs font-bold bg-slate-200 dark:bg-slate-800">
                                 Slide 1 of 5
                             </span>
+                            <button onclick="openVideoExporterModal()" class="px-3 py-1.5 rounded-xl bg-gradient-to-r from-red-600 via-pink-600 to-purple-600 hover:from-red-700 hover:to-purple-700 text-white text-xs font-bold shadow-md shadow-pink-500/20 flex items-center gap-1.5 active:scale-95 transition-all">
+                                <i data-lucide="video" class="w-4 h-4"></i> Turn into Video
+                            </button>
                             <button onclick="toggleSpeakerNotes()" class="p-2 rounded-xl border hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-semibold flex items-center gap-1">
                                 <i data-lucide="message-square" class="w-4 h-4 text-purple-600"></i> Notes
                             </button>
@@ -552,43 +636,66 @@
                         </div>
                     </div>
 
-                    <!-- Transition Duration & Easing controls -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 rounded-2xl bg-slate-100/50 dark:bg-slate-800/30 border border-slate-200/50 dark:border-slate-800/50 text-xs">
+                    <!-- Transition Duration, Easing & Style controls -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 rounded-2xl bg-slate-100/50 dark:bg-slate-800/30 border border-slate-200/50 dark:border-slate-800/50 text-xs">
                         <div class="flex flex-col gap-1.5">
-                            <div class="flex justify-between items-center font-semibold">
-                                <span class="flex items-center gap-1"><i data-lucide="timer" class="w-3.5 h-3.5 text-purple-600"></i> Transition Duration</span>
-                                <span id="duration-val-label" class="px-1.5 py-0.5 rounded bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 font-bold">0.6s</span>
-                            </div>
-                            <input type="range" id="transition-duration" min="0.1" max="2.0" step="0.1" value="0.6" oninput="updateTransitionSettings()" class="w-full accent-purple-600">
+                            <label class="font-semibold flex items-center gap-1"><i data-lucide="sparkles" class="w-3.5 h-3.5 text-purple-600"></i> Animation Style</label>
+                            <select id="slide-animation-mode" onchange="updateAnimationMode()" class="w-full px-2 py-1.5 text-xs rounded-lg border bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700 font-medium">
+                                <option value="mode-carousel">3D Carousel Deck (Default)</option>
+                                <option value="mode-cube">3D Cube Flip</option>
+                                <option value="mode-zoom">Zoom & Fade (Ken Burns)</option>
+                                <option value="mode-slide">Smooth Horizontal Slide</option>
+                            </select>
                         </div>
                         <div class="flex flex-col gap-1.5">
-                            <label class="font-semibold flex items-center gap-1"><i data-lucide="activity" class="w-3.5 h-3.5 text-purple-600"></i> Transition Easing Curve</label>
+                            <div class="flex justify-between items-center font-semibold">
+                                <span class="flex items-center gap-1"><i data-lucide="timer" class="w-3.5 h-3.5 text-purple-600"></i> Transition Speed</span>
+                                <span id="duration-val-label" class="px-1.5 py-0.5 rounded bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 font-bold">0.6s</span>
+                            </div>
+                            <input type="range" id="transition-duration" min="0.2" max="1.5" step="0.1" value="0.6" oninput="updateTransitionSettings()" class="w-full accent-purple-600">
+                        </div>
+                        <div class="flex flex-col gap-1.5">
+                            <label class="font-semibold flex items-center gap-1"><i data-lucide="activity" class="w-3.5 h-3.5 text-purple-600"></i> Easing Dynamics</label>
                             <select id="transition-easing" onchange="updateTransitionSettings()" class="w-full px-2 py-1.5 text-xs rounded-lg border bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700 font-medium">
-                                <option value="cubic-bezier(0.25, 1, 0.5, 1)">Smooth Deceleration (Out-Quad)</option>
-                                <option value="cubic-bezier(0.34, 1.56, 0.64, 1)">Spring / Snappy Elastic Bounce</option>
-                                <option value="cubic-bezier(0.16, 1, 0.3, 1)">Ultra-Smooth Slow-Motion (Expo)</option>
-                                <option value="ease-in-out">Standard In-Out Ease</option>
-                                <option value="linear">Strictly Linear</option>
+                                <option value="cubic-bezier(0.25, 1, 0.5, 1)">Smooth Deceleration</option>
+                                <option value="cubic-bezier(0.34, 1.56, 0.64, 1)">Snappy Elastic Pop</option>
+                                <option value="cubic-bezier(0.16, 1, 0.3, 1)">Cinematic Expo Smooth</option>
+                                <option value="ease-in-out">Standard In-Out</option>
                             </select>
                         </div>
                     </div>
 
-                    <!-- CONTROLS & DOTS -->
-                    <div class="flex items-center justify-between pt-2">
-                        <!-- Left Prev Arrow -->
-                        <button onclick="prevSlide()" class="w-12 h-12 rounded-2xl glass-card flex items-center justify-center text-slate-700 dark:text-slate-200 hover:bg-purple-600 hover:text-white transition-all shadow-md">
-                            <i data-lucide="chevron-left" class="w-6 h-6"></i>
-                        </button>
+                    <!-- CONTROLS & AUTO-PLAY SLIDESHOW TOOLBAR -->
+                    <div class="flex flex-wrap items-center justify-between gap-3 pt-2">
+                        <div class="flex items-center gap-2">
+                            <!-- Left Prev Arrow -->
+                            <button onclick="prevSlide()" class="w-11 h-11 rounded-2xl glass-card flex items-center justify-center text-slate-700 dark:text-slate-200 hover:bg-purple-600 hover:text-white transition-all shadow-md active:scale-95">
+                                <i data-lucide="chevron-left" class="w-5 h-5"></i>
+                            </button>
+
+                            <!-- Play/Pause Slideshow Button -->
+                            <button id="slideshow-toggle-btn" onclick="toggleAutoPlaySlideshow()" class="px-3.5 py-2.5 rounded-2xl glass-card flex items-center gap-2 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-purple-600 hover:text-white transition-all shadow-md active:scale-95">
+                                <i data-lucide="play" class="w-4 h-4 text-purple-600" id="slideshow-icon"></i>
+                                <span id="slideshow-label">Play Slideshow</span>
+                            </button>
+                        </div>
 
                         <!-- Slide Dots Indicator -->
                         <div class="flex items-center gap-2" id="dots-container">
                             <!-- Dots rendered via JS -->
                         </div>
 
-                        <!-- Right Next Arrow -->
-                        <button onclick="nextSlide()" class="w-12 h-12 rounded-2xl glass-card flex items-center justify-center text-slate-700 dark:text-slate-200 hover:bg-purple-600 hover:text-white transition-all shadow-md">
-                            <i data-lucide="chevron-right" class="w-6 h-6"></i>
-                        </button>
+                        <div class="flex items-center gap-2">
+                            <!-- Replay Entrance Animation Button -->
+                            <button onclick="replaySlideAnimation()" title="Replay active slide animations" class="w-11 h-11 rounded-2xl glass-card flex items-center justify-center text-slate-700 dark:text-slate-200 hover:bg-purple-600 hover:text-white transition-all shadow-md active:scale-95">
+                                <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                            </button>
+
+                            <!-- Right Next Arrow -->
+                            <button onclick="nextSlide()" class="w-11 h-11 rounded-2xl glass-card flex items-center justify-center text-slate-700 dark:text-slate-200 hover:bg-purple-600 hover:text-white transition-all shadow-md active:scale-95">
+                                <i data-lucide="chevron-right" class="w-5 h-5"></i>
+                            </button>
+                        </div>
                     </div>
 
                     <!-- Speaker Notes Drawer -->
@@ -613,34 +720,6 @@
                         <span class="px-3 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300 flex items-center gap-1">
                             <i data-lucide="languages" class="w-3.5 h-3.5"></i> English & Français Only
                         </span>
-                    </div>
-
-                    <!-- Quick Language Topic Presets -->
-                    <div class="space-y-1.5">
-                        <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300">Quick Curriculum Presets / Thèmes Pédagogiques</label>
-                        <div class="flex flex-wrap gap-2">
-                            <button onclick="setWorksheetPreset('English Language', 'Grade 8 / Intermediate', 'Future Simple & Tenses (will / won t / going to)', 'en')" class="px-3 py-1.5 rounded-xl border border-blue-200 dark:border-blue-800/60 bg-blue-50/70 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300 text-xs font-semibold hover:bg-blue-100 active:scale-95 transition-all">
-                                🇬🇧 English: Future Simple (Tenses)
-                            </button>
-                            <button onclick="setWorksheetPreset('English Language', 'Grade 8 / Intermediate', 'Present Perfect vs Past Simple Tenses', 'en')" class="px-3 py-1.5 rounded-xl border border-blue-200 dark:border-blue-800/60 bg-blue-50/70 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300 text-xs font-semibold hover:bg-blue-100 active:scale-95 transition-all">
-                                🇬🇧 English: Past & Perfect Tenses
-                            </button>
-                            <button onclick="setWorksheetPreset('English Language', 'Grade 9 / Secondary', 'Reading Comprehension & Vocabulary Analysis', 'en')" class="px-3 py-1.5 rounded-xl border border-blue-200 dark:border-blue-800/60 bg-blue-50/70 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300 text-xs font-semibold hover:bg-blue-100 active:scale-95 transition-all">
-                                🇬🇧 English: Reading & Vocab
-                            </button>
-                            <button onclick="setWorksheetPreset('Langue Française', '4ème / Collège', 'Le Futur Simple: Règles, Verbes Irréguliers et Concordance', 'fr')" class="px-3 py-1.5 rounded-xl border border-blue-200 dark:border-blue-800/60 bg-blue-50/70 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300 text-xs font-semibold hover:bg-blue-100 active:scale-95 transition-all">
-                                🇫🇷 Français: Le Futur Simple
-                            </button>
-                            <button onclick="setWorksheetPreset('Langue Française', '4ème / Collège', 'L Accord du Participe Passé avec Avoir et Être', 'fr')" class="px-3 py-1.5 rounded-xl border border-blue-200 dark:border-blue-800/60 bg-blue-50/70 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300 text-xs font-semibold hover:bg-blue-100 active:scale-95 transition-all">
-                                🇫🇷 Français: Accord Participe Passé
-                            </button>
-                            <button onclick="setWorksheetPreset('Langue Française', '3ème / Lycée', 'Conjugaison: Passé Simple et Imparfait', 'fr')" class="px-3 py-1.5 rounded-xl border border-blue-200 dark:border-blue-800/60 bg-blue-50/70 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300 text-xs font-semibold hover:bg-blue-100 active:scale-95 transition-all">
-                                🇫🇷 Français: Passé Simple & Imparfait
-                            </button>
-                            <button onclick="setWorksheetPreset('Langue Française', '5ème / Collège', 'Les Pronoms Personnels COD et COI', 'fr')" class="px-3 py-1.5 rounded-xl border border-blue-200 dark:border-blue-800/60 bg-blue-50/70 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300 text-xs font-semibold hover:bg-blue-100 active:scale-95 transition-all">
-                                🇫🇷 Français: Pronoms COD/COI
-                            </button>
-                        </div>
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -767,6 +846,102 @@
                         <i data-lucide="copy" class="w-4 h-4"></i>
                     </button>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PRESENTATION VIDEO EXPORTER & PLAYER MODAL -->
+    <div id="video-export-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-md hidden" onclick="closeVideoExporterModal()">
+        <div class="glass-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 sm:p-7 max-w-2xl w-full mx-4 shadow-2xl relative space-y-4 max-h-[92vh] flex flex-col overflow-hidden" onclick="event.stopPropagation()">
+            <!-- Modal Header -->
+            <div class="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-red-600 to-purple-600 flex items-center justify-center text-white shadow-md shadow-red-500/20">
+                        <i data-lucide="film" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-base text-slate-800 dark:text-slate-100 flex items-center gap-1.5">
+                            Turn Deck into Video <span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-red-100 text-red-700 dark:bg-red-950/60 dark:text-red-300">MP4 / WebM</span>
+                        </h3>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">Transform your curriculum slides with voice narration and animated slide transitions</p>
+                    </div>
+                </div>
+                <button onclick="closeVideoExporterModal()" class="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 active:scale-95 transition-all">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <!-- Video Preview Stage (Canvas + Video Element) -->
+            <div class="relative w-full aspect-video rounded-2xl overflow-hidden bg-slate-950 shadow-inner flex items-center justify-center border border-slate-800">
+                <!-- Live Canvas where slides are rendered frame-by-frame with transitions -->
+                <canvas id="video-render-canvas" width="1280" height="720" class="w-full h-full object-contain"></canvas>
+                
+                <!-- Video player element after recording completes -->
+                <video id="video-player-output" controls class="hidden w-full h-full object-contain z-20 bg-black"></video>
+
+                <!-- Recording Overlay Banner -->
+                <div id="video-recording-indicator" class="hidden absolute top-4 left-4 z-30 flex items-center gap-2 px-3 py-1.5 rounded-full bg-red-600/90 text-white text-xs font-bold shadow-lg backdrop-blur-md animate-pulse">
+                    <span class="w-2 h-2 rounded-full bg-white animate-ping"></span>
+                    <span>RENDERING VIDEO FRAME BY FRAME...</span>
+                </div>
+
+                <!-- Slide Timeline Progress Indicator in Video Stage -->
+                <div id="video-canvas-progress" class="absolute bottom-0 left-0 right-0 h-1.5 bg-white/20 z-30">
+                    <div id="video-canvas-progress-bar" class="h-full bg-gradient-to-r from-red-500 to-purple-500 w-0 transition-all duration-300"></div>
+                </div>
+            </div>
+
+            <!-- Video Customization Settings -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                <div>
+                    <label class="block font-semibold mb-1 text-slate-700 dark:text-slate-300">Slide Duration</label>
+                    <select id="video-slide-duration" class="w-full px-2.5 py-1.5 rounded-lg border bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 font-medium">
+                        <option value="3">3 seconds per slide (Fast)</option>
+                        <option value="5" selected>5 seconds per slide (Standard)</option>
+                        <option value="8">8 seconds per slide (In-depth)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block font-semibold mb-1 text-slate-700 dark:text-slate-300">Transition Effect</label>
+                    <select id="video-transition-style" class="w-full px-2.5 py-1.5 rounded-lg border bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 font-medium">
+                        <option value="crossfade">Cinematic Crossfade</option>
+                        <option value="slide-left">Smooth Slide Left</option>
+                        <option value="zoom-fade">Ken Burns Zoom & Fade</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block font-semibold mb-1 text-slate-700 dark:text-slate-300">Voice Narration</label>
+                    <select id="video-speech-narration" class="w-full px-2.5 py-1.5 rounded-lg border bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 font-medium">
+                        <option value="speech" selected>Teacher Speech Narration</option>
+                        <option value="none">No Audio (Mute)</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Video Progress & Status Bar -->
+            <div id="video-status-box" class="p-3 rounded-xl bg-slate-100 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-800 flex items-center justify-between text-xs">
+                <div class="flex items-center gap-2">
+                    <i data-lucide="info" class="w-4 h-4 text-purple-600"></i>
+                    <span id="video-status-message" class="text-slate-600 dark:text-slate-300 font-medium">
+                        Ready to render <strong id="video-slides-count-label">5</strong> slides into high-definition video (1280x720).
+                    </span>
+                </div>
+                <span id="video-progress-percent" class="font-mono font-bold text-purple-600 dark:text-purple-400">0%</span>
+            </div>
+
+            <!-- Actions Bar -->
+            <div class="flex items-center justify-between gap-3 pt-1">
+                <div class="flex items-center gap-2">
+                    <button id="btn-render-video" onclick="startVideoRendering()" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-red-600 to-purple-600 hover:from-red-700 hover:to-purple-700 text-white font-bold text-xs shadow-lg shadow-purple-500/25 flex items-center gap-2 active:scale-95 transition-all">
+                        <i data-lucide="play-circle" class="w-4 h-4"></i> Render & Record Video
+                    </button>
+                    <button id="btn-download-video" onclick="downloadRenderedVideo()" disabled class="px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-800 text-slate-400 cursor-not-allowed font-bold text-xs flex items-center gap-2 transition-all">
+                        <i data-lucide="download" class="w-4 h-4"></i> Download Video File
+                    </button>
+                </div>
+                <button onclick="closeVideoExporterModal()" class="px-4 py-2.5 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 font-medium text-xs">
+                    Close
+                </button>
             </div>
         </div>
     </div>
@@ -1718,10 +1893,17 @@
         // =========================================
         // 3D CAROUSEL SLIDER RENDERER & TOUCH DRAG ENGINE
         // =========================================
+        let autoPlayInterval = null;
+        let isAutoPlaying = false;
+        let currentAnimationMode = 'mode-carousel';
+
         function render3DSlider() {
             const container = document.getElementById('slide-cards-container');
             const dotsContainer = document.getElementById('dots-container');
             if (!container) return;
+
+            // Ensure current animation mode class is set on container
+            container.className = `relative w-[92%] max-w-[640px] h-[360px] ${currentAnimationMode}`;
 
             container.innerHTML = slidesData.map((slide, idx) => {
                 let stateClass = "state-far-next";
@@ -1737,18 +1919,18 @@
                     <div class="slide-3d-card ${stateClass} glass-card rounded-2xl p-5 sm:p-6 text-white bg-gradient-to-br ${slide.bgGradient} flex flex-col justify-between" onclick="selectSlide(${idx})">
                         <div>
                             <div class="flex items-center justify-between mb-2 sm:mb-3">
-                                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-white/20 backdrop-blur-md uppercase tracking-wider">${slide.tag}</span>
+                                <span class="slide-anim-tag px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-white/20 backdrop-blur-md uppercase tracking-wider">${slide.tag}</span>
                                 <span class="text-xs font-bold text-white/80">Slide ${slide.number} / ${slidesData.length}</span>
                             </div>
 
                             <div class="flex items-start justify-between gap-3 sm:gap-4">
                                 <div class="flex-1 min-w-0">
-                                    <h3 class="text-lg sm:text-xl font-black tracking-tight mb-1 text-white line-clamp-2">${slide.title}</h3>
-                                    <p class="text-xs text-white/85 font-medium mb-3 line-clamp-1">${slide.subtitle}</p>
+                                    <h3 class="slide-anim-title text-lg sm:text-xl font-black tracking-tight mb-1 text-white line-clamp-2">${slide.title}</h3>
+                                    <p class="slide-anim-subtitle text-xs text-white/85 font-medium mb-3 line-clamp-1">${slide.subtitle}</p>
                                     
                                     <ul class="space-y-1.5 sm:space-y-2">
-                                        ${slide.bullets.map(b => `
-                                            <li class="flex items-start gap-2 text-xs font-medium text-white/95 leading-snug">
+                                        ${slide.bullets.map((b, bIdx) => `
+                                            <li class="slide-anim-bullet-${Math.min(3, bIdx + 1)} flex items-start gap-2 text-xs font-medium text-white/95 leading-snug">
                                                 <div class="w-1.5 h-1.5 rounded-full bg-white mt-1 flex-shrink-0"></div>
                                                 <span class="line-clamp-2">${b}</span>
                                             </li>
@@ -1756,9 +1938,9 @@
                                     </ul>
                                 </div>
 
-                                <!-- Slide Illustration Picture Card -->
-                                <div class="flex flex-col items-center justify-center p-2 rounded-2xl bg-white/15 backdrop-blur-md border border-white/25 shadow-lg w-28 h-28 sm:w-36 sm:h-36 flex-shrink-0">
-                                    <div class="w-16 h-16 sm:w-24 sm:h-24 flex items-center justify-center">
+                                <!-- Slide Illustration Picture Card with smooth floating entrance -->
+                                <div class="slide-anim-illustration flex flex-col items-center justify-center p-2 rounded-2xl bg-white/15 backdrop-blur-md border border-white/25 shadow-lg w-28 h-28 sm:w-36 sm:h-36 flex-shrink-0">
+                                    <div class="slide-illustration-inner w-16 h-16 sm:w-24 sm:h-24 flex items-center justify-center">
                                         ${illSvg}
                                     </div>
                                     <span class="text-[8px] sm:text-[9px] font-mono font-bold uppercase tracking-wider text-white/90 mt-1 text-center truncate max-w-full">
@@ -1787,6 +1969,66 @@
             document.getElementById('slide-counter-badge').innerText = `Slide ${currentSlideIndex + 1} of ${slidesData.length}`;
             document.getElementById('speaker-notes-text').innerText = slidesData[currentSlideIndex].notes;
 
+            lucide.createIcons();
+        }
+
+        function updateAnimationMode() {
+            const modeSelect = document.getElementById('slide-animation-mode');
+            if (modeSelect) {
+                currentAnimationMode = modeSelect.value;
+                const container = document.getElementById('slide-cards-container');
+                if (container) {
+                    container.className = `relative w-[92%] max-w-[640px] h-[360px] ${currentAnimationMode}`;
+                }
+            }
+        }
+
+        function replaySlideAnimation() {
+            const activeCard = document.querySelector('.slide-3d-card.state-active');
+            if (activeCard) {
+                activeCard.classList.remove('state-active');
+                void activeCard.offsetWidth; // force reflow
+                activeCard.classList.add('state-active');
+            }
+        }
+
+        function toggleAutoPlaySlideshow() {
+            isAutoPlaying = !isAutoPlaying;
+            const btn = document.getElementById('slideshow-toggle-btn');
+            const label = document.getElementById('slideshow-label');
+            const icon = document.getElementById('slideshow-icon');
+
+            if (isAutoPlaying) {
+                if (label) label.innerText = "Pause Slideshow";
+                if (btn) btn.classList.add('bg-purple-600', 'text-white');
+                if (icon) {
+                    icon.setAttribute('data-lucide', 'pause');
+                    icon.classList.remove('text-purple-600');
+                    icon.classList.add('text-white');
+                }
+                
+                showToast("Slideshow started: Auto-advancing every 4 seconds", "info");
+                
+                autoPlayInterval = setInterval(() => {
+                    if (currentSlideIndex < slidesData.length - 1) {
+                        nextSlide();
+                    } else {
+                        currentSlideIndex = 0;
+                        render3DSlider();
+                    }
+                }, 4000);
+            } else {
+                if (label) label.innerText = "Play Slideshow";
+                if (btn) btn.classList.remove('bg-purple-600', 'text-white');
+                if (icon) {
+                    icon.setAttribute('data-lucide', 'play');
+                    icon.classList.remove('text-white');
+                    icon.classList.add('text-purple-600');
+                }
+                clearInterval(autoPlayInterval);
+                autoPlayInterval = null;
+                showToast("Slideshow paused", "info");
+            }
             lucide.createIcons();
         }
 
@@ -1909,6 +2151,413 @@
                 container.style.setProperty('--transition-duration', `${duration}s`);
                 container.style.setProperty('--transition-easing', easing);
             }
+        }
+
+        // ==========================================================
+        // HIGH-DEFINITION PRESENTATION VIDEO GENERATION ENGINE
+        // ==========================================================
+        let recordedVideoBlob = null;
+        let isVideoRendering = false;
+        let videoRecorder = null;
+        let videoRecordedChunks = [];
+
+        function openVideoExporterModal() {
+            const modal = document.getElementById('video-export-modal');
+            const countLabel = document.getElementById('video-slides-count-label');
+            const statusMsg = document.getElementById('video-status-message');
+            const percentLabel = document.getElementById('video-progress-percent');
+            const canvas = document.getElementById('video-render-canvas');
+            const videoOut = document.getElementById('video-player-output');
+            const downloadBtn = document.getElementById('btn-download-video');
+
+            if (countLabel) countLabel.innerText = slidesData.length;
+            if (statusMsg) statusMsg.innerText = `Ready to render ${slidesData.length} slides into high-definition video (1280x720).`;
+            if (percentLabel) percentLabel.innerText = "0%";
+            if (videoOut) {
+                videoOut.classList.add('hidden');
+                videoOut.src = "";
+            }
+            if (canvas) {
+                canvas.classList.remove('hidden');
+                // Draw title slide preview on initial open
+                if (slidesData.length > 0) {
+                    drawSlideOnCanvas(canvas, slidesData[0], 0, 1);
+                }
+            }
+            if (downloadBtn) {
+                downloadBtn.disabled = true;
+                downloadBtn.classList.add('cursor-not-allowed', 'text-slate-400');
+                downloadBtn.classList.remove('bg-purple-600', 'text-white', 'hover:bg-purple-700');
+            }
+
+            if (modal) modal.classList.remove('hidden');
+            lucide.createIcons();
+        }
+
+        function closeVideoExporterModal() {
+            if (isVideoRendering) {
+                if (videoRecorder && videoRecorder.state !== "inactive") {
+                    try { videoRecorder.stop(); } catch (e) {}
+                }
+                isVideoRendering = false;
+                if ('speechSynthesis' in window) {
+                    window.speechSynthesis.cancel();
+                }
+            }
+            const modal = document.getElementById('video-export-modal');
+            if (modal) modal.classList.add('hidden');
+        }
+
+        // Draw a rich slide frame onto the 1280x720 2D canvas
+        function drawSlideOnCanvas(canvas, slide, animOffset = 0, opacity = 1) {
+            const ctx = canvas.getContext('2d');
+            const w = canvas.width;
+            const h = canvas.height;
+
+            ctx.save();
+            ctx.globalAlpha = opacity;
+
+            // Background Gradient according to slide.bgGradient
+            let grad = ctx.createLinearGradient(0, 0, w, h);
+            const gLower = (slide.bgGradient || "").toLowerCase();
+
+            if (gLower.includes('emerald') || gLower.includes('teal')) {
+                grad.addColorStop(0, '#059669');
+                grad.addColorStop(1, '#134E4A');
+            } else if (gLower.includes('amber') || gLower.includes('orange')) {
+                grad.addColorStop(0, '#D97706');
+                grad.addColorStop(1, '#9A3412');
+            } else if (gLower.includes('fuchsia') || gLower.includes('pink')) {
+                grad.addColorStop(0, '#C026D3');
+                grad.addColorStop(1, '#831843');
+            } else if (gLower.includes('blue') || gLower.includes('indigo')) {
+                grad.addColorStop(0, '#2563EB');
+                grad.addColorStop(1, '#1E1B4B');
+            } else {
+                // Purple / Sapphire default
+                grad.addColorStop(0, '#7C3AED');
+                grad.addColorStop(1, '#312E81');
+            }
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, w, h);
+
+            // Subtle decorative mesh circles
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
+            ctx.beginPath();
+            ctx.arc(w * 0.88, h * 0.2, 260, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.beginPath();
+            ctx.arc(w * 0.1, h * 0.9, 180, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Card Inner Panel
+            const cardMargin = 40;
+            const cardW = w - (cardMargin * 2);
+            const cardH = h - (cardMargin * 2);
+
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.12)';
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.28)';
+            ctx.lineWidth = 2;
+            roundRect(ctx, cardMargin, cardMargin, cardW, cardH, 28, true, true);
+
+            // Header Tag & Slide Counter
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.25)';
+            roundRect(ctx, cardMargin + 30, cardMargin + 28, 180, 36, 18, true, false);
+
+            ctx.fillStyle = '#FFFFFF';
+            ctx.font = 'bold 15px system-ui, -apple-system, sans-serif';
+            ctx.fillText(slide.tag || "CURRICULUM MODULE", cardMargin + 48, cardMargin + 52);
+
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+            ctx.font = 'bold 18px system-ui, -apple-system, sans-serif';
+            ctx.fillText(`Slide ${slide.number} of ${slidesData.length}`, cardMargin + cardW - 160, cardMargin + 52);
+
+            // Left Column: Text & Content
+            const textX = cardMargin + 35;
+            let currentY = cardMargin + 130 + (animOffset * 0.15);
+
+            // Slide Title
+            ctx.fillStyle = '#FFFFFF';
+            ctx.font = '900 42px system-ui, -apple-system, sans-serif';
+            wrapCanvasText(ctx, slide.title, textX, currentY, 680, 48);
+
+            // Subtitle
+            currentY += 75;
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.88)';
+            ctx.font = '500 22px system-ui, -apple-system, sans-serif';
+            wrapCanvasText(ctx, slide.subtitle, textX, currentY, 680, 30);
+
+            // Bullet Points
+            currentY += 60;
+            if (slide.bullets && slide.bullets.length) {
+                slide.bullets.forEach((bullet, bIdx) => {
+                    const bY = currentY + (bIdx * 56);
+                    // Bullet dot
+                    ctx.fillStyle = '#FFFFFF';
+                    ctx.beginPath();
+                    ctx.arc(textX + 8, bY - 8, 5, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // Bullet Text
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.96)';
+                    ctx.font = '600 20px system-ui, -apple-system, sans-serif';
+                    wrapCanvasText(ctx, bullet, textX + 26, bY, 660, 26);
+                });
+            }
+
+            // Right Column: Pedagogical Illustration Card Box
+            const illBoxX = cardMargin + cardW - 380;
+            const illBoxY = cardMargin + 110;
+            const illBoxW = 340;
+            const illBoxH = 340;
+
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.18)';
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.35)';
+            ctx.lineWidth = 2;
+            roundRect(ctx, illBoxX, illBoxY, illBoxW, illBoxH, 24, true, true);
+
+            // Badge for illustration
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.28)';
+            roundRect(ctx, illBoxX + 20, illBoxY + 20, illBoxW - 40, 34, 12, true, false);
+
+            ctx.fillStyle = '#FFFFFF';
+            ctx.font = 'bold 15px monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText(slide.illustrationBadge || "PEDAGOGICAL FIGURE", illBoxX + (illBoxW / 2), illBoxY + 43);
+            ctx.textAlign = 'left';
+
+            // Graphic symbol inside illustration card box
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
+            ctx.beginPath();
+            ctx.arc(illBoxX + (illBoxW / 2), illBoxY + (illBoxH / 2) + 20, 75, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.15)';
+            ctx.fill();
+
+            // Icon symbol representation
+            ctx.fillStyle = '#FFFFFF';
+            ctx.font = 'bold 36px system-ui, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText("🇬🇧 🇫🇷", illBoxX + (illBoxW / 2), illBoxY + (illBoxH / 2) + 16);
+            ctx.font = '600 14px system-ui, sans-serif';
+            ctx.fillText("CURRICULUM ILLUSTRATION", illBoxX + (illBoxW / 2), illBoxY + (illBoxH / 2) + 48);
+            ctx.textAlign = 'left';
+
+            // Bottom Footer banner
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.75)';
+            ctx.font = 'bold 14px system-ui, -apple-system, sans-serif';
+            ctx.fillText("AUTOMATED PEDAGOGICAL CONTENT GENERATOR • ENGLISH & FRANÇAIS", cardMargin + 35, cardMargin + cardH - 24);
+
+            ctx.restore();
+        }
+
+        // Canvas helper: rounded rectangles
+        function roundRect(ctx, x, y, width, height, radius, fill, stroke) {
+            ctx.beginPath();
+            ctx.moveTo(x + radius, y);
+            ctx.lineTo(x + width - radius, y);
+            ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+            ctx.lineTo(x + width, y + height - radius);
+            ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+            ctx.lineTo(x + radius, y + height);
+            ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+            ctx.lineTo(x, y + radius);
+            ctx.quadraticCurveTo(x, y, x + radius, y);
+            ctx.closePath();
+            if (fill) ctx.fill();
+            if (stroke) ctx.stroke();
+        }
+
+        // Canvas helper: text wrapping
+        function wrapCanvasText(ctx, text, x, y, maxWidth, lineHeight) {
+            if (!text) return;
+            const words = text.split(' ');
+            let line = '';
+
+            for (let n = 0; n < words.length; n++) {
+                const testLine = line + words[n] + ' ';
+                const metrics = ctx.measureText(testLine);
+                const testWidth = metrics.width;
+                if (testWidth > maxWidth && n > 0) {
+                    ctx.fillText(line, x, y);
+                    line = words[n] + ' ';
+                    y += lineHeight;
+                } else {
+                    line = testLine;
+                }
+            }
+            ctx.fillText(line, x, y);
+        }
+
+        // START VIDEO RENDERING AND RECORDING
+        async function startVideoRendering() {
+            if (isVideoRendering) return;
+            if (!slidesData || slidesData.length === 0) {
+                showToast("No slides available to render into video", "error");
+                return;
+            }
+
+            const canvas = document.getElementById('video-render-canvas');
+            const videoOut = document.getElementById('video-player-output');
+            const recIndicator = document.getElementById('video-recording-indicator');
+            const renderBtn = document.getElementById('btn-render-video');
+            const downloadBtn = document.getElementById('btn-download-video');
+            const statusMsg = document.getElementById('video-status-message');
+            const percentLabel = document.getElementById('video-progress-percent');
+            const progressBar = document.getElementById('video-canvas-progress-bar');
+            const durationSec = parseInt(document.getElementById('video-slide-duration').value) || 5;
+            const transitionStyle = document.getElementById('video-transition-style').value || "crossfade";
+            const speechMode = document.getElementById('video-speech-narration').value || "speech";
+
+            videoOut.classList.add('hidden');
+            canvas.classList.remove('hidden');
+            recIndicator.classList.remove('hidden');
+
+            renderBtn.disabled = true;
+            renderBtn.classList.add('opacity-50', 'cursor-not-allowed');
+
+            downloadBtn.disabled = true;
+            downloadBtn.classList.add('cursor-not-allowed', 'text-slate-400');
+            downloadBtn.classList.remove('bg-purple-600', 'text-white', 'hover:bg-purple-700');
+
+            isVideoRendering = true;
+            videoRecordedChunks = [];
+
+            // Setup MediaStream from Canvas
+            let stream = null;
+            try {
+                stream = canvas.captureStream(30); // 30 FPS high-definition recording
+            } catch (err) {
+                console.warn("captureStream error, using fallback", err);
+            }
+
+            // Detect supported mimeTypes
+            let mimeType = 'video/webm;codecs=vp9';
+            if (!MediaRecorder.isTypeSupported(mimeType)) {
+                mimeType = 'video/webm;codecs=vp8';
+                if (!MediaRecorder.isTypeSupported(mimeType)) {
+                    mimeType = 'video/webm';
+                }
+            }
+
+            try {
+                videoRecorder = new MediaRecorder(stream, { mimeType });
+            } catch (e) {
+                console.warn("MediaRecorder creation error", e);
+                videoRecorder = new MediaRecorder(stream);
+            }
+
+            videoRecorder.ondataavailable = (event) => {
+                if (event.data && event.data.size > 0) {
+                    videoRecordedChunks.push(event.data);
+                }
+            };
+
+            videoRecorder.start(100); // chunk every 100ms
+            showToast("Video recording started...", "info");
+
+            const totalSlides = slidesData.length;
+            const framesPerSlide = durationSec * 30;
+            const transitionFrames = 20;
+
+            for (let s = 0; s < totalSlides; s++) {
+                if (!isVideoRendering) break;
+
+                const currentSlide = slidesData[s];
+                const nextSlide = (s + 1 < totalSlides) ? slidesData[s + 1] : null;
+
+                // Trigger voice narration if speech is enabled
+                if (speechMode === 'speech' && 'speechSynthesis' in window) {
+                    window.speechSynthesis.cancel();
+                    const narrationText = `${currentSlide.title}. ${currentSlide.subtitle}. ${currentSlide.bullets.join('. ')}`;
+                    const utterance = new SpeechSynthesisUtterance(narrationText);
+                    const isFrench = (document.getElementById('ppt-lang')?.value === 'fr');
+                    utterance.lang = isFrench ? 'fr-FR' : 'en-US';
+                    utterance.rate = 1.0;
+                    window.speechSynthesis.speak(utterance);
+                }
+
+                // Render slide duration frames
+                for (let f = 0; f < framesPerSlide; f++) {
+                    if (!isVideoRendering) break;
+
+                    const totalProgressPercent = Math.round((((s * framesPerSlide) + f) / (totalSlides * framesPerSlide)) * 100);
+                    if (percentLabel) percentLabel.innerText = `${totalProgressPercent}%`;
+                    if (progressBar) progressBar.style.width = `${totalProgressPercent}%`;
+                    if (statusMsg) statusMsg.innerText = `Rendering Slide ${s + 1} of ${totalSlides}: "${currentSlide.title}"...`;
+
+                    // Check if in transition window
+                    if (f > framesPerSlide - transitionFrames && nextSlide) {
+                        const tRatio = (f - (framesPerSlide - transitionFrames)) / transitionFrames;
+                        if (transitionStyle === 'slide-left') {
+                            drawSlideOnCanvas(canvas, currentSlide, 0, 1 - tRatio);
+                        } else if (transitionStyle === 'zoom-fade') {
+                            drawSlideOnCanvas(canvas, currentSlide, f * 0.5, 1 - tRatio);
+                        } else {
+                            // Crossfade
+                            drawSlideOnCanvas(canvas, currentSlide, 0, 1 - (tRatio * 0.7));
+                        }
+                    } else {
+                        // Standard active frame with slight cinematic Ken Burns offset
+                        drawSlideOnCanvas(canvas, currentSlide, f * 0.1, 1);
+                    }
+
+                    // Await next frame delay (~33ms for 30fps)
+                    await new Promise(r => setTimeout(r, 33));
+                }
+            }
+
+            // Stop speech
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+            }
+
+            // Finalize recording
+            if (videoRecorder && videoRecorder.state !== "inactive") {
+                videoRecorder.onstop = () => {
+                    recordedVideoBlob = new Blob(videoRecordedChunks, { type: 'video/webm' });
+                    const videoUrl = URL.createObjectURL(recordedVideoBlob);
+
+                    canvas.classList.add('hidden');
+                    recIndicator.classList.add('hidden');
+                    videoOut.classList.remove('hidden');
+                    videoOut.src = videoUrl;
+                    videoOut.play();
+
+                    renderBtn.disabled = false;
+                    renderBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+
+                    downloadBtn.disabled = false;
+                    downloadBtn.classList.remove('cursor-not-allowed', 'text-slate-400');
+                    downloadBtn.classList.add('bg-purple-600', 'text-white', 'hover:bg-purple-700');
+
+                    if (percentLabel) percentLabel.innerText = "100%";
+                    if (progressBar) progressBar.style.width = "100%";
+                    if (statusMsg) statusMsg.innerText = `Video rendering complete! (${(recordedVideoBlob.size / (1024 * 1024)).toFixed(2)} MB)`;
+
+                    isVideoRendering = false;
+                    showToast("High-definition presentation video created successfully!", "success");
+                    lucide.createIcons();
+                };
+
+                videoRecorder.stop();
+            }
+        }
+
+        // DOWNLOAD RENDERED VIDEO FILE
+        function downloadRenderedVideo() {
+            if (!recordedVideoBlob) {
+                showToast("No rendered video to download", "error");
+                return;
+            }
+            const topic = (document.getElementById('ppt-topic')?.value || 'presentation').replace(/[^a-z0-9]/gi, '_').toLowerCase();
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(recordedVideoBlob);
+            a.download = `${topic}_video_lesson.webm`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            showToast("Presentation video downloaded!", "success");
         }
 
         // EDUCATIONAL IMAGE & ICON LIBRARY DATASET (ENGLISH & FRENCH LANGUAGE FOCUS)
