@@ -648,6 +648,9 @@
                             <button onclick="saveCurrentPPTDeck()" id="btn-save-ppt" class="px-3.5 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold shadow-md shadow-purple-500/20 flex items-center gap-1.5 active:scale-95 transition-all" title="Save presentation deck to My Saved Documents">
                                 <i data-lucide="bookmark" class="w-4 h-4"></i> Save Presentation
                             </button>
+                            <button onclick="shareCurrentPPTQR()" id="btn-share-ppt-qr" class="px-3.5 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-md shadow-indigo-500/20 flex items-center gap-1.5 active:scale-95 transition-all" title="Share via QR Code">
+                                <i data-lucide="qr-code" class="w-4 h-4"></i> Share QR
+                            </button>
                             <button onclick="downloadPPTDeckA4PDF()" id="btn-export-a4-ppt" class="px-3.5 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold shadow-md shadow-amber-500/20 flex items-center gap-1.5 active:scale-95 transition-all" title="Export entire presentation deck as printable A4 PDF">
                                 <i data-lucide="file-text" class="w-4 h-4"></i> Export A4 PDF
                             </button>
@@ -1081,7 +1084,10 @@
             { id: 'periwinkle-dream', title: 'Periwinkle Dream', primary: '#7C3AED', bg: '#F5F3FF', isDark: false },
             { id: 'creme-brulee', title: 'Creme Brulee', primary: '#EA580C', bg: '#FFFBEB', isDark: false },
             { id: 'neon-glam', title: 'Neon Glam', primary: '#EC4899', bg: '#09090B', isDark: true },
-            { id: 'carbon-dusk', title: 'Carbon Dusk', primary: '#38BDF8', bg: '#18181B', isDark: true }
+            { id: 'carbon-dusk', title: 'Carbon Dusk', primary: '#38BDF8', bg: '#18181B', isDark: true },
+            { id: 'eclipse-solstice', title: 'Eclipse & Solstice', primary: '#F59E0B', bg: '#1E1B4B', isDark: true },
+            { id: 'aether-nether', title: 'Aether & Nether', primary: '#06B6D4', bg: '#4C1D95', isDark: true },
+            { id: 'ivory-ebony', title: 'Ivory & Ebony', primary: '#171717', bg: '#FAFAFA', isDark: false }
         ];
 
         let activeTheme = themes[0];
@@ -2149,6 +2155,35 @@
 
             showToast("Presentation saved offline to My Docs!", "success");
             loadSavedDocuments();
+        }
+
+        function shareCurrentPPTQR() {
+            if (!slidesData || slidesData.length === 0) {
+                showToast("No active presentation deck to share", "error");
+                return;
+            }
+
+            const topic = document.getElementById('ppt-topic')?.value || "Language Presentation";
+            const audience = document.getElementById('ppt-audience')?.value || "Classroom";
+            const lang = document.getElementById('ppt-lang')?.value || "en";
+            const style = document.getElementById('ppt-style')?.value || "3D Glassmorphism Sapphire";
+
+            const pptDoc = {
+                id: 'ppt-' + Date.now(),
+                date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' }),
+                type: 'presentation',
+                title: topic,
+                subject: topic,
+                grade: audience,
+                topic: topic,
+                slides: slidesData,
+                slideCount: slidesData.length,
+                lang: lang,
+                style: style
+            };
+
+            const encodedDoc = encodeURIComponent(JSON.stringify(pptDoc));
+            shareWorksheetQR(encodedDoc);
         }
 
         function renderA4PPTDeckHtml(slides, topic, audience, lang) {
@@ -4511,13 +4546,23 @@
                     };
                 }
 
-                const sharePayload = encodeURIComponent(JSON.stringify({
+                const basePayload = {
                     subject: doc.subject,
                     grade: doc.grade,
                     topic: doc.topic,
                     questions: doc.questions || [],
                     image: doc.image || null
-                }));
+                };
+
+                if (doc.type === 'presentation' || doc.slides) {
+                    basePayload.type = 'presentation';
+                    basePayload.slides = doc.slides;
+                    basePayload.slideCount = doc.slideCount;
+                    basePayload.lang = doc.lang;
+                    basePayload.style = doc.style;
+                }
+
+                const sharePayload = encodeURIComponent(JSON.stringify(basePayload));
                 
                 const origin = window.location.origin;
                 const path = window.location.pathname;
@@ -4587,12 +4632,30 @@
                     }
 
                     setTimeout(() => {
-                        switchTab('worksheet');
-                        document.getElementById('ws-subject').value = docObj.subject || "Subject";
-                        document.getElementById('ws-topic').value = docObj.topic || "Topic";
-                        document.getElementById('ws-grade').value = docObj.grade || "Grade";
-                        document.getElementById('ws-count').value = docObj.questions ? docObj.questions.length : 5;
-                        generateWorksheetDirectly(docObj);
+                        if (docObj.type === 'presentation' || (docObj.slides && docObj.slides.length > 0)) {
+                            switchTab('presentation');
+                            if (docObj.topic) {
+                                const topInput = document.getElementById('ppt-topic');
+                                if (topInput) topInput.value = docObj.topic;
+                            }
+                            if (docObj.grade || docObj.audience) {
+                                const audInput = document.getElementById('ppt-audience');
+                                if (audInput) audInput.value = docObj.grade || docObj.audience;
+                            }
+                            if (docObj.slides && docObj.slides.length > 0) {
+                                slidesData = docObj.slides;
+                                currentSlideIndex = 0;
+                                render3DSlider();
+                                showToast("Shared presentation loaded successfully!", "success");
+                            }
+                        } else {
+                            switchTab('worksheet');
+                            if (document.getElementById('ws-subject')) document.getElementById('ws-subject').value = docObj.subject || "Subject";
+                            if (document.getElementById('ws-topic')) document.getElementById('ws-topic').value = docObj.topic || "Topic";
+                            if (document.getElementById('ws-grade')) document.getElementById('ws-grade').value = docObj.grade || "Grade";
+                            if (document.getElementById('ws-count') && docObj.questions) document.getElementById('ws-count').value = docObj.questions.length;
+                            generateWorksheetDirectly(docObj);
+                        }
                     }, 250);
                     
                 } catch (e) {
