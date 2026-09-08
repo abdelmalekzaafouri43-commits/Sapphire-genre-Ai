@@ -23,6 +23,17 @@
             --text-muted: #475569;
         }
 
+        /* Typography Presets */
+        .font-sans-custom {
+            font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
+        }
+        .font-serif-custom {
+            font-family: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif !important;
+        }
+        .font-mono-custom {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace !important;
+        }
+
         body.dark {
             --bg-main: #0B1120;
             --surface: #131C31;
@@ -192,10 +203,10 @@
 <body class="h-screen flex overflow-hidden">
 
     <!-- SIDEBAR MOBILE & FULLSCREEN OVERLAY -->
-    <div id="sidebar-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black/40 backdrop-blur-xs z-30 hidden"></div>
+    <div id="sidebar-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black/40 backdrop-blur-xs z-30 hidden md:hidden"></div>
 
-    <!-- NAVIGATION DRAWER (OFF-CANVAS FOR TRUE FULL SCREEN) -->
-    <aside id="sidebar-container" class="fixed inset-y-0 left-0 w-72 glass-card border-r flex flex-col justify-between p-5 z-40 transform -translate-x-full transition-transform duration-300 shadow-2xl">
+    <!-- PERSISTENT LEFT SIDEBAR / DASHBOARD NAVIGATION -->
+    <aside id="sidebar-container" class="fixed md:static inset-y-0 left-0 w-72 glass-card border-r flex flex-col justify-between p-5 z-40 transform -translate-x-full md:translate-x-0 transition-transform duration-300 shadow-2xl md:shadow-none flex-shrink-0">
         <div>
             <!-- Header Brand -->
             <div class="flex items-center justify-between mb-8">
@@ -208,8 +219,8 @@
                         <span class="text-xs text-blue-600 dark:text-blue-400 font-semibold uppercase tracking-wider">Workspace</span>
                     </div>
                 </div>
-                <!-- Close menu button inside sidebar -->
-                <button onclick="toggleSidebar()" class="p-1.5 rounded-lg hover:bg-slate-200/50 dark:hover:bg-slate-800/50 text-slate-500 active:scale-95 transition-transform" aria-label="Close Sidebar">
+                <!-- Close menu button inside sidebar (visible on mobile only) -->
+                <button onclick="toggleSidebar()" class="md:hidden p-1.5 rounded-lg hover:bg-slate-200/50 dark:hover:bg-slate-800/50 text-slate-500 active:scale-95 transition-transform" aria-label="Close Sidebar">
                     <i data-lucide="chevron-left" class="w-5 h-5"></i>
                 </button>
             </div>
@@ -695,6 +706,14 @@
                                 <option>Minimalist Academic Clean</option>
                             </select>
                         </div>
+                        <div>
+                            <label class="block text-xs font-semibold mb-1">Font Style / Typographie</label>
+                            <select id="ppt-font-style" onchange="onPPTFontStyleChange()" class="w-full px-3 py-2 text-sm rounded-lg border bg-slate-50 dark:bg-slate-900 border-slate-300 dark:border-slate-700 font-semibold text-purple-600 dark:text-purple-400">
+                                <option value="sans">Modern Sans-Serif (Inter / Clean)</option>
+                                <option value="serif">Classic Serif (Editorial / Book)</option>
+                                <option value="mono">Technical Monospaced (Code / Tech)</option>
+                            </select>
+                        </div>
                     </div>
                     
                     <button onclick="generatePPTDeck()" class="w-full py-3 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-sm shadow-lg shadow-purple-500/25 flex items-center justify-center gap-2 transition-all">
@@ -926,6 +945,14 @@
                             <select id="ws-lang" onchange="syncWorksheetSubjectWithLang()" class="w-full px-3 py-2 text-sm rounded-lg border bg-slate-50 dark:bg-slate-900 border-slate-300 dark:border-slate-700 font-semibold">
                                 <option value="en">English (Anglais)</option>
                                 <option value="fr">Français (French)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold mb-1">Font Style / Typographie</label>
+                            <select id="ws-font-style" onchange="onWorksheetFontStyleChange()" class="w-full px-3 py-2 text-sm rounded-lg border bg-slate-50 dark:bg-slate-900 border-slate-300 dark:border-slate-700 font-semibold text-blue-600 dark:text-blue-400">
+                                <option value="sans">Modern Sans-Serif (Standard / Clean)</option>
+                                <option value="serif">Classic Serif (Formal / Literature)</option>
+                                <option value="mono">Technical Monospaced (Exam / Coding)</option>
                             </select>
                         </div>
                         <div class="flex flex-col justify-end">
@@ -1562,11 +1589,13 @@
             const mainContent = document.getElementById('main-content');
             if (mainContent) mainContent.scrollTop = 0;
 
-            // Auto-collapse sidebar after navigating for unobstructed full-screen experience
-            const sidebar = document.getElementById('sidebar-container');
-            const overlay = document.getElementById('sidebar-overlay');
-            if (sidebar) sidebar.classList.add('-translate-x-full');
-            if (overlay) overlay.classList.add('hidden');
+            // Auto-collapse sidebar on mobile screens only after navigating
+            if (window.innerWidth < 768) {
+                const sidebar = document.getElementById('sidebar-container');
+                const overlay = document.getElementById('sidebar-overlay');
+                if (sidebar) sidebar.classList.add('-translate-x-full');
+                if (overlay) overlay.classList.add('hidden');
+            }
             
             lucide.createIcons();
         }
@@ -2290,6 +2319,51 @@
             showToast(`AI guidance copied to Slide ${currentSlideIndex + 1} annotation!`, "success");
         }
 
+        function getPPTFontCss() {
+            const fontVal = document.getElementById('ppt-font-style')?.value || 'sans';
+            if (fontVal === 'serif') return 'Georgia, Cambria, "Times New Roman", Times, serif';
+            if (fontVal === 'mono') return 'SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace';
+            return 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+        }
+
+        function getPPTFontClass() {
+            const fontVal = document.getElementById('ppt-font-style')?.value || 'sans';
+            if (fontVal === 'serif') return 'font-serif-custom';
+            if (fontVal === 'mono') return 'font-mono-custom';
+            return 'font-sans-custom';
+        }
+
+        function onPPTFontStyleChange() {
+            if (slidesData && slidesData.length > 0) {
+                render3DSlider();
+                showToast("Presentation font style updated", "info");
+            }
+        }
+
+        function getWorksheetFontClass(fontKey) {
+            const fontVal = fontKey || document.getElementById('ws-font-style')?.value || 'sans';
+            if (fontVal === 'serif') return 'font-serif-custom';
+            if (fontVal === 'mono') return 'font-mono-custom';
+            return 'font-sans-custom';
+        }
+
+        function getWorksheetFontCss(fontKey) {
+            const fontVal = fontKey || document.getElementById('ws-font-style')?.value || 'sans';
+            if (fontVal === 'serif') return 'Georgia, Cambria, "Times New Roman", Times, serif';
+            if (fontVal === 'mono') return 'SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace';
+            return 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+        }
+
+        function onWorksheetFontStyleChange() {
+            const wsContent = document.getElementById('worksheet-print-content');
+            if (wsContent) {
+                wsContent.classList.remove('font-sans-custom', 'font-serif-custom', 'font-mono-custom');
+                wsContent.classList.add(getWorksheetFontClass());
+            }
+            triggerWorksheetAutoSave();
+            showToast("Worksheet font style updated", "info");
+        }
+
         function render3DSlider() {
             const container = document.getElementById('slide-cards-container');
             const dotsContainer = document.getElementById('dots-container');
@@ -2304,8 +2378,11 @@
 
                 const hasAnnotation = slide.annotation && slide.annotation.trim().length > 0;
 
+                const pptFontClass = getPPTFontClass();
+                const pptFontFamily = getPPTFontCss();
+
                 return `
-                    <div class="slide-3d-card ${stateClass} glass-card rounded-2xl p-6 text-white bg-gradient-to-br ${slide.bgGradient} flex flex-col justify-between" onclick="selectSlide(${idx})">
+                    <div class="slide-3d-card ${stateClass} ${pptFontClass} glass-card rounded-2xl p-6 text-white bg-gradient-to-br ${slide.bgGradient} flex flex-col justify-between" style="font-family: ${pptFontFamily};" onclick="selectSlide(${idx})">
                         <div class="slide-card-body">
                             <div class="flex items-center justify-between mb-3">
                                 <div class="flex items-center gap-2">
@@ -2579,8 +2656,9 @@
                             `;
                         }
 
+                        const pptFontCss = getPPTFontCss();
                         stage.innerHTML = `
-                            <div style="width: 1123px; height: 794px; ${bgStyle} color: #ffffff; font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; position: relative; overflow: hidden; box-sizing: border-box; display: flex; flex-direction: column; padding: 48px 56px;">
+                            <div style="width: 1123px; height: 794px; ${bgStyle} color: #ffffff; font-family: ${pptFontCss}; position: relative; overflow: hidden; box-sizing: border-box; display: flex; flex-direction: column; padding: 48px 56px;">
                                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                                     <span style="display: inline-block; padding: 6px 18px; background: rgba(255,255,255,0.22); border: 1px solid rgba(255,255,255,0.35); border-radius: 9999px; font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: #ffffff;">
                                         ${escapeHtml(slide.tag || `SLIDE ${i + 1}`)} • ${escapeHtml(layout.toUpperCase())}
@@ -2652,11 +2730,12 @@
                     // Fallback to html2pdf
                     showToast("Exporting via PDF engine...");
                     let allSlidesHtml = '';
+                    const pptFontCss = getPPTFontCss();
                     slidesData.forEach((slide, i) => {
                         const bgStyle = getBgStyle(slide.bgGradient, i);
                         const isLast = (i === slidesData.length - 1);
                         allSlidesHtml += `
-                            <div style="width: 1123px; height: 794px; ${bgStyle} color: #ffffff; padding: 48px; box-sizing: border-box; page-break-after: always; break-after: page;">
+                            <div style="width: 1123px; height: 794px; ${bgStyle} color: #ffffff; font-family: ${pptFontCss}; padding: 48px; box-sizing: border-box; page-break-after: always; break-after: page;">
                                 <h2 style="font-size: 36px; font-weight: bold; margin-bottom: 16px;">${escapeHtml(slide.title || '')}</h2>
                                 <h3 style="font-size: 20px; opacity: 0.9; margin-bottom: 24px;">${escapeHtml(slide.subtitle || '')}</h3>
                                 <ul style="font-size: 20px; line-height: 1.6;">
@@ -2883,11 +2962,18 @@
             const padX = cardMarginX + 48;
             let curY = cardMarginY + 60;
 
+            const pptFontFamily = (() => {
+                const f = document.getElementById('ppt-font-style')?.value;
+                if (f === 'serif') return 'Georgia, serif';
+                if (f === 'mono') return 'SFMono-Regular, monospace';
+                return 'Inter, system-ui, sans-serif';
+            })();
+
             // Tag badge
             ctx.fillStyle = '#ec4899';
             drawRoundRect(ctx, padX, curY - 32, isVertical ? 260 : 300, 42, 21, true, false);
             ctx.fillStyle = '#ffffff';
-            ctx.font = 'bold 18px Inter, system-ui, sans-serif';
+            ctx.font = `bold 18px ${pptFontFamily}`;
             ctx.textAlign = 'center';
             ctx.fillText((slide.tag || 'LANGUAGE PEDAGOGY').toUpperCase(), padX + (isVertical ? 130 : 150), curY - 6);
 
@@ -2895,7 +2981,7 @@
             ctx.fillStyle = 'rgba(255, 255, 255, 0.15)';
             drawRoundRect(ctx, cardMarginX + cardW - 180, curY - 32, 130, 42, 21, true, false);
             ctx.fillStyle = '#f8fafc';
-            ctx.font = 'bold 18px Inter, system-ui, sans-serif';
+            ctx.font = `bold 18px ${pptFontFamily}`;
             ctx.textAlign = 'center';
             ctx.fillText(`Slide ${slideIndex + 1} / ${totalSlides}`, cardMarginX + cardW - 115, curY - 6);
 
@@ -2904,7 +2990,7 @@
             ctx.fillStyle = '#ffffff';
             ctx.textAlign = 'left';
             const titleFontSize = isVertical ? 48 : 54;
-            ctx.font = `800 ${titleFontSize}px Inter, system-ui, sans-serif`;
+            ctx.font = `800 ${titleFontSize}px ${pptFontFamily}`;
             const titleText = slide.title || 'Interactive Presentation';
             const titleLines = wrapText(ctx, titleText, cardW - 96);
             titleLines.slice(0, 2).forEach(line => {
@@ -2917,7 +3003,7 @@
                 curY += 10;
                 ctx.fillStyle = '#cbd5e1';
                 const subFontSize = isVertical ? 26 : 28;
-                ctx.font = `500 ${subFontSize}px Inter, system-ui, sans-serif`;
+                ctx.font = `500 ${subFontSize}px ${pptFontFamily}`;
                 const subLines = wrapText(ctx, slide.subtitle, cardW - 96);
                 subLines.slice(0, 2).forEach(line => {
                     ctx.fillText(line, padX, curY);
@@ -2941,7 +3027,7 @@
                 "Conversational practice & classroom discourse engagement"
             ];
             const bulletFontSize = isVertical ? 26 : 28;
-            ctx.font = `500 ${bulletFontSize}px Inter, system-ui, sans-serif`;
+            ctx.font = `500 ${bulletFontSize}px ${pptFontFamily}`;
 
             bullets.slice(0, isVertical ? 4 : 3).forEach((bullet, bIdx) => {
                 // Bullet marker icon
@@ -2973,11 +3059,11 @@
                     drawRoundRect(ctx, padX, curY, cardW - 96, noteBoxH, 18, true, true);
 
                     ctx.fillStyle = '#fbbf24';
-                    ctx.font = 'bold 18px Inter, system-ui, sans-serif';
+                    ctx.font = `bold 18px ${pptFontFamily}`;
                     ctx.fillText("📝 PEDAGOGICAL SLIDE NOTES:", padX + 24, curY + 30);
 
                     ctx.fillStyle = '#f1f5f9';
-                    ctx.font = '500 20px Inter, system-ui, sans-serif';
+                    ctx.font = `500 20px ${pptFontFamily}`;
                     const nLines = wrapText(ctx, noteText, cardW - 144);
                     if (nLines[0]) ctx.fillText(nLines[0], padX + 24, curY + 60);
                     if (nLines[1] && noteBoxH > 90) ctx.fillText(nLines[1], padX + 24, curY + 86);
@@ -2986,7 +3072,7 @@
 
             // 10. Footer within the card
             ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
-            ctx.font = '600 20px Inter, system-ui, sans-serif';
+            ctx.font = `600 20px ${pptFontFamily}`;
             ctx.textAlign = 'left';
             ctx.fillText("Educator: Mr. Zaafouri Abdelmalek", padX, cardMarginY + cardH - 30);
 
@@ -3249,6 +3335,23 @@
         }
 
 
+        async function downloadPPTX() {
+            if (!window.PptxGenJS) {
+                showToast("PowerPoint Generator library loading...", "error");
+                return;
+            }
+            if (!slidesData || slidesData.length === 0) {
+                showToast("No presentation generated yet.", "error");
+                return;
+            }
+
+            let pptx = new PptxGenJS();
+            pptx.layout = 'LAYOUT_16x9';
+
+            const rawTopic = document.getElementById('ppt-topic')?.value || 'Presentation';
+            const fontChoice = document.getElementById('ppt-font-style')?.value || 'sans';
+            const pptFontFamily = fontChoice === 'serif' ? 'Georgia' : (fontChoice === 'mono' ? 'Courier New' : 'Calibri');
+
             slidesData.forEach(slideInfo => {
                 let slide = pptx.addSlide();
                 
@@ -3257,31 +3360,31 @@
 
                 // Handle Different Layouts
                 if (slideInfo.layout === 'title') {
-                    slide.addText(slideInfo.title || "", { x:1, y:2, w:8, h:1.5, fontSize:44, bold:true, align:'center', color:'0F172A' });
-                    if (slideInfo.subtitle) slide.addText(slideInfo.subtitle, { x:1, y:3.8, w:8, h:1, fontSize:24, align:'center', color:'475569' });
+                    slide.addText(slideInfo.title || "", { x:1, y:2, w:8, h:1.5, fontSize:44, bold:true, align:'center', color:'0F172A', fontFace: pptFontFamily });
+                    if (slideInfo.subtitle) slide.addText(slideInfo.subtitle, { x:1, y:3.8, w:8, h:1, fontSize:24, align:'center', color:'475569', fontFace: pptFontFamily });
                 } else if (slideInfo.layout === 'quote') {
-                    slide.addText(`"${slideInfo.title || ""}"`, { x:1, y:2, w:8, h:2, fontSize:36, italic:true, align:'center', color:'0F172A' });
-                    if (slideInfo.subtitle) slide.addText(`— ${slideInfo.subtitle}`, { x:1, y:4.5, w:8, h:1, fontSize:20, align:'right', color:'475569' });
+                    slide.addText(`"${slideInfo.title || ""}"`, { x:1, y:2, w:8, h:2, fontSize:36, italic:true, align:'center', color:'0F172A', fontFace: pptFontFamily });
+                    if (slideInfo.subtitle) slide.addText(`— ${slideInfo.subtitle}`, { x:1, y:4.5, w:8, h:1, fontSize:20, align:'right', color:'475569', fontFace: pptFontFamily });
                 } else if (slideInfo.layout === 'two-column') {
-                    slide.addText(slideInfo.title || "", { x:0.5, y:0.5, w:9, h:1, fontSize:32, bold:true, color:'0F172A' });
-                    if (slideInfo.subtitle) slide.addText(slideInfo.subtitle, { x:0.5, y:1.3, w:9, h:0.5, fontSize:18, color:'64748B' });
+                    slide.addText(slideInfo.title || "", { x:0.5, y:0.5, w:9, h:1, fontSize:32, bold:true, color:'0F172A', fontFace: pptFontFamily });
+                    if (slideInfo.subtitle) slide.addText(slideInfo.subtitle, { x:0.5, y:1.3, w:9, h:0.5, fontSize:18, color:'64748B', fontFace: pptFontFamily });
                     
                     let col1 = [];
                     let col2 = [];
                     (slideInfo.bullets || []).forEach((b, idx) => {
-                        if (idx % 2 === 0) col1.push({ text: b, options: { bullet:true }});
-                        else col2.push({ text: b, options: { bullet:true }});
+                        if (idx % 2 === 0) col1.push({ text: b, options: { bullet:true, fontFace: pptFontFamily }});
+                        else col2.push({ text: b, options: { bullet:true, fontFace: pptFontFamily }});
                     });
                     
-                    if (col1.length > 0) slide.addText(col1, { x:0.5, y:2.2, w:4.2, h:4, fontSize:18, color:'334155', align:'left', valign:'top' });
-                    if (col2.length > 0) slide.addText(col2, { x:5.2, y:2.2, w:4.2, h:4, fontSize:18, color:'334155', align:'left', valign:'top' });
+                    if (col1.length > 0) slide.addText(col1, { x:0.5, y:2.2, w:4.2, h:4, fontSize:18, color:'334155', align:'left', valign:'top', fontFace: pptFontFamily });
+                    if (col2.length > 0) slide.addText(col2, { x:5.2, y:2.2, w:4.2, h:4, fontSize:18, color:'334155', align:'left', valign:'top', fontFace: pptFontFamily });
                 } else {
                     // Default to bullets layout
-                    slide.addText(slideInfo.title || "", { x:0.5, y:0.5, w:9, h:1, fontSize:32, bold:true, color:'0F172A' });
-                    if (slideInfo.subtitle) slide.addText(slideInfo.subtitle, { x:0.5, y:1.3, w:9, h:0.5, fontSize:18, color:'64748B' });
+                    slide.addText(slideInfo.title || "", { x:0.5, y:0.5, w:9, h:1, fontSize:32, bold:true, color:'0F172A', fontFace: pptFontFamily });
+                    if (slideInfo.subtitle) slide.addText(slideInfo.subtitle, { x:0.5, y:1.3, w:9, h:0.5, fontSize:18, color:'64748B', fontFace: pptFontFamily });
                     
-                    let formattedBullets = (slideInfo.bullets || []).map(b => ({ text: b, options: { bullet:true } }));
-                    if (formattedBullets.length > 0) slide.addText(formattedBullets, { x:0.5, y:2.2, w:8.5, h:4, fontSize:20, color:'334155', align:'left', valign:'top' });
+                    let formattedBullets = (slideInfo.bullets || []).map(b => ({ text: b, options: { bullet:true, fontFace: pptFontFamily } }));
+                    if (formattedBullets.length > 0) slide.addText(formattedBullets, { x:0.5, y:2.2, w:8.5, h:4, fontSize:20, color:'334155', align:'left', valign:'top', fontFace: pptFontFamily });
                 }
 
                 // Add Speaker Notes & Custom Annotation
@@ -3529,6 +3632,7 @@ Do NOT include any markdown formatting like \`\`\`json or \`\`\`, just return th
                     topic: document.getElementById('ws-topic')?.value || '',
                     count: document.getElementById('ws-count')?.value || 5,
                     lang: document.getElementById('ws-lang')?.value || 'en',
+                    fontStyle: document.getElementById('ws-font-style')?.value || 'sans',
                     image: selectedWorksheetImage,
                     savedAt: Date.now()
                 };
@@ -3583,6 +3687,9 @@ Do NOT include any markdown formatting like \`\`\`json or \`\`\`, just return th
                 if (state.lang && document.getElementById('ws-lang')) {
                     document.getElementById('ws-lang').value = state.lang;
                 }
+                if (state.fontStyle && document.getElementById('ws-font-style')) {
+                    document.getElementById('ws-font-style').value = state.fontStyle;
+                }
                 if (state.image) {
                     selectedWorksheetImage = state.image;
                     updateSelectedImageBadge();
@@ -3594,7 +3701,7 @@ Do NOT include any markdown formatting like \`\`\`json or \`\`\`, just return th
         }
 
         function setupWorksheetAutoSaveListeners() {
-            const fieldIds = ['ws-subject-select', 'ws-grade', 'ws-topic', 'ws-count', 'ws-lang'];
+            const fieldIds = ['ws-subject-select', 'ws-grade', 'ws-topic', 'ws-count', 'ws-lang', 'ws-font-style'];
             fieldIds.forEach(id => {
                 const el = document.getElementById(id);
                 if (el) {
@@ -3886,11 +3993,13 @@ Do NOT include any markdown formatting like \`\`\`json or \`\`\`, just return th
             const scoreLabel = lang === "fr" ? "Note" : "Score";
 
             // Save active worksheet to memory for instant sharing
+            const fontStyle = document.getElementById('ws-font-style')?.value || 'sans';
             currentActiveWorksheet = {
                 subject,
                 grade,
                 topic,
                 questions,
+                fontStyle,
                 image: selectedWorksheetImage
             };
 
@@ -3929,7 +4038,7 @@ Do NOT include any markdown formatting like \`\`\`json or \`\`\`, just return th
                 
                 <!-- A4 PAGE CONTAINER -->
                 <div class="overflow-x-auto py-2">
-                    <div id="worksheet-print-content" class="a4-page-sheet border border-slate-300 dark:border-slate-700 shadow-xl space-y-5 text-slate-900 bg-white">
+                    <div id="worksheet-print-content" class="a4-page-sheet ${getWorksheetFontClass()} border border-slate-300 dark:border-slate-700 shadow-xl space-y-5 text-slate-900 bg-white" style="font-family: ${getWorksheetFontCss()};">
                         <!-- Header -->
                         <div class="border-b-4 border-double border-slate-900 pb-3">
                             <div class="flex justify-between items-start gap-4">
@@ -4277,7 +4386,7 @@ Do NOT include any markdown formatting like \`\`\`json or \`\`\`, just return th
                 </div>
                 
                 <div class="overflow-x-auto py-2">
-                    <div id="worksheet-print-content" class="a4-page-sheet border border-slate-300 dark:border-slate-700 shadow-xl space-y-5 text-slate-900 bg-white">
+                    <div id="worksheet-print-content" class="a4-page-sheet ${getWorksheetFontClass(doc.fontStyle)} border border-slate-300 dark:border-slate-700 shadow-xl space-y-5 text-slate-900 bg-white" style="font-family: ${getWorksheetFontCss(doc.fontStyle)};">
                         <!-- Header -->
                         <div class="border-b-4 border-double border-slate-900 pb-3">
                             <div class="flex justify-between items-start gap-4">

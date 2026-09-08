@@ -192,10 +192,10 @@
 <body class="h-screen flex overflow-hidden">
 
     <!-- SIDEBAR MOBILE & FULLSCREEN OVERLAY -->
-    <div id="sidebar-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black/40 backdrop-blur-xs z-30 hidden"></div>
+    <div id="sidebar-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black/40 backdrop-blur-xs z-30 hidden md:hidden"></div>
 
-    <!-- NAVIGATION DRAWER (OFF-CANVAS FOR TRUE FULL SCREEN) -->
-    <aside id="sidebar-container" class="fixed inset-y-0 left-0 w-72 glass-card border-r flex flex-col justify-between p-5 z-40 transform -translate-x-full transition-transform duration-300 shadow-2xl">
+    <!-- PERSISTENT LEFT SIDEBAR / DASHBOARD NAVIGATION -->
+    <aside id="sidebar-container" class="fixed md:static inset-y-0 left-0 w-72 glass-card border-r flex flex-col justify-between p-5 z-40 transform -translate-x-full md:translate-x-0 transition-transform duration-300 shadow-2xl md:shadow-none flex-shrink-0">
         <div>
             <!-- Header Brand -->
             <div class="flex items-center justify-between mb-8">
@@ -208,8 +208,8 @@
                         <span class="text-xs text-blue-600 dark:text-blue-400 font-semibold uppercase tracking-wider">Workspace</span>
                     </div>
                 </div>
-                <!-- Close menu button inside sidebar -->
-                <button onclick="toggleSidebar()" class="p-1.5 rounded-lg hover:bg-slate-200/50 dark:hover:bg-slate-800/50 text-slate-500 active:scale-95 transition-transform" aria-label="Close Sidebar">
+                <!-- Close menu button inside sidebar (visible on mobile only) -->
+                <button onclick="toggleSidebar()" class="md:hidden p-1.5 rounded-lg hover:bg-slate-200/50 dark:hover:bg-slate-800/50 text-slate-500 active:scale-95 transition-transform" aria-label="Close Sidebar">
                     <i data-lucide="chevron-left" class="w-5 h-5"></i>
                 </button>
             </div>
@@ -1562,11 +1562,13 @@
             const mainContent = document.getElementById('main-content');
             if (mainContent) mainContent.scrollTop = 0;
 
-            // Auto-collapse sidebar after navigating for unobstructed full-screen experience
-            const sidebar = document.getElementById('sidebar-container');
-            const overlay = document.getElementById('sidebar-overlay');
-            if (sidebar) sidebar.classList.add('-translate-x-full');
-            if (overlay) overlay.classList.add('hidden');
+            // Auto-collapse sidebar on mobile screens only after navigating
+            if (window.innerWidth < 768) {
+                const sidebar = document.getElementById('sidebar-container');
+                const overlay = document.getElementById('sidebar-overlay');
+                if (sidebar) sidebar.classList.add('-translate-x-full');
+                if (overlay) overlay.classList.add('hidden');
+            }
             
             lucide.createIcons();
         }
