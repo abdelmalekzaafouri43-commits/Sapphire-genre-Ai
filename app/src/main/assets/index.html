@@ -197,6 +197,18 @@
             opacity: 0;
         }
 
+        /* A4 SLIDE DECK FORMATS */
+        .ratio-a4-landscape .slide-3d-card,
+        .ratio-a4-portrait .slide-3d-card {
+            border: 2px solid rgba(255, 255, 255, 0.35);
+            box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.4), inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+        }
+
+        .ratio-a4-portrait .slide-illustration-inner {
+            width: 5rem !important;
+            height: 5rem !important;
+        }
+
         /* STAGGERED ENTRANCE ANIMATIONS FOR ACTIVE SLIDE CONTENT */
         .state-active .slide-anim-tag {
             animation: slideFadeDown 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
@@ -274,21 +286,35 @@
                 background: #ffffff !important;
                 color: #000000 !important;
                 overflow: visible !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                width: 100% !important;
             }
             /* Hide all default dashboard and application elements during printing */
-            body > *:not(#print-worksheet-area) {
+            body > *:not(#print-worksheet-area):not(#ppt-a4-export-container) {
                 display: none !important;
             }
-            #print-worksheet-area {
+            #print-worksheet-area, #ppt-a4-export-container {
                 display: block !important;
-                position: absolute;
-                left: 0;
-                top: 0;
-                width: 100%;
-                margin: 0;
-                padding: 24px;
+                position: relative !important; /* Relative is better for multi-page flows than absolute */
+                width: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
                 background: white !important;
                 color: black !important;
+                box-sizing: border-box;
+            }
+            /* Professional A4 alignment and strict page breaks */
+            .a4-page-sheet {
+                page-break-after: always;
+                page-break-inside: avoid;
+                break-after: page;
+                break-inside: avoid;
+                margin: 0 auto !important;
+            }
+            .question-container {
+                page-break-inside: avoid;
+                break-inside: avoid;
             }
         }
     </style>
@@ -615,10 +641,16 @@
                             <p class="text-xs text-slate-500">Swipe left/right or click arrow controls to navigate in 3D space</p>
                         </div>
 
-                        <div class="flex items-center gap-2">
+                        <div class="flex items-center gap-2 flex-wrap">
                             <span id="slide-counter-badge" class="px-3 py-1 rounded-full text-xs font-bold bg-slate-200 dark:bg-slate-800">
                                 Slide 1 of 5
                             </span>
+                            <button onclick="saveCurrentPPTDeck()" id="btn-save-ppt" class="px-3.5 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold shadow-md shadow-purple-500/20 flex items-center gap-1.5 active:scale-95 transition-all" title="Save presentation deck to My Saved Documents">
+                                <i data-lucide="bookmark" class="w-4 h-4"></i> Save Presentation
+                            </button>
+                            <button onclick="downloadPPTDeckA4PDF()" id="btn-export-a4-ppt" class="px-3.5 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold shadow-md shadow-amber-500/20 flex items-center gap-1.5 active:scale-95 transition-all" title="Export entire presentation deck as printable A4 PDF">
+                                <i data-lucide="file-text" class="w-4 h-4"></i> Export A4 PDF
+                            </button>
                             <button onclick="openVideoExporterModal()" class="px-3 py-1.5 rounded-xl bg-gradient-to-r from-red-600 via-pink-600 to-purple-600 hover:from-red-700 hover:to-purple-700 text-white text-xs font-bold shadow-md shadow-pink-500/20 flex items-center gap-1.5 active:scale-95 transition-all">
                                 <i data-lucide="video" class="w-4 h-4"></i> Turn into Video
                             </button>
@@ -629,15 +661,23 @@
                     </div>
 
                     <!-- 3D SLIDE DISPLAY STAGE -->
-                    <div class="relative w-full h-[420px] slider-perspective flex items-center justify-center overflow-hidden py-4" id="slider-stage">
+                    <div class="relative w-full h-[520px] slider-perspective flex items-center justify-center overflow-hidden py-4 transition-all duration-300" id="slider-stage">
                         <!-- Dynamic 3D Slide Cards Container with Illustrations -->
-                        <div class="relative w-[92%] max-w-[640px] h-[360px]" id="slide-cards-container">
+                        <div class="relative w-[92%] max-w-[700px] h-[490px] ratio-a4-landscape transition-all duration-300" id="slide-cards-container">
                             <!-- Cards inserted via JS -->
                         </div>
                     </div>
 
                     <!-- Transition Duration, Easing & Style controls -->
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 rounded-2xl bg-slate-100/50 dark:bg-slate-800/30 border border-slate-200/50 dark:border-slate-800/50 text-xs">
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 rounded-2xl bg-slate-100/50 dark:bg-slate-800/30 border border-slate-200/50 dark:border-slate-800/50 text-xs">
+                        <div class="flex flex-col gap-1.5">
+                            <label class="font-semibold flex items-center gap-1"><i data-lucide="layout" class="w-3.5 h-3.5 text-purple-600"></i> Slide Format & Size</label>
+                            <select id="ppt-aspect-ratio" onchange="updatePPTAspectRatio()" class="w-full px-2 py-1.5 text-xs rounded-lg border bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700 font-bold text-purple-700 dark:text-purple-300">
+                                <option value="ratio-a4-landscape" selected>A4 Landscape Format (297×210mm)</option>
+                                <option value="ratio-a4-portrait">A4 Portrait Format (210×297mm)</option>
+                                <option value="ratio-16-9">16:9 Widescreen Deck</option>
+                            </select>
+                        </div>
                         <div class="flex flex-col gap-1.5">
                             <label class="font-semibold flex items-center gap-1"><i data-lucide="sparkles" class="w-3.5 h-3.5 text-purple-600"></i> Animation Style</label>
                             <select id="slide-animation-mode" onchange="updateAnimationMode()" class="w-full px-2 py-1.5 text-xs rounded-lg border bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700 font-medium">
@@ -1929,14 +1969,41 @@
         let autoPlayInterval = null;
         let isAutoPlaying = false;
         let currentAnimationMode = 'mode-carousel';
+        let currentPPTAspectRatio = 'ratio-a4-landscape';
+
+        function updatePPTAspectRatio() {
+            const select = document.getElementById('ppt-aspect-ratio');
+            if (select) currentPPTAspectRatio = select.value;
+
+            const stage = document.getElementById('slider-stage');
+            const container = document.getElementById('slide-cards-container');
+            if (!container || !stage) return;
+
+            if (currentPPTAspectRatio === 'ratio-a4-portrait') {
+                stage.style.height = '640px';
+                container.style.maxWidth = '460px';
+                container.style.height = '590px';
+            } else if (currentPPTAspectRatio === 'ratio-a4-landscape') {
+                stage.style.height = '520px';
+                container.style.maxWidth = '700px';
+                container.style.height = '490px';
+            } else {
+                // 16:9
+                stage.style.height = '420px';
+                container.style.maxWidth = '640px';
+                container.style.height = '360px';
+            }
+
+            render3DSlider();
+        }
 
         function render3DSlider() {
             const container = document.getElementById('slide-cards-container');
             const dotsContainer = document.getElementById('dots-container');
             if (!container) return;
 
-            // Ensure current animation mode class is set on container
-            container.className = `relative w-[92%] max-w-[640px] h-[360px] ${currentAnimationMode}`;
+            // Ensure current animation mode and aspect ratio classes are set on container
+            container.className = `relative w-[92%] ${currentPPTAspectRatio} ${currentAnimationMode} transition-all duration-300`;
 
             container.innerHTML = slidesData.map((slide, idx) => {
                 let stateClass = "state-far-next";
@@ -1953,7 +2020,15 @@
                         <div>
                             <div class="flex items-center justify-between mb-2 sm:mb-3">
                                 <span class="slide-anim-tag px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-white/20 backdrop-blur-md uppercase tracking-wider">${slide.tag}</span>
-                                <span class="text-xs font-bold text-white/80">Slide ${slide.number} / ${slidesData.length}</span>
+                                <div class="flex items-center gap-1.5 z-10">
+                                    <button onclick="moveSlideLeft(event, ${idx})" class="p-1 rounded-lg bg-white/10 hover:bg-white/30 text-white transition-all ${idx === 0 ? 'opacity-30 cursor-not-allowed' : ''}" title="Move Slide Left" ${idx === 0 ? 'disabled' : ''}>
+                                        <i data-lucide="chevron-left" class="w-4 h-4"></i>
+                                    </button>
+                                    <button onclick="moveSlideRight(event, ${idx})" class="p-1 rounded-lg bg-white/10 hover:bg-white/30 text-white transition-all ${idx === slidesData.length - 1 ? 'opacity-30 cursor-not-allowed' : ''}" title="Move Slide Right" ${idx === slidesData.length - 1 ? 'disabled' : ''}>
+                                        <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                                    </button>
+                                    <span class="text-xs font-bold text-white/80 ml-2">A4 Slide ${slide.number} / ${slidesData.length}</span>
+                                </div>
                             </div>
 
                             <div class="flex items-start justify-between gap-3 sm:gap-4">
@@ -1984,7 +2059,7 @@
                         </div>
 
                         <div class="flex items-center justify-between pt-2.5 border-t border-white/20 text-[10px] text-white/75 font-medium mt-2">
-                            <span>Sapphire AI PowerPoint Deck</span>
+                            <span>Sapphire Academic Presentation Deck (A4 Format)</span>
                             <span>Mr. Zaafouri Abdelmalek</span>
                         </div>
                     </div>
@@ -2009,11 +2084,215 @@
             const modeSelect = document.getElementById('slide-animation-mode');
             if (modeSelect) {
                 currentAnimationMode = modeSelect.value;
-                const container = document.getElementById('slide-cards-container');
-                if (container) {
-                    container.className = `relative w-[92%] max-w-[640px] h-[360px] ${currentAnimationMode}`;
-                }
+                render3DSlider();
             }
+        }
+
+        async function saveCurrentPPTDeck() {
+            if (!slidesData || slidesData.length === 0) {
+                showToast("No active presentation deck to save", "error");
+                return;
+            }
+
+            const topic = document.getElementById('ppt-topic')?.value || "Language Presentation";
+            const audience = document.getElementById('ppt-audience')?.value || "Classroom";
+            const lang = document.getElementById('ppt-lang')?.value || "en";
+            const style = document.getElementById('ppt-style')?.value || "3D Glassmorphism Sapphire";
+
+            const newDoc = {
+                id: 'ppt-' + Date.now(),
+                date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' }),
+                type: 'presentation',
+                title: topic,
+                subject: topic,
+                grade: audience,
+                topic: topic,
+                slides: slidesData,
+                slideCount: slidesData.length,
+                lang: lang,
+                style: style
+            };
+
+            if (savedDocs.some(d => d.type === 'presentation' && d.topic === newDoc.topic && d.grade === newDoc.grade)) {
+                showToast("Presentation is already in your saved documents!", "info");
+                return;
+            }
+
+            savedDocs.unshift(newDoc);
+
+            // 1. Persist in IndexedDB
+            await SapphireLocalStore.put(newDoc);
+
+            // 2. Persist in LocalStorage
+            try {
+                localStorage.setItem('saved_docs', JSON.stringify(savedDocs));
+            } catch (e) {}
+
+            // 3. Persist in Android SQLite Room Database
+            try {
+                if (window.AndroidBridge && typeof window.AndroidBridge.saveDocToRoom === 'function') {
+                    const dbId = window.AndroidBridge.saveDocToRoom(
+                        newDoc.topic,
+                        newDoc.type,
+                        newDoc.subject,
+                        newDoc.grade,
+                        newDoc.date,
+                        JSON.stringify(newDoc)
+                    );
+                    if (dbId > 0) {
+                        newDoc.dbId = dbId;
+                    }
+                }
+            } catch (e) {
+                console.warn("Room persistence bridge skipped:", e);
+            }
+
+            showToast("Presentation saved offline to My Docs!", "success");
+            loadSavedDocuments();
+        }
+
+        function renderA4PPTDeckHtml(slides, topic, audience, lang) {
+            const isFr = (lang === 'fr') || (topic && topic.toLowerCase().includes('français'));
+            return `
+                <div id="ppt-a4-print-content" class="space-y-8 p-4 bg-slate-100 dark:bg-slate-900 rounded-3xl no-print-padding">
+                    ${slides.map((slide, sIdx) => {
+                        const illSvg = slide.illustrationSvg || getGenericSlideIllustration(slide.number, isFr).svg;
+                        const illBadge = slide.illustrationBadge || "PEDAGOGICAL FIGURE";
+
+                        return `
+                            <div class="a4-page-sheet bg-white text-slate-900 border-2 border-slate-900 p-8 shadow-xl rounded-none relative mx-auto mb-8 font-sans" style="width:210mm; min-height:297mm; box-sizing:border-box; page-break-after:always;">
+                                <div class="flex items-center justify-between border-b-2 border-slate-900 pb-4 mb-6">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-12 h-12 flex-shrink-0">
+                                            ${academicCrestSvg}
+                                        </div>
+                                        <div>
+                                            <h2 class="text-base font-black tracking-tight text-slate-900 uppercase">SAPPHIRE ACADEMIC PRESENTATION SERIES</h2>
+                                            <p class="text-xs font-bold text-slate-600">${topic} • ${audience}</p>
+                                        </div>
+                                    </div>
+                                    <div class="text-right">
+                                        <span class="px-3 py-1 bg-purple-700 text-white text-xs font-black rounded uppercase tracking-wider">A4 SLIDE ${slide.number} / ${slides.length}</span>
+                                        <p class="text-[10px] text-slate-500 font-mono mt-1">${slide.tag}</p>
+                                    </div>
+                                </div>
+
+                                <div class="p-6 bg-slate-50 border border-slate-300 rounded-xl mb-6">
+                                    <span class="text-xs font-black text-purple-700 uppercase tracking-widest block mb-1">${slide.tag}</span>
+                                    <h1 class="text-2xl font-black text-slate-900 leading-tight mb-2">${slide.title}</h1>
+                                    <p class="text-sm font-semibold text-slate-600 italic">${slide.subtitle}</p>
+                                </div>
+
+                                <div class="grid grid-cols-12 gap-6 mb-6">
+                                    <div class="col-span-7 space-y-3">
+                                        <h3 class="text-xs font-black text-slate-900 uppercase tracking-wider border-b border-slate-300 pb-1">
+                                            ${isFr ? "CONCEPTS CLÉS & EXPLICATIONS" : "KEY LESSON CONCEPTS"}
+                                        </h3>
+                                        <ul class="space-y-2.5">
+                                            ${(slide.bullets || []).map(b => `
+                                                <li class="flex items-start gap-2.5 text-xs text-slate-800 font-medium leading-relaxed p-3 rounded bg-slate-50 border border-slate-200">
+                                                    <span class="w-2 h-2 rounded-full bg-purple-600 mt-1.5 flex-shrink-0"></span>
+                                                    <span>${b}</span>
+                                                </li>
+                                            `).join('')}
+                                        </ul>
+                                    </div>
+
+                                    <div class="col-span-5 flex flex-col items-center justify-center p-4 bg-slate-50 border border-slate-300 rounded-xl text-center space-y-3">
+                                        <span class="text-[10px] font-mono font-black text-slate-700 uppercase tracking-widest bg-slate-200 px-2 py-0.5 rounded">${illBadge}</span>
+                                        <div class="w-32 h-32 p-2 bg-white border border-slate-200 rounded-lg flex items-center justify-center shadow-xs">
+                                            ${illSvg}
+                                        </div>
+                                        <p class="text-[10px] text-slate-500 font-medium italic">${isFr ? "Figure pédagogique d'illustration" : "Visual diagram representation"}</p>
+                                    </div>
+                                </div>
+
+                                <div class="p-4 bg-purple-50 border border-purple-200 rounded-xl mb-6 text-xs text-slate-800 space-y-1">
+                                    <span class="font-black text-purple-900 uppercase tracking-wider block flex items-center gap-1">
+                                        💡 ${isFr ? "NOTES DE PRÉSENTATION & CONSEILS PÉDAGOGIQUES :" : "SPEAKER NOTES & LECTURE DELIVERY PROMPT:"}
+                                    </span>
+                                    <p class="font-medium text-slate-700 leading-relaxed">${slide.notes || slide.subtitle}</p>
+                                </div>
+
+                                <div class="absolute bottom-6 left-8 right-8 border-t border-slate-300 pt-3 flex items-center justify-between text-[10px] text-slate-500 font-mono">
+                                    <span>SAPPHIRE ACADEMIC PRESENTATIONS • A4 FORMAT</span>
+                                    <span>SLIDE ${sIdx + 1} OF ${slides.length}</span>
+                                </div>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            `;
+        }
+
+        function downloadPPTDeckA4PDF() {
+            if (!slidesData || slidesData.length === 0) {
+                showToast("No active presentation deck found to export.", "error");
+                return;
+            }
+
+            const topic = document.getElementById('ppt-topic')?.value || "Presentation";
+            const audience = document.getElementById('ppt-audience')?.value || "Audience";
+            const lang = document.getElementById('ppt-lang')?.value || "en";
+
+            showToast("Generating A4 Printable Presentation PDF...", "info");
+
+            let container = document.getElementById('ppt-a4-export-container');
+            if (!container) {
+                container = document.createElement('div');
+                container.id = 'ppt-a4-export-container';
+                container.className = 'fixed left-[-9999px] top-0 bg-white z-[-1]';
+                document.body.appendChild(container);
+            }
+
+            container.innerHTML = renderA4PPTDeckHtml(slidesData, topic, audience, lang);
+
+            const cleanFileName = `${topic}_A4_Presentation`.replace(/[^a-zA-Z0-9_\-]/g, '_') + '.pdf';
+            const opt = {
+                margin: [5, 5, 5, 5],
+                filename: cleanFileName,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: {
+                    scale: 2,
+                    useCORS: true,
+                    letterRendering: true,
+                    scrollY: 0
+                },
+                jsPDF: {
+                    unit: 'mm',
+                    format: 'a4',
+                    orientation: 'portrait'
+                },
+                pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+            };
+
+            if (window.html2pdf) {
+                html2pdf().set(opt).from(container.querySelector('#ppt-a4-print-content')).save().then(() => {
+                    showToast("A4 Presentation PDF Downloaded successfully!", "success");
+                }).catch(err => {
+                    console.error("PDF export error:", err);
+                    printPPTDeckA4();
+                });
+            } else {
+                printPPTDeckA4();
+            }
+        }
+
+        function printPPTDeckA4() {
+            const topic = document.getElementById('ppt-topic')?.value || "Presentation";
+            const audience = document.getElementById('ppt-audience')?.value || "Audience";
+            const lang = document.getElementById('ppt-lang')?.value || "en";
+
+            let container = document.getElementById('ppt-a4-export-container');
+            if (!container) {
+                container = document.createElement('div');
+                container.id = 'ppt-a4-export-container';
+                document.body.appendChild(container);
+            }
+            container.className = 'print-only-container';
+            container.innerHTML = renderA4PPTDeckHtml(slidesData, topic, audience, lang);
+
+            window.print();
         }
 
         function replaySlideAnimation() {
@@ -2068,6 +2347,36 @@
         function selectSlide(idx) {
             currentSlideIndex = idx;
             render3DSlider();
+        }
+
+        function moveSlideLeft(e, idx) {
+            if (e) e.stopPropagation();
+            if (idx > 0) {
+                const temp = slidesData[idx];
+                slidesData[idx] = slidesData[idx - 1];
+                slidesData[idx - 1] = temp;
+                slidesData.forEach((s, i) => s.number = i + 1);
+                
+                if (currentSlideIndex === idx) currentSlideIndex--;
+                else if (currentSlideIndex === idx - 1) currentSlideIndex++;
+                
+                render3DSlider();
+            }
+        }
+
+        function moveSlideRight(e, idx) {
+            if (e) e.stopPropagation();
+            if (idx < slidesData.length - 1) {
+                const temp = slidesData[idx];
+                slidesData[idx] = slidesData[idx + 1];
+                slidesData[idx + 1] = temp;
+                slidesData.forEach((s, i) => s.number = i + 1);
+                
+                if (currentSlideIndex === idx) currentSlideIndex++;
+                else if (currentSlideIndex === idx + 1) currentSlideIndex--;
+                
+                render3DSlider();
+            }
         }
 
         function prevSlide() {
@@ -3195,7 +3504,7 @@
                     <!-- QUESTIONS SECTION -->
                     <div class="space-y-3.5 flex-1 py-1">
                         ${questions.map((q, idx) => `
-                            <div class="space-y-1.5">
+                            <div class="space-y-1.5 question-container">
                                 <div class="text-xs font-bold text-slate-900 flex items-start justify-between gap-2 leading-relaxed">
                                     <div class="flex items-start gap-2">
                                         <span class="bg-slate-900 text-white px-2 py-0.5 rounded text-[10px] font-mono font-bold flex-shrink-0">Q${q.id || (idx + 1)}</span>
@@ -4035,7 +4344,7 @@
                     <div class="p-8 text-center text-slate-400 dark:text-slate-500 border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl">
                         <i data-lucide="folder-open" class="w-8 h-8 mx-auto mb-2 opacity-50"></i>
                         <p class="text-xs font-semibold">No saved documents yet.</p>
-                        <p class="text-[10px] mt-1">Generate a worksheet and click "Save to My Docs" to bookmark them here.</p>
+                        <p class="text-[10px] mt-1">Generate a worksheet or PowerPoint deck and click "Save" to bookmark them here.</p>
                     </div>
                 `;
                 lucide.createIcons();
@@ -4044,19 +4353,29 @@
 
             listContainer.innerHTML = savedDocs.map(doc => {
                 const encodedDoc = encodeURIComponent(JSON.stringify(doc));
+                const isPPT = (doc.type === 'presentation') || (doc.slides && doc.slides.length > 0);
+                const icon = isPPT ? 'presentation' : 'file-text';
+                const iconColor = isPPT 
+                    ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300' 
+                    : 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400';
+                const badge = isPPT ? 'PRESENTATION' : 'WORKSHEET';
+
                 return `
                     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-4 rounded-2xl bg-white/40 dark:bg-slate-900/45 border border-slate-200 dark:border-slate-800/80 hover:shadow-md transition-all">
                         <div class="flex items-start gap-3">
-                            <div class="p-3 rounded-xl bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400 flex-shrink-0">
-                                <i data-lucide="file-text" class="w-5 h-5"></i>
+                            <div class="p-3 rounded-xl ${iconColor} flex-shrink-0">
+                                <i data-lucide="${icon}" class="w-5 h-5"></i>
                             </div>
                             <div>
-                                <h4 class="text-sm font-bold text-slate-800 dark:text-slate-100">${doc.subject}: ${doc.topic}</h4>
-                                <p class="text-[11px] text-slate-500 dark:text-slate-400 font-medium">${doc.grade} • Saved on ${doc.date}</p>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-[9px] font-bold px-1.5 py-0.5 rounded ${isPPT ? 'bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-300' : 'bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300'} uppercase">${badge}</span>
+                                    <h4 class="text-sm font-bold text-slate-800 dark:text-slate-100">${doc.subject || doc.title}: ${doc.topic}</h4>
+                                </div>
+                                <p class="text-[11px] text-slate-500 dark:text-slate-400 font-medium mt-0.5">${doc.grade || doc.audience || "Classroom"} • ${isPPT ? (doc.slideCount || doc.slides?.length || 5) + ' Slides' : 'Worksheet'} • Saved on ${doc.date}</p>
                             </div>
                         </div>
                         <div class="flex items-center gap-2">
-                            <button onclick="loadSavedWorksheet('${encodedDoc}')" class="px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-blue-950/40 text-slate-700 dark:text-slate-200 hover:text-blue-600 dark:hover:text-blue-400 text-xs font-bold transition-all flex items-center gap-1">
+                            <button onclick="openSavedDocument('${encodedDoc}')" class="px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-purple-50 dark:hover:bg-purple-950/40 text-slate-700 dark:text-slate-200 hover:text-purple-600 dark:hover:text-purple-400 text-xs font-bold transition-all flex items-center gap-1">
                                 <i data-lucide="eye" class="w-3.5 h-3.5"></i> Open
                             </button>
                             <button onclick="shareWorksheetQR('${encodedDoc}')" class="px-3 py-2 rounded-xl bg-indigo-50 dark:bg-indigo-950/20 hover:bg-indigo-100 text-indigo-600 dark:text-indigo-400 text-xs font-bold transition-all flex items-center gap-1">
@@ -4073,18 +4392,45 @@
             lucide.createIcons();
         }
 
+        function openSavedDocument(encodedDoc) {
+            try {
+                const doc = JSON.parse(decodeURIComponent(encodedDoc));
+                if (doc.type === 'presentation' || (doc.slides && doc.slides.length > 0)) {
+                    switchTab('presentation');
+                    if (doc.topic) {
+                        const topInput = document.getElementById('ppt-topic');
+                        if (topInput) topInput.value = doc.topic;
+                    }
+                    if (doc.grade || doc.audience) {
+                        const audInput = document.getElementById('ppt-audience');
+                        if (audInput) audInput.value = doc.grade || doc.audience;
+                    }
+                    if (doc.slides && doc.slides.length > 0) {
+                        slidesData = doc.slides;
+                        currentSlideIndex = 0;
+                        render3DSlider();
+                        showToast("Saved presentation deck loaded successfully!", "success");
+                    }
+                } else {
+                    loadSavedWorksheet(encodedDoc);
+                }
+            } catch (err) {
+                console.error("Open document error", err);
+            }
+        }
+
         function loadSavedWorksheet(encodedDoc) {
             try {
                 const doc = JSON.parse(decodeURIComponent(encodedDoc));
                 switchTab('worksheet');
                 
-                document.getElementById('ws-subject').value = doc.subject;
-                document.getElementById('ws-topic').value = doc.topic;
-                document.getElementById('ws-grade').value = doc.grade;
-                document.getElementById('ws-count').value = doc.questions.length;
+                if (document.getElementById('ws-subject')) document.getElementById('ws-subject').value = doc.subject || "English Language";
+                if (document.getElementById('ws-topic')) document.getElementById('ws-topic').value = doc.topic || "";
+                if (document.getElementById('ws-grade')) document.getElementById('ws-grade').value = doc.grade || "Grade 8 / Intermediate";
+                if (document.getElementById('ws-count') && doc.questions) document.getElementById('ws-count').value = doc.questions.length;
                 
                 generateWorksheetDirectly(doc);
-                showToast("Worksheet opened!");
+                showToast("Worksheet opened!", "success");
             } catch (err) {
                 console.error("Load doc error", err);
             }
