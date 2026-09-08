@@ -1,6 +1,9 @@
 package com.example
 
 import android.annotation.SuppressLint
+import android.content.Context
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.os.Bundle
 import android.view.ViewGroup
 import android.webkit.JavascriptInterface
@@ -16,6 +19,11 @@ import androidx.activity.enableEdgeToEdge
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
+import com.example.data.local.AppDatabase
+import com.example.data.model.DocType
+import com.example.data.model.GeneratedDoc
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.runBlocking
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -39,12 +47,29 @@ class MainActivity : ComponentActivity() {
             systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
         }
 
+        // Pre-create WebView cache directories to prevent Chromium index / directory enumeration warnings
+        try {
+            val wasmDir = java.io.File(cacheDir, "WebView/Default/HTTP Cache/Code Cache/wasm")
+            if (!wasmDir.exists()) {
+                wasmDir.mkdirs()
+            }
+            val jsDir = java.io.File(cacheDir, "WebView/Default/HTTP Cache/Code Cache/js")
+            if (!jsDir.exists()) {
+                jsDir.mkdirs()
+            }
+        } catch (_: Exception) {}
+
+        val cm = getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager
+        val isNetworkAvailable = cm?.activeNetwork?.let {
+            cm.getNetworkCapabilities(it)?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+        } ?: false
+
         val webView = WebView(this).apply {
             layoutParams = ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT
             )
-            addJavascriptInterface(WebAppInterface(), "AndroidBridge")
+            addJavascriptInterface(WebAppInterface(this@MainActivity), "AndroidBridge")
             
             webViewClient = object : WebViewClient() {
                 override fun onPageFinished(view: WebView?, url: String?) {
@@ -71,7 +96,23 @@ class MainActivity : ComponentActivity() {
                     super.onReceivedError(view, request, error)
                 }
             }
-            webChromeClient = WebChromeClient()
+            webChromeClient = object : WebChromeClient() {
+                override fun onPermissionRequest(request: android.webkit.PermissionRequest?) {
+                    try {
+                        request?.grant(request.resources)
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
+                }
+
+                override fun onConsoleMessage(consoleMessage: android.webkit.ConsoleMessage?): Boolean {
+                    android.util.Log.d(
+                        "WebViewConsole",
+                        "${consoleMessage?.message()} -- line ${consoleMessage?.lineNumber()}"
+                    )
+                    return true
+                }
+            }
             settings.apply {
                 javaScriptEnabled = true
                 domStorageEnabled = true
@@ -80,7 +121,7 @@ class MainActivity : ComponentActivity() {
                 loadWithOverviewMode = true
                 allowFileAccess = true
                 allowContentAccess = true
-                cacheMode = WebSettings.LOAD_DEFAULT
+                cacheMode = if (isNetworkAvailable) WebSettings.LOAD_DEFAULT else WebSettings.LOAD_CACHE_ELSE_NETWORK
                 mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
                 mediaPlaybackRequiresUserGesture = false
             }
@@ -123,7 +164,7 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-class WebAppInterface {
+class WebAppInterface(private val context: Context) {
     private val httpClient = OkHttpClient.Builder()
         .connectTimeout(60, TimeUnit.SECONDS)
         .readTimeout(60, TimeUnit.SECONDS)
@@ -136,6 +177,81 @@ class WebAppInterface {
         "gemini-3.1-flash-lite-preview",
         "gemini-3.1-pro-preview"
     )
+
+    @JavascriptInterface
+    fun isNetworkConnected(): Boolean {
+        return try {
+            val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager
+            val network = cm?.activeNetwork ?: return false
+            val caps = cm.getNetworkCapabilities(network) ?: return false
+            caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    @JavascriptInterface
+    fun saveDocToRoom(title: String, docTypeStr: String, subject: String, grade: String, date: String, contentJson: String): Long {
+        return try {
+            val db = AppDatabase.getDatabase(context)
+            val type = if (docTypeStr.equals("presentation", ignoreCase = true)) DocType.PRESENTATION else DocType.WORKSHEET
+            val doc = GeneratedDoc(
+                title = title,
+                docType = type,
+                subjectOrTopic = subject,
+                gradeOrAudience = grade,
+                dateCreated = date,
+                contentJson = contentJson,
+                slideCountOrQuestionCount = 5,
+                styleOrType = "Default"
+            )
+            runBlocking {
+                db.docDao().insertDoc(doc)
+            }
+        } catch (e: Exception) {
+            -1L
+        }
+    }
+
+    @JavascriptInterface
+    fun getAllDocsFromRoom(): String {
+        return try {
+            val db = AppDatabase.getDatabase(context)
+            val docs = runBlocking {
+                db.docDao().getAllDocs().firstOrNull() ?: emptyList()
+            }
+            val arr = JSONArray()
+            for (d in docs) {
+                val obj = JSONObject()
+                obj.put("id", "db-${d.id}")
+                obj.put("dbId", d.id)
+                obj.put("title", d.title)
+                obj.put("type", d.docType.name.lowercase())
+                obj.put("subject", d.subjectOrTopic)
+                obj.put("grade", d.gradeOrAudience)
+                obj.put("topic", d.title)
+                obj.put("date", d.dateCreated)
+                obj.put("contentJson", d.contentJson)
+                arr.put(obj)
+            }
+            arr.toString()
+        } catch (e: Exception) {
+            "[]"
+        }
+    }
+
+    @JavascriptInterface
+    fun deleteDocFromRoom(id: Long): Boolean {
+        return try {
+            val db = AppDatabase.getDatabase(context)
+            runBlocking {
+                db.docDao().deleteDoc(id)
+            }
+            true
+        } catch (e: Exception) {
+            false
+        }
+    }
 
     @JavascriptInterface
     fun getApiKey(): String {

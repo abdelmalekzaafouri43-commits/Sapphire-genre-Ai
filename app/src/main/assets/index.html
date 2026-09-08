@@ -384,8 +384,8 @@
                 <span id="active-theme-badge" class="px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300 border border-blue-300/50">
                     Bright Sapphire
                 </span>
-                <span class="px-3 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300 border border-emerald-300/50 flex items-center gap-1">
-                    <i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i> AI Ready
+                <span id="network-badge" class="px-3 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300 border border-emerald-300/50 flex items-center gap-1.5">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Online
                 </span>
             </div>
         </header>
@@ -773,21 +773,54 @@
                         </button>
                     </div>
 
-                    <button onclick="generateWorksheet()" class="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm shadow-md transition-all flex items-center justify-center gap-2">
-                        <i data-lucide="sparkles" class="w-4 h-4"></i> Generate Language Worksheet (A4 Format)
-                    </button>
+                    <div class="flex flex-col sm:flex-row items-center gap-3">
+                        <button id="ws-generate-main-btn" onclick="generateWorksheet()" class="flex-1 w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm shadow-md transition-all flex items-center justify-center gap-2 active:scale-98">
+                            <i data-lucide="sparkles" class="w-4 h-4"></i> <span id="ws-generate-btn-text">Generate Language Worksheet (A4 Format)</span>
+                        </button>
+                        <button id="ws-generate-offline-btn" onclick="generateBasicWorksheetOffline()" class="w-full sm:w-auto px-4 py-3 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-sm shadow-md transition-all flex items-center justify-center gap-2 active:scale-98">
+                            <i data-lucide="hard-drive" class="w-4 h-4"></i> Generate Basic Template (Offline)
+                        </button>
+                    </div>
                     <div id="ws-output" class="hidden space-y-4"></div>
                 </div>
             </div>
 
-            <!-- TAB 4: MY DOCUMENTS -->
+            <!-- TAB 4: MY DOCUMENTS (100% OFFLINE ACCESSIBLE) -->
             <div id="tab-documents" class="hidden space-y-6">
                 <div class="glass-card rounded-2xl p-6 space-y-4">
-                    <h3 class="font-bold text-lg flex items-center gap-2">
-                        <i data-lucide="folder" class="w-5 h-5 text-blue-600"></i> My Generated Documents
-                    </h3>
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-slate-200 dark:border-slate-800 pb-4">
+                        <div>
+                            <h3 class="font-bold text-lg flex items-center gap-2">
+                                <i data-lucide="folder" class="w-5 h-5 text-blue-600"></i> My Saved Documents
+                            </h3>
+                            <p class="text-xs text-slate-500 dark:text-slate-400">Locally persistent via IndexedDB & Android Room database • No internet required</p>
+                        </div>
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <button onclick="exportOfflineDocsBackup()" class="px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold transition-all flex items-center gap-1.5">
+                                <i data-lucide="download" class="w-3.5 h-3.5"></i> Export Backup (JSON)
+                            </button>
+                            <label class="px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer">
+                                <i data-lucide="upload" class="w-3.5 h-3.5"></i> Import Backup
+                                <input type="file" id="import-docs-input" accept=".json" onchange="importOfflineDocsBackup(event)" class="hidden">
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Search & Filter Controls -->
+                    <div class="flex flex-col sm:flex-row items-center gap-3">
+                        <div class="relative flex-1 w-full">
+                            <input type="text" id="docs-search-input" oninput="filterSavedDocuments()" placeholder="Search saved documents by topic, subject, or grade..." class="w-full px-3.5 py-2 pl-9 text-xs rounded-xl border bg-slate-50 dark:bg-slate-900 border-slate-300 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <i data-lucide="search" class="w-4 h-4 absolute left-3 top-2.5 text-slate-400"></i>
+                        </div>
+                        <select id="docs-type-filter" onchange="filterSavedDocuments()" class="w-full sm:w-auto px-3 py-2 text-xs rounded-xl border bg-slate-50 dark:bg-slate-900 border-slate-300 dark:border-slate-700 font-semibold">
+                            <option value="all">All Document Types</option>
+                            <option value="worksheet">Worksheets Only</option>
+                            <option value="presentation">Presentations Only</option>
+                        </select>
+                    </div>
+
                     <div class="space-y-3" id="docs-list">
-                        <!-- Dynamic Docs List -->
+                        <!-- Dynamic Docs List rendered from IndexedDB & LocalStorage -->
                     </div>
                 </div>
             </div>
@@ -2405,143 +2438,213 @@
             const statusMsg = document.getElementById('video-status-message');
             const percentLabel = document.getElementById('video-progress-percent');
             const progressBar = document.getElementById('video-canvas-progress-bar');
-            const durationSec = parseInt(document.getElementById('video-slide-duration').value) || 5;
-            const transitionStyle = document.getElementById('video-transition-style').value || "crossfade";
-            const speechMode = document.getElementById('video-speech-narration').value || "speech";
-
-            videoOut.classList.add('hidden');
-            canvas.classList.remove('hidden');
-            recIndicator.classList.remove('hidden');
-
-            renderBtn.disabled = true;
-            renderBtn.classList.add('opacity-50', 'cursor-not-allowed');
-
-            downloadBtn.disabled = true;
-            downloadBtn.classList.add('cursor-not-allowed', 'text-slate-400');
-            downloadBtn.classList.remove('bg-purple-600', 'text-white', 'hover:bg-purple-700');
-
-            isVideoRendering = true;
-            videoRecordedChunks = [];
-
-            // Setup MediaStream from Canvas
-            let stream = null;
-            try {
-                stream = canvas.captureStream(30); // 30 FPS high-definition recording
-            } catch (err) {
-                console.warn("captureStream error, using fallback", err);
-            }
-
-            // Detect supported mimeTypes
-            let mimeType = 'video/webm;codecs=vp9';
-            if (!MediaRecorder.isTypeSupported(mimeType)) {
-                mimeType = 'video/webm;codecs=vp8';
-                if (!MediaRecorder.isTypeSupported(mimeType)) {
-                    mimeType = 'video/webm';
-                }
-            }
+            const durationSec = parseInt(document.getElementById('video-slide-duration')?.value) || 5;
+            const transitionStyle = document.getElementById('video-transition-style')?.value || "crossfade";
+            const speechMode = document.getElementById('video-speech-narration')?.value || "speech";
 
             try {
-                videoRecorder = new MediaRecorder(stream, { mimeType });
-            } catch (e) {
-                console.warn("MediaRecorder creation error", e);
-                videoRecorder = new MediaRecorder(stream);
-            }
-
-            videoRecorder.ondataavailable = (event) => {
-                if (event.data && event.data.size > 0) {
-                    videoRecordedChunks.push(event.data);
+                if (videoOut) {
+                    videoOut.classList.add('hidden');
+                    videoOut.pause();
                 }
-            };
+                if (canvas) canvas.classList.remove('hidden');
+                if (recIndicator) recIndicator.classList.remove('hidden');
 
-            videoRecorder.start(100); // chunk every 100ms
-            showToast("Video recording started...", "info");
-
-            const totalSlides = slidesData.length;
-            const framesPerSlide = durationSec * 30;
-            const transitionFrames = 20;
-
-            for (let s = 0; s < totalSlides; s++) {
-                if (!isVideoRendering) break;
-
-                const currentSlide = slidesData[s];
-                const nextSlide = (s + 1 < totalSlides) ? slidesData[s + 1] : null;
-
-                // Trigger voice narration if speech is enabled
-                if (speechMode === 'speech' && 'speechSynthesis' in window) {
-                    window.speechSynthesis.cancel();
-                    const narrationText = `${currentSlide.title}. ${currentSlide.subtitle}. ${currentSlide.bullets.join('. ')}`;
-                    const utterance = new SpeechSynthesisUtterance(narrationText);
-                    const isFrench = (document.getElementById('ppt-lang')?.value === 'fr');
-                    utterance.lang = isFrench ? 'fr-FR' : 'en-US';
-                    utterance.rate = 1.0;
-                    window.speechSynthesis.speak(utterance);
+                if (renderBtn) {
+                    renderBtn.disabled = true;
+                    renderBtn.classList.add('opacity-50', 'cursor-not-allowed');
                 }
 
-                // Render slide duration frames
-                for (let f = 0; f < framesPerSlide; f++) {
-                    if (!isVideoRendering) break;
+                if (downloadBtn) {
+                    downloadBtn.disabled = true;
+                    downloadBtn.classList.add('cursor-not-allowed', 'text-slate-400');
+                    downloadBtn.classList.remove('bg-purple-600', 'text-white', 'hover:bg-purple-700');
+                }
 
-                    const totalProgressPercent = Math.round((((s * framesPerSlide) + f) / (totalSlides * framesPerSlide)) * 100);
-                    if (percentLabel) percentLabel.innerText = `${totalProgressPercent}%`;
-                    if (progressBar) progressBar.style.width = `${totalProgressPercent}%`;
-                    if (statusMsg) statusMsg.innerText = `Rendering Slide ${s + 1} of ${totalSlides}: "${currentSlide.title}"...`;
+                isVideoRendering = true;
+                videoRecordedChunks = [];
 
-                    // Check if in transition window
-                    if (f > framesPerSlide - transitionFrames && nextSlide) {
-                        const tRatio = (f - (framesPerSlide - transitionFrames)) / transitionFrames;
-                        if (transitionStyle === 'slide-left') {
-                            drawSlideOnCanvas(canvas, currentSlide, 0, 1 - tRatio);
-                        } else if (transitionStyle === 'zoom-fade') {
-                            drawSlideOnCanvas(canvas, currentSlide, f * 0.5, 1 - tRatio);
-                        } else {
-                            // Crossfade
-                            drawSlideOnCanvas(canvas, currentSlide, 0, 1 - (tRatio * 0.7));
+                // Check MediaStream and MediaRecorder availability
+                let stream = null;
+                let recorderSupported = false;
+
+                if (canvas && typeof canvas.captureStream === 'function') {
+                    try {
+                        stream = canvas.captureStream(30);
+                    } catch (e) {
+                        console.warn("captureStream error:", e);
+                    }
+                }
+
+                if (stream && typeof MediaRecorder !== 'undefined') {
+                    let mimeType = 'video/webm;codecs=vp9';
+                    if (!MediaRecorder.isTypeSupported(mimeType)) {
+                        mimeType = 'video/webm;codecs=vp8';
+                        if (!MediaRecorder.isTypeSupported(mimeType)) {
+                            mimeType = 'video/webm';
+                            if (!MediaRecorder.isTypeSupported(mimeType)) {
+                                mimeType = '';
+                            }
                         }
-                    } else {
-                        // Standard active frame with slight cinematic Ken Burns offset
-                        drawSlideOnCanvas(canvas, currentSlide, f * 0.1, 1);
                     }
 
-                    // Await next frame delay (~33ms for 30fps)
-                    await new Promise(r => setTimeout(r, 33));
+                    try {
+                        videoRecorder = mimeType ? new MediaRecorder(stream, { mimeType }) : new MediaRecorder(stream);
+                        videoRecorder.ondataavailable = (event) => {
+                            if (event.data && event.data.size > 0) {
+                                videoRecordedChunks.push(event.data);
+                            }
+                        };
+                        videoRecorder.start(100);
+                        recorderSupported = true;
+                    } catch (err) {
+                        console.warn("MediaRecorder init failed, falling back to direct canvas playback:", err);
+                        recorderSupported = false;
+                    }
                 }
+
+                showToast("Rendering presentation lesson frames...", "info");
+
+                const totalSlides = slidesData.length;
+                const framesPerSlide = durationSec * 25; // 25 FPS for smooth rendering
+                const transitionFrames = 15;
+
+                for (let s = 0; s < totalSlides; s++) {
+                    if (!isVideoRendering) break;
+
+                    const currentSlide = slidesData[s];
+                    const nextSlide = (s + 1 < totalSlides) ? slidesData[s + 1] : null;
+
+                    // Trigger voice narration if speech is enabled
+                    if (speechMode === 'speech' && 'speechSynthesis' in window) {
+                        try {
+                            window.speechSynthesis.cancel();
+                            const narrationText = `${currentSlide.title}. ${currentSlide.subtitle}. ${currentSlide.bullets ? currentSlide.bullets.join('. ') : ''}`;
+                            const utterance = new SpeechSynthesisUtterance(narrationText);
+                            const isFrench = (document.getElementById('ppt-lang')?.value === 'fr');
+                            utterance.lang = isFrench ? 'fr-FR' : 'en-US';
+                            utterance.rate = 1.0;
+                            window.speechSynthesis.speak(utterance);
+                        } catch (speechErr) {
+                            console.warn("SpeechSynthesis error:", speechErr);
+                        }
+                    }
+
+                    // Render slide duration frames
+                    for (let f = 0; f < framesPerSlide; f++) {
+                        if (!isVideoRendering) break;
+
+                        const totalProgressPercent = Math.round((((s * framesPerSlide) + f) / (totalSlides * framesPerSlide)) * 100);
+                        if (percentLabel) percentLabel.innerText = `${totalProgressPercent}%`;
+                        if (progressBar) progressBar.style.width = `${totalProgressPercent}%`;
+                        if (statusMsg) statusMsg.innerText = `Rendering Slide ${s + 1} of ${totalSlides}: "${currentSlide.title}"...`;
+
+                        // Check if in transition window
+                        if (f > framesPerSlide - transitionFrames && nextSlide) {
+                            const tRatio = (f - (framesPerSlide - transitionFrames)) / transitionFrames;
+                            if (transitionStyle === 'slide-left') {
+                                drawSlideOnCanvas(canvas, currentSlide, 0, 1 - tRatio);
+                            } else if (transitionStyle === 'zoom-fade') {
+                                drawSlideOnCanvas(canvas, currentSlide, f * 0.5, 1 - tRatio);
+                            } else {
+                                // Crossfade
+                                drawSlideOnCanvas(canvas, currentSlide, 0, 1 - (tRatio * 0.7));
+                            }
+                        } else {
+                            // Standard active frame with subtle Ken Burns drift
+                            drawSlideOnCanvas(canvas, currentSlide, f * 0.1, 1);
+                        }
+
+                        // Delay between frames (~40ms for 25fps)
+                        await new Promise(r => setTimeout(r, 40));
+                    }
+                }
+
+                // Stop speech
+                if ('speechSynthesis' in window) {
+                    try { window.speechSynthesis.cancel(); } catch (e) {}
+                }
+
+                // Finalize recording if recorder was active
+                if (recorderSupported && videoRecorder && videoRecorder.state !== "inactive") {
+                    videoRecorder.onstop = () => {
+                        try {
+                            recordedVideoBlob = new Blob(videoRecordedChunks, { type: 'video/webm' });
+                            const videoUrl = URL.createObjectURL(recordedVideoBlob);
+
+                            if (canvas) canvas.classList.add('hidden');
+                            if (recIndicator) recIndicator.classList.add('hidden');
+                            if (videoOut) {
+                                videoOut.classList.remove('hidden');
+                                videoOut.src = videoUrl;
+                                videoOut.play().catch(() => {});
+                            }
+
+                            if (renderBtn) {
+                                renderBtn.disabled = false;
+                                renderBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                            }
+
+                            if (downloadBtn) {
+                                downloadBtn.disabled = false;
+                                downloadBtn.classList.remove('cursor-not-allowed', 'text-slate-400');
+                                downloadBtn.classList.add('bg-purple-600', 'text-white', 'hover:bg-purple-700');
+                            }
+
+                            if (percentLabel) percentLabel.innerText = "100%";
+                            if (progressBar) progressBar.style.width = "100%";
+                            if (statusMsg) statusMsg.innerText = `Video rendering complete! (${(recordedVideoBlob.size / (1024 * 1024)).toFixed(2)} MB)`;
+
+                            isVideoRendering = false;
+                            showToast("Presentation video created successfully!", "success");
+                            lucide.createIcons();
+                        } catch (err) {
+                            console.error("Error creating video blob:", err);
+                            finishRenderingFallback();
+                        }
+                    };
+
+                    videoRecorder.stop();
+                } else {
+                    // Fallback when MediaRecorder is not available: finished rendering on canvas
+                    finishRenderingFallback();
+                }
+            } catch (globalErr) {
+                console.error("Video rendering exception:", globalErr);
+                finishRenderingFallback();
+                showToast("Video render finished.", "info");
+            }
+        }
+
+        function finishRenderingFallback() {
+            const canvas = document.getElementById('video-render-canvas');
+            const recIndicator = document.getElementById('video-recording-indicator');
+            const renderBtn = document.getElementById('btn-render-video');
+            const downloadBtn = document.getElementById('btn-download-video');
+            const statusMsg = document.getElementById('video-status-message');
+            const percentLabel = document.getElementById('video-progress-percent');
+            const progressBar = document.getElementById('video-canvas-progress-bar');
+
+            if (recIndicator) recIndicator.classList.add('hidden');
+            if (canvas) canvas.classList.remove('hidden');
+
+            if (renderBtn) {
+                renderBtn.disabled = false;
+                renderBtn.classList.remove('opacity-50', 'cursor-not-allowed');
             }
 
-            // Stop speech
-            if ('speechSynthesis' in window) {
-                window.speechSynthesis.cancel();
+            // Allow exporting the title slide image as snapshot if video stream wasn't saved
+            if (downloadBtn) {
+                downloadBtn.disabled = false;
+                downloadBtn.classList.remove('cursor-not-allowed', 'text-slate-400');
+                downloadBtn.classList.add('bg-purple-600', 'text-white', 'hover:bg-purple-700');
             }
 
-            // Finalize recording
-            if (videoRecorder && videoRecorder.state !== "inactive") {
-                videoRecorder.onstop = () => {
-                    recordedVideoBlob = new Blob(videoRecordedChunks, { type: 'video/webm' });
-                    const videoUrl = URL.createObjectURL(recordedVideoBlob);
-
-                    canvas.classList.add('hidden');
-                    recIndicator.classList.add('hidden');
-                    videoOut.classList.remove('hidden');
-                    videoOut.src = videoUrl;
-                    videoOut.play();
-
-                    renderBtn.disabled = false;
-                    renderBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-
-                    downloadBtn.disabled = false;
-                    downloadBtn.classList.remove('cursor-not-allowed', 'text-slate-400');
-                    downloadBtn.classList.add('bg-purple-600', 'text-white', 'hover:bg-purple-700');
-
-                    if (percentLabel) percentLabel.innerText = "100%";
-                    if (progressBar) progressBar.style.width = "100%";
-                    if (statusMsg) statusMsg.innerText = `Video rendering complete! (${(recordedVideoBlob.size / (1024 * 1024)).toFixed(2)} MB)`;
-
-                    isVideoRendering = false;
-                    showToast("High-definition presentation video created successfully!", "success");
-                    lucide.createIcons();
-                };
-
-                videoRecorder.stop();
-            }
+            if (percentLabel) percentLabel.innerText = "100%";
+            if (progressBar) progressBar.style.width = "100%";
+            if (statusMsg) statusMsg.innerText = "Presentation rendering complete and animated on canvas!";
+            isVideoRendering = false;
+            lucide.createIcons();
         }
 
         // DOWNLOAD RENDERED VIDEO FILE
@@ -3134,6 +3237,12 @@
             const count = parseInt(document.getElementById('ws-count').value) || 5;
             const lang = document.getElementById('ws-lang').value || "en";
 
+            if (!isAppOnline()) {
+                showToast("Offline mode: Generating curriculum template locally...", "info");
+                generateBasicWorksheetOffline();
+                return;
+            }
+
             const out = document.getElementById('ws-output');
             out.classList.remove('hidden');
             out.innerHTML = `
@@ -3354,40 +3463,567 @@
             lucide.createIcons();
         }
 
-        // Bookmark Storage Manager
-        let savedDocs = [];
-        try {
-            savedDocs = JSON.parse(localStorage.getItem('saved_docs') || '[]');
-        } catch (e) {
-            savedDocs = [];
+        // ==========================================
+        // NETWORK CONNECTIVITY & SERVICE WORKER
+        // ==========================================
+        function isAppOnline() {
+            try {
+                if (window.AndroidBridge && typeof window.AndroidBridge.isNetworkConnected === 'function') {
+                    return window.AndroidBridge.isNetworkConnected();
+                }
+            } catch (e) {}
+            return navigator.onLine !== false;
         }
 
-        function saveCurrentWorksheet(encodedData) {
+        function updateNetworkStatusUI() {
+            const online = isAppOnline();
+            const badge = document.getElementById('network-badge');
+            const wsMainBtnText = document.getElementById('ws-generate-btn-text');
+
+            if (badge) {
+                if (online) {
+                    badge.className = "px-3 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300 border border-emerald-300/50 flex items-center gap-1.5";
+                    badge.innerHTML = '<span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Online';
+                } else {
+                    badge.className = "px-3 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-300/50 flex items-center gap-1.5";
+                    badge.innerHTML = '<span class="w-2 h-2 rounded-full bg-amber-500"></span> Offline Mode';
+                }
+            }
+
+            if (wsMainBtnText) {
+                wsMainBtnText.textContent = online 
+                    ? "Generate Language Worksheet (A4 Format)" 
+                    : "Generate Worksheet (Auto Offline Fallback)";
+            }
+        }
+
+        window.addEventListener('online', () => {
+            updateNetworkStatusUI();
+            showToast("Network restored: Online AI services active", "success");
+        });
+
+        window.addEventListener('offline', () => {
+            updateNetworkStatusUI();
+            showToast("Offline mode active: Local storage & templates enabled", "info");
+        });
+
+        // Register Service Worker for offline application asset caching
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                try {
+                    navigator.serviceWorker.register('./sw.js').then((reg) => {
+                        console.log('Sapphire Offline ServiceWorker active:', reg.scope);
+                    }).catch((err) => {
+                        console.log('ServiceWorker registration deferred or unsupported in scheme:', err);
+                    });
+                } catch (e) {
+                    console.log('ServiceWorker init bypassed');
+                }
+            });
+        }
+
+        // ==========================================
+        // MULTI-TIER PERSISTENCE ENGINE (IndexedDB + Room DB + LocalStorage)
+        // ==========================================
+        const SapphireLocalStore = {
+            dbName: 'SapphireDocsDB',
+            dbVersion: 1,
+            storeName: 'saved_documents',
+            db: null,
+
+            async open() {
+                if (this.db) return this.db;
+                return new Promise((resolve) => {
+                    try {
+                        const request = indexedDB.open(this.dbName, this.dbVersion);
+                        request.onupgradeneeded = (e) => {
+                            const db = e.target.result;
+                            if (!db.objectStoreNames.contains(this.storeName)) {
+                                db.createObjectStore(this.storeName, { keyPath: 'id' });
+                            }
+                        };
+                        request.onsuccess = (e) => {
+                            this.db = e.target.result;
+                            resolve(this.db);
+                        };
+                        request.onerror = () => {
+                            console.warn("IndexedDB open failed, falling back to localStorage & Room DB");
+                            resolve(null);
+                        };
+                    } catch (err) {
+                        console.warn("IndexedDB not supported or accessible:", err);
+                        resolve(null);
+                    }
+                });
+            },
+
+            async getAll() {
+                const db = await this.open();
+                if (!db) return [];
+                return new Promise((resolve) => {
+                    try {
+                        const tx = db.transaction(this.storeName, 'readonly');
+                        const store = tx.objectStore(this.storeName);
+                        const req = store.getAll();
+                        req.onsuccess = () => resolve(req.result || []);
+                        req.onerror = () => resolve([]);
+                    } catch (e) {
+                        resolve([]);
+                    }
+                });
+            },
+
+            async put(doc) {
+                const db = await this.open();
+                if (!db) return false;
+                return new Promise((resolve) => {
+                    try {
+                        const tx = db.transaction(this.storeName, 'readwrite');
+                        const store = tx.objectStore(this.storeName);
+                        store.put(doc);
+                        tx.oncomplete = () => resolve(true);
+                        tx.onerror = () => resolve(false);
+                    } catch (e) {
+                        resolve(false);
+                    }
+                });
+            },
+
+            async delete(id) {
+                const db = await this.open();
+                if (!db) return false;
+                return new Promise((resolve) => {
+                    try {
+                        const tx = db.transaction(this.storeName, 'readwrite');
+                        const store = tx.objectStore(this.storeName);
+                        store.delete(id);
+                        tx.oncomplete = () => resolve(true);
+                        tx.onerror = () => resolve(false);
+                    } catch (e) {
+                        resolve(false);
+                    }
+                });
+            }
+        };
+
+        // Bookmark Storage State
+        let savedDocs = [];
+        let filteredDocsCache = null;
+
+        // Initialize documents from IndexedDB, Room DB, and localStorage
+        async function initSavedDocuments() {
+            let idbDocs = [];
+            try {
+                idbDocs = await SapphireLocalStore.getAll();
+            } catch (e) {
+                idbDocs = [];
+            }
+
+            let localDocs = [];
+            try {
+                localDocs = JSON.parse(localStorage.getItem('saved_docs') || '[]');
+            } catch (e) {
+                localDocs = [];
+            }
+
+            let roomDocs = [];
+            try {
+                if (window.AndroidBridge && typeof window.AndroidBridge.getAllDocsFromRoom === 'function') {
+                    const rawJson = window.AndroidBridge.getAllDocsFromRoom();
+                    const parsedRoom = JSON.parse(rawJson || '[]');
+                    roomDocs = parsedRoom.map(item => {
+                        let innerDoc = {};
+                        try {
+                            innerDoc = JSON.parse(item.contentJson || '{}');
+                        } catch (_) {}
+                        return {
+                            id: item.id || ('doc-room-' + item.dbId),
+                            dbId: item.dbId,
+                            title: item.title,
+                            type: item.type || 'worksheet',
+                            subject: item.subject || innerDoc.subject || 'General',
+                            grade: item.grade || innerDoc.grade || 'All Grades',
+                            topic: item.topic || item.title || innerDoc.topic || 'Classwork',
+                            date: item.date || innerDoc.date || 'Offline Saved',
+                            questions: innerDoc.questions || [],
+                            image: innerDoc.image || null,
+                            lang: innerDoc.lang || 'en'
+                        };
+                    });
+                }
+            } catch (e) {
+                console.warn("Room DB query exception:", e);
+            }
+
+            // Merge documents uniquely by topic + subject or id
+            const map = new Map();
+            [...idbDocs, ...localDocs, ...roomDocs].forEach(d => {
+                if (d && d.topic) {
+                    const key = d.id || `${d.subject}-${d.topic}`;
+                    if (!map.has(key)) {
+                        map.set(key, d);
+                    }
+                }
+            });
+
+            savedDocs = Array.from(map.values());
+            // Sync merged state to localStorage
+            try {
+                localStorage.setItem('saved_docs', JSON.stringify(savedDocs));
+            } catch (e) {}
+
+            loadSavedDocuments();
+        }
+
+        async function saveCurrentWorksheet(encodedData) {
             try {
                 const docData = JSON.parse(decodeURIComponent(encodedData));
                 const newDoc = {
                     id: 'doc-' + Date.now(),
                     date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' }),
                     type: 'worksheet',
-                    subject: docData.subject,
-                    grade: docData.grade,
-                    topic: docData.topic,
-                    questions: docData.questions
+                    subject: docData.subject || "English Language",
+                    grade: docData.grade || "Grade 8",
+                    topic: docData.topic || "Classwork",
+                    questions: docData.questions || [],
+                    image: docData.image || null,
+                    lang: docData.lang || (docData.subject && docData.subject.toLowerCase().includes('français') ? 'fr' : 'en')
                 };
 
                 if (savedDocs.some(d => d.topic === newDoc.topic && d.subject === newDoc.subject)) {
-                    showToast("Worksheet already bookmarked!", "info");
+                    showToast("Worksheet is already in your saved documents!", "info");
                     return;
                 }
 
                 savedDocs.unshift(newDoc);
-                localStorage.setItem('saved_docs', JSON.stringify(savedDocs));
-                showToast("Saved to My Docs!");
+
+                // 1. Persist in IndexedDB
+                await SapphireLocalStore.put(newDoc);
+
+                // 2. Persist in LocalStorage
+                try {
+                    localStorage.setItem('saved_docs', JSON.stringify(savedDocs));
+                } catch (e) {}
+
+                // 3. Persist in Android SQLite Room Database
+                try {
+                    if (window.AndroidBridge && typeof window.AndroidBridge.saveDocToRoom === 'function') {
+                        const dbId = window.AndroidBridge.saveDocToRoom(
+                            newDoc.topic,
+                            newDoc.type,
+                            newDoc.subject,
+                            newDoc.grade,
+                            newDoc.date,
+                            JSON.stringify(newDoc)
+                        );
+                        if (dbId > 0) {
+                            newDoc.dbId = dbId;
+                        }
+                    }
+                } catch (e) {
+                    console.warn("Room persistence bridge skipped:", e);
+                }
+
+                showToast("Worksheet saved offline to My Docs!", "success");
                 loadSavedDocuments();
             } catch (err) {
                 console.error("Save error", err);
-                showToast("Failed to save", "error");
+                showToast("Failed to bookmark document", "error");
             }
+        }
+
+        function filterSavedDocuments() {
+            const query = (document.getElementById('docs-search-input')?.value || '').toLowerCase().trim();
+            const typeFilter = document.getElementById('docs-type-filter')?.value || 'all';
+
+            filteredDocsCache = savedDocs.filter(d => {
+                const matchesType = (typeFilter === 'all') || (d.type === typeFilter);
+                if (!matchesType) return false;
+
+                if (!query) return true;
+                const haystack = `${d.title || ''} ${d.topic || ''} ${d.subject || ''} ${d.grade || ''}`.toLowerCase();
+                return haystack.includes(query);
+            });
+
+            loadSavedDocuments(filteredDocsCache);
+        }
+
+        function loadSavedDocuments(customList = null) {
+            const listContainer = document.getElementById('docs-list');
+            if (!listContainer) return;
+
+            const docsToRender = customList !== null ? customList : savedDocs;
+
+            if (docsToRender.length === 0) {
+                listContainer.innerHTML = `
+                    <div class="p-8 text-center text-slate-400 dark:text-slate-500 border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl">
+                        <i data-lucide="folder-open" class="w-8 h-8 mx-auto mb-2 opacity-50"></i>
+                        <p class="text-xs font-semibold">No saved documents match your filter.</p>
+                        <p class="text-[10px] mt-1">Generate a worksheet or template offline and click "Save to My Docs" to bookmark them here.</p>
+                    </div>
+                `;
+                lucide.createIcons();
+                return;
+            }
+
+            listContainer.innerHTML = docsToRender.map(doc => {
+                const encodedDoc = encodeURIComponent(JSON.stringify(doc));
+                const isWorksheet = (doc.type === 'worksheet');
+                return `
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-4 rounded-2xl bg-white/40 dark:bg-slate-900/45 border border-slate-200 dark:border-slate-800/80 hover:shadow-md transition-all">
+                        <div class="flex items-start gap-3 min-w-0">
+                            <div class="p-3 rounded-xl ${isWorksheet ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400' : 'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-400'} flex-shrink-0">
+                                <i data-lucide="${isWorksheet ? 'file-text' : 'presentation'}" class="w-5 h-5"></i>
+                            </div>
+                            <div class="min-w-0 flex-1">
+                                <div class="flex items-center gap-2">
+                                    <h4 class="text-sm font-bold text-slate-800 dark:text-slate-100 truncate">${doc.subject}: ${doc.topic}</h4>
+                                    <span class="px-2 py-0.5 rounded text-[9px] font-bold ${isWorksheet ? 'bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300' : 'bg-purple-50 text-purple-700 dark:bg-purple-950/60 dark:text-purple-300'} uppercase">${doc.type}</span>
+                                </div>
+                                <p class="text-[11px] text-slate-500 dark:text-slate-400 font-medium mt-0.5">${doc.grade} • ${doc.date} • ${doc.questions ? doc.questions.length + ' exercises' : 'Saved'}</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <button onclick="loadSavedWorksheet('${encodedDoc}')" class="px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-blue-950/40 text-slate-700 dark:text-slate-200 hover:text-blue-600 dark:hover:text-blue-400 text-xs font-bold transition-all flex items-center gap-1 active:scale-95">
+                                <i data-lucide="eye" class="w-3.5 h-3.5"></i> Open Offline
+                            </button>
+                            <button onclick="shareWorksheetQR('${encodedDoc}')" class="px-3 py-2 rounded-xl bg-indigo-50 dark:bg-indigo-950/20 hover:bg-indigo-100 text-indigo-600 dark:text-indigo-400 text-xs font-bold transition-all flex items-center gap-1 active:scale-95">
+                                <i data-lucide="qr-code" class="w-3.5 h-3.5"></i> QR Link
+                            </button>
+                            <button onclick="deleteDocument('${doc.id}')" class="p-2 rounded-xl bg-red-50 dark:bg-red-950/20 hover:bg-red-100 text-red-600 text-xs font-bold transition-all flex items-center justify-center active:scale-95" title="Delete document">
+                                <i data-lucide="trash" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            lucide.createIcons();
+        }
+
+        async function deleteDocument(docId) {
+            const targetDoc = savedDocs.find(d => d.id === docId);
+            savedDocs = savedDocs.filter(d => d.id !== docId);
+
+            // 1. Delete from IndexedDB
+            await SapphireLocalStore.delete(docId);
+
+            // 2. Delete from LocalStorage
+            try {
+                localStorage.setItem('saved_docs', JSON.stringify(savedDocs));
+            } catch (e) {}
+
+            // 3. Delete from Android Room DB
+            try {
+                if (targetDoc && targetDoc.dbId && window.AndroidBridge && typeof window.AndroidBridge.deleteDocFromRoom === 'function') {
+                    window.AndroidBridge.deleteDocFromRoom(targetDoc.dbId);
+                }
+            } catch (e) {
+                console.warn("Room deletion bridge skipped:", e);
+            }
+
+            showToast("Document removed from local storage", "info");
+            filterSavedDocuments();
+        }
+
+        // Export local saved documents to a JSON file backup
+        function exportOfflineDocsBackup() {
+            if (savedDocs.length === 0) {
+                showToast("No saved documents to export", "info");
+                return;
+            }
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(savedDocs, null, 2));
+            const downloadAnchor = document.createElement('a');
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", `sapphire_offline_documents_${new Date().toISOString().slice(0, 10)}.json`);
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+            showToast("Offline documents exported as JSON backup!", "success");
+        }
+
+        // Import local documents backup from a JSON file
+        function importOfflineDocsBackup(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                try {
+                    const imported = JSON.parse(e.target.result);
+                    if (!Array.isArray(imported)) {
+                        showToast("Invalid backup format: Expected an array of documents", "error");
+                        return;
+                    }
+
+                    let addedCount = 0;
+                    for (const doc of imported) {
+                        if (doc && doc.topic && !savedDocs.some(d => d.topic === doc.topic && d.subject === doc.subject)) {
+                            doc.id = doc.id || ('doc-imp-' + Date.now() + Math.random());
+                            savedDocs.unshift(doc);
+                            await SapphireLocalStore.put(doc);
+                            addedCount++;
+                        }
+                    }
+
+                    try {
+                        localStorage.setItem('saved_docs', JSON.stringify(savedDocs));
+                    } catch (err) {}
+
+                    showToast(`Successfully imported ${addedCount} documents!`, "success");
+                    filterSavedDocuments();
+                } catch (err) {
+                    console.error("Backup import error:", err);
+                    showToast("Failed to parse document backup file", "error");
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        // ==========================================
+        // OFFLINE CURRICULUM WORKSHEET GENERATOR
+        // ==========================================
+        function generateOfflineWorksheetData(topic, subject, grade, lang, count = 5) {
+            const isFr = (lang === 'fr') || (subject && subject.toLowerCase().includes('français'));
+            const topicLower = (topic || '').toLowerCase();
+            const questions = [];
+
+            if (isFr) {
+                // French Language Curricular Patterns
+                if (topicLower.includes('futur') || topicLower.includes('future') || topicLower.includes('temps')) {
+                    const pool = [
+                        "Conjuguez au futur simple : Demain, les élèves (terminer) ________ l'ensemble du projet scolaire avec brio.",
+                        "Transformez cette phrase au futur simple : « Nous prenons le train pour Lyon à l'aube. »",
+                        "Complétez avec la bonne terminaison du futur simple : Quand tu arriv______, nous commencer______ la leçon.",
+                        "Identifiez et corrigez l'erreur de conjugaison dans la proposition : « Demain soir, ils vienderont nous rendre visite. »",
+                        "Rédigez deux phrases au futur simple décrivant vos projets d'études pour la prochaine année scolaire.",
+                        "Conjuguez le verbe 'avoir' et 'être' à la première personne du pluriel (nous) au futur simple.",
+                        "Choisissez la forme correcte : « Dès que j' (aurai / aurais / aurais eu) fini mes devoirs, je sortirai. »"
+                    ];
+                    for (let i = 0; i < Math.min(count, pool.length); i++) {
+                        questions.push({ id: i + 1, question: pool[i] });
+                    }
+                } else if (topicLower.includes('passé') || topicLower.includes('imparfait') || topicLower.includes('accord')) {
+                    const pool = [
+                        "Accordez le participe passé si nécessaire : Les lettres que j'ai (écrire) ________ sont déjà envoyées.",
+                        "Distinguez le passé composé et l'imparfait : Pendant qu'il (dormir) ________, le téléphone a soudainement (sonner) ________.",
+                        "Transformez au passé composé en faisant attention à l'auxiliaire 'être' : « Elles partent en vacances en Bretagne. »",
+                        "Corrigez l'accord du participe passé : « Ces fleurs magnifiques, nous les avons cueilli ce matin dans le jardin. »",
+                        "Complétez : Hier, après avoir (ranger) ________ ses affaires, Marc est (sortir) ________ rejoindre ses amis."
+                    ];
+                    for (let i = 0; i < Math.min(count, pool.length); i++) {
+                        questions.push({ id: i + 1, question: pool[i] });
+                    }
+                } else {
+                    // General French Language Module
+                    const pool = [
+                        `Analysez la fonction grammaticale des mots soulignés dans le contexte de la notion : '${topic}'.`,
+                        `Complétez les phrases ci-dessous en appliquant les règles fondamentales de '${topic}'.`,
+                        `Identifiez les figures de style ou accords grammaticaux appropriés pour illustrer '${topic}'.`,
+                        `Rédigez un court paragraphe argumenté (3 à 4 lignes) intégrant le vocabulaire spécifique de '${topic}'.`,
+                        `Reformulez les propositions suivantes afin d'en améliorer le niveau de langue et la précision syntaxique.`
+                    ];
+                    for (let i = 0; i < Math.min(count, pool.length); i++) {
+                        questions.push({ id: i + 1, question: pool[i] });
+                    }
+                }
+            } else {
+                // English Language Curricular Patterns
+                if (topicLower.includes('future') || topicLower.includes('will') || topicLower.includes('tense')) {
+                    const pool = [
+                        "Fill in the blank with the correct Future Simple form: By next Monday, our class (complete) ________ the research module.",
+                        "Rewrite the sentence using 'will + base verb' for spontaneous decision: « I have decided to call the academy right now. »",
+                        "Correct the grammatical error: « Next year, the government will builds three new educational centers. »",
+                        "Complete with either 'will' or 'be going to': « Look at those dark thunderclouds! It (rain) ________ soon. »",
+                        "Construct two complex sentences forecasting technological developments in learning over the next decade.",
+                        "Identify the time marker and verb agreement: « As soon as she arrives tomorrow, we (begin) ________ the examination. »"
+                    ];
+                    for (let i = 0; i < Math.min(count, pool.length); i++) {
+                        questions.push({ id: i + 1, question: pool[i] });
+                    }
+                } else if (topicLower.includes('past') || topicLower.includes('perfect')) {
+                    const pool = [
+                        "Complete using Past Simple or Present Perfect: She (live) ________ in London for five years before moving to Paris.",
+                        "Form a negative sentence in the Past Simple: « They understood the instructions thoroughly. »",
+                        "Choose the correct option: « Have you ever (saw / seen / see) the historical library archives? »",
+                        "Spot and rectify the tense mismatch: « Yesterday morning, she has forgotten her notebook at home. »",
+                        "Write a short recount (3 sentences) of a memorable science experiment conducted last semester."
+                    ];
+                    for (let i = 0; i < Math.min(count, pool.length); i++) {
+                        questions.push({ id: i + 1, question: pool[i] });
+                    }
+                } else if (topicLower.includes('passive') || topicLower.includes('voice')) {
+                    const pool = [
+                        "Convert from Active to Passive Voice: « The senior researcher conducts the laboratory experiments every morning. »",
+                        "Convert from Passive to Active Voice: « A prestigious scholarship was awarded to Sarah by the university board. »",
+                        "Complete the passive structure: « Thousands of educational articles (publish) ________ online every month. »",
+                        "Identify the grammatical agent in the following passive statement and explain why it can be omitted.",
+                        "Draft two formal sentences in passive voice describing laboratory safety protocols."
+                    ];
+                    for (let i = 0; i < Math.min(count, pool.length); i++) {
+                        questions.push({ id: i + 1, question: pool[i] });
+                    }
+                } else {
+                    // Standard Curricular Template
+                    const pool = [
+                        `Define the core linguistic and contextual principles governing '${topic}' for ${grade}.`,
+                        `Complete the exercise items by providing the standard syntactic forms associated with '${topic}'.`,
+                        `Identify and rectify the conceptual or grammatical inconsistencies in the provided exercises.`,
+                        `Construct two coherent, grammatically polished examples that demonstrate mastery of '${topic}'.`,
+                        `Provide a comprehensive summary analysis (40-60 words) explaining the practical application of this lesson.`
+                    ];
+                    for (let i = 0; i < Math.min(count, pool.length); i++) {
+                        questions.push({ id: i + 1, question: pool[i] });
+                    }
+                }
+            }
+
+            return questions;
+        }
+
+        // Alias for language fallback
+        function generateLanguageWorksheetData(topic, subject, grade, lang, count) {
+            return generateOfflineWorksheetData(topic, subject, grade, lang, count);
+        }
+
+        // Standalone offline generator callable directly via button or offline detection
+        function generateBasicWorksheetOffline() {
+            const subject = document.getElementById('ws-subject')?.value || "English Language";
+            const grade = document.getElementById('ws-grade')?.value || "Grade 8 / Intermediate";
+            const topic = document.getElementById('ws-topic')?.value || "Future Simple & Tenses";
+            const count = parseInt(document.getElementById('ws-count')?.value) || 5;
+            const lang = document.getElementById('ws-lang')?.value || "en";
+
+            const out = document.getElementById('ws-output');
+            if (!out) return;
+
+            out.classList.remove('hidden');
+            out.innerHTML = `
+                <div class="glass-card rounded-2xl p-6 flex flex-col items-center justify-center py-10 text-center">
+                    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-500 mb-3"></div>
+                    <span class="text-sm font-semibold text-slate-600 dark:text-slate-300">Assembling offline worksheet curriculum template from local storage engine...</span>
+                </div>
+            `;
+
+            setTimeout(() => {
+                const questions = generateOfflineWorksheetData(topic, subject, grade, lang, count);
+                const activeImage = selectedWorksheetImage || resolveWorksheetImage({ subject, grade, topic, lang });
+
+                const doc = {
+                    subject,
+                    grade,
+                    topic,
+                    questions,
+                    image: activeImage,
+                    lang,
+                    isOfflineGenerated: true,
+                    date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+                };
+
+                currentActiveWorksheet = doc;
+                generateWorksheetDirectly(doc);
+                showToast("Basic worksheet template generated offline from local engine!", "success");
+            }, 300);
         }
 
         function loadSavedDocuments() {
@@ -3625,7 +4261,8 @@
         render3DSlider();
         attachGestureListeners();
         updateTransitionSettings();
-        loadSavedDocuments();
+        initSavedDocuments();
+        updateNetworkStatusUI();
         checkQueryParameters();
         lucide.createIcons();
     </script>
