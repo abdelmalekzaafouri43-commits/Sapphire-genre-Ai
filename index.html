@@ -193,7 +193,7 @@
     <div id="sidebar-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black/40 backdrop-blur-xs z-20 hidden"></div>
 
     <!-- LEFT NAVIGATION SIDEBAR -->
-    <aside id="sidebar-container" class="w-72 min-w-[288px] max-w-[288px] flex-shrink-0 h-full glass-card border-r flex flex-col justify-between p-5 z-30 overflow-y-auto custom-scrollbar">
+    <aside id="sidebar-container" class="fixed inset-y-0 left-0 w-72 md:static md:w-72 glass-card border-r flex flex-col justify-between p-5 z-30 transform -translate-x-full md:translate-x-0 transition-all duration-300 overflow-y-auto custom-scrollbar">
         <div>
             <!-- Header Brand -->
             <div class="flex items-center justify-between mb-8">
@@ -207,7 +207,9 @@
                     </div>
                 </div>
                 <!-- Close menu button for mobile inside sidebar -->
-                
+                <button onclick="toggleSidebar()" class="md:hidden p-1.5 rounded-lg hover:bg-slate-200/50 dark:hover:bg-slate-800/50 text-slate-500 active:scale-95 transition-transform">
+                    <i data-lucide="chevron-left" class="w-5 h-5"></i>
+                </button>
             </div>
 
             <!-- Nav Links -->
@@ -291,7 +293,7 @@
         <!-- Top Bar -->
         <header class="h-16 border-b glass-card flex items-center justify-between px-6 z-10">
             <div class="flex items-center gap-3">
-                
+                <button onclick="toggleSidebar()" class="md:hidden p-2 rounded-xl hover:bg-slate-200/50 dark:hover:bg-slate-800/50 text-slate-700 dark:text-slate-300 active:scale-95 transition-transform" aria-label="Toggle Navigation Sidebar">
                     <i data-lucide="menu" class="w-5 h-5"></i>
                 </button>
                 <h2 id="page-title" class="font-bold text-lg tracking-tight">Dashboard</h2>
@@ -1028,7 +1030,7 @@
             document.getElementById('page-title').innerText = tabId.toUpperCase();
 
             // Auto-collapse sidebar after navigating on mobile or small screens
-            if (window.innerWidth < 1024) {
+            if (window.innerWidth < 768) {
                 const sidebar = document.getElementById('sidebar-container');
                 const overlay = document.getElementById('sidebar-overlay');
                 if (sidebar) sidebar.classList.add('-translate-x-full');
