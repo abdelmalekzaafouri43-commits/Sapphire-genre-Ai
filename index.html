@@ -300,7 +300,7 @@
                     </div>
                 </div>
 
-                <div class="flex items-center gap-3 overflow-x-auto pb-2 custom-scrollbar" id="theme-options">
+                <div class="flex flex-wrap items-center gap-3" id="theme-options">
                     <!-- Dynamic Theme Buttons rendered via JS -->
                 </div>
             </section>
@@ -820,6 +820,9 @@
     <script>
         const themes = [
             { id: 'bright-sapphire', title: 'Bright Sapphire', primary: '#0F52BA', bg: '#F0F4FF', isDark: false },
+            { id: 'eclipse-solstice', title: 'Eclipse & Solstice', primary: '#F59E0B', bg: '#1E1B4B', isDark: true },
+            { id: 'aether-nether', title: 'Aether & Nether', primary: '#06B6D4', bg: '#4C1D95', isDark: true },
+            { id: 'ivory-ebony', title: 'Ivory & Ebony', primary: '#171717', bg: '#FAFAFA', isDark: false },
             { id: 'midnight-cobalt', title: 'Midnight Cobalt', primary: '#2563EB', bg: '#0F172A', isDark: true },
             { id: 'golden-taupe', title: 'Golden Taupe', primary: '#D97706', bg: '#FDFBF7', isDark: false },
             { id: 'mossy-hollow', title: 'Mossy Hollow', primary: '#15803D', bg: '#F4F7F4', isDark: false },
@@ -905,7 +908,7 @@
         function renderThemeOptions() {
             const container = document.getElementById('theme-options');
             container.innerHTML = themes.map(t => `
-                <button onclick="setTheme('${t.id}')" class="flex-shrink-0 flex items-center gap-2.5 px-3.5 py-2 rounded-xl border text-xs font-semibold transition-all ${t.id === activeTheme.id ? 'border-blue-600 bg-blue-50 dark:bg-blue-950/40 text-blue-600' : 'border-slate-200 dark:border-slate-800 hover:bg-slate-100/50'}">
+                <button onclick="setTheme('${t.id}')" style="${t.id === activeTheme.id ? `border-color: ${t.primary}; color: ${t.primary}; background-color: ${t.primary}1A;` : ''}" class="flex-shrink-0 flex items-center gap-2.5 px-3.5 py-2 rounded-xl border text-xs font-semibold transition-all ${t.id === activeTheme.id ? 'ring-1 ring-opacity-50' : 'border-slate-200 dark:border-slate-800 hover:bg-slate-100/50'}">
                     <span class="w-3.5 h-3.5 rounded-full" style="background:${t.primary}"></span>
                     <span>${t.title}</span>
                 </button>
