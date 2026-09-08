@@ -172,23 +172,69 @@
             pointer-events: none;
         }
 
-        /* Sidebar responsive and compact styles */
-        .sidebar-collapsed {
-            width: 4.5rem !important;
-            padding-left: 0.5rem !important;
-            padding-right: 0.5rem !important;
+        /* Sidebar responsive and compact styles - Always docked on the left of the screen */
+        #sidebar-container {
+            width: 4.25rem; /* 68px compact icon rail by default on mobile */
+            min-width: 4.25rem;
+            transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1), transform 0.25s ease, box-shadow 0.25s ease;
         }
-        .sidebar-collapsed .sidebar-brand-text,
-        .sidebar-collapsed .nav-label,
-        .sidebar-collapsed .sidebar-bottom-panel .sidebar-label,
-        .sidebar-collapsed .sidebar-bottom-panel .sidebar-copyright,
-        .sidebar-collapsed .sidebar-bottom-panel > div:first-child {
+
+        /* Large screens (>= 1024px) start expanded by default */
+        @media (min-width: 1024px) {
+            #sidebar-container:not(.sidebar-collapsed) {
+                width: 16rem;
+                min-width: 16rem;
+            }
+        }
+
+        /* When on small/preview screens (< 1024px) and expanded by user tap */
+        @media (max-width: 1023px) {
+            #sidebar-container.sidebar-expanded {
+                position: fixed !important;
+                top: 0;
+                bottom: 0;
+                left: 0;
+                width: 16rem !important;
+                min-width: 16rem !important;
+                z-index: 50 !important;
+                box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            }
+        }
+
+        /* When in compact rail mode (default on mobile preview or when .sidebar-collapsed) */
+        #sidebar-container:not(.sidebar-expanded) .sidebar-brand-text,
+        #sidebar-container.sidebar-collapsed .sidebar-brand-text,
+        #sidebar-container:not(.sidebar-expanded) .nav-label,
+        #sidebar-container.sidebar-collapsed .nav-label,
+        #sidebar-container:not(.sidebar-expanded) .sidebar-bottom-panel .sidebar-label,
+        #sidebar-container.sidebar-collapsed .sidebar-bottom-panel .sidebar-label,
+        #sidebar-container:not(.sidebar-expanded) .sidebar-bottom-panel .sidebar-copyright,
+        #sidebar-container.sidebar-collapsed .sidebar-bottom-panel .sidebar-copyright,
+        #sidebar-container:not(.sidebar-expanded) .sidebar-bottom-panel > div:first-child,
+        #sidebar-container.sidebar-collapsed .sidebar-bottom-panel > div:first-child {
             display: none !important;
         }
-        .sidebar-collapsed .nav-btn {
+
+        #sidebar-container:not(.sidebar-expanded) .nav-btn,
+        #sidebar-container.sidebar-collapsed .nav-btn {
             justify-content: center !important;
             padding-left: 0.5rem !important;
             padding-right: 0.5rem !important;
+        }
+
+        @media (min-width: 1024px) {
+            #sidebar-container:not(.sidebar-collapsed) .sidebar-brand-text,
+            #sidebar-container:not(.sidebar-collapsed) .nav-label,
+            #sidebar-container:not(.sidebar-collapsed) .sidebar-bottom-panel .sidebar-label,
+            #sidebar-container:not(.sidebar-collapsed) .sidebar-bottom-panel .sidebar-copyright,
+            #sidebar-container:not(.sidebar-collapsed) .sidebar-bottom-panel > div:first-child {
+                display: block !important;
+            }
+            #sidebar-container:not(.sidebar-collapsed) .nav-btn {
+                justify-content: flex-start !important;
+                padding-left: 1rem !important;
+                padding-right: 1rem !important;
+            }
         }
 
         #print-worksheet-area {
@@ -221,8 +267,11 @@
 </head>
 <body class="h-screen flex overflow-hidden">
 
+    <!-- BACKDROP FOR MOBILE EXPANDED SIDEBAR DRAWER (ALWAYS DOCKED ON LEFT) -->
+    <div id="sidebar-backdrop" onclick="toggleSidebar(false)" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-40 hidden transition-opacity"></div>
+
     <!-- PERSISTENT LEFT SIDEBAR / DASHBOARD (ALWAYS ON THE LEFT OF THE SCREEN) -->
-    <aside id="sidebar-container" class="static inset-y-0 left-0 w-60 sm:w-64 md:w-72 glass-card border-r flex flex-col justify-between p-3.5 sm:p-5 z-40 transition-all duration-300 shadow-sm flex-shrink-0 select-none overflow-y-auto custom-scrollbar">
+    <aside id="sidebar-container" class="glass-card border-r flex flex-col justify-between p-2.5 sm:p-4 z-30 transition-all duration-300 shadow-sm flex-shrink-0 select-none overflow-y-auto custom-scrollbar">
         <div>
             <!-- Header Brand -->
             <div class="flex items-center justify-between mb-6 sm:mb-8">
@@ -297,25 +346,25 @@
     <main class="flex-1 flex flex-col h-screen overflow-hidden min-w-0">
         
         <!-- Top Bar -->
-        <header class="h-16 border-b glass-card flex items-center justify-between px-6 z-10">
-            <div class="flex items-center gap-3">
-                <button onclick="toggleSidebar()" class="p-2 rounded-xl hover:bg-slate-200/50 dark:hover:bg-slate-800/50 text-slate-700 dark:text-slate-300 active:scale-95 transition-transform" aria-label="Toggle Navigation Sidebar">
+        <header class="h-14 sm:h-16 border-b glass-card flex items-center justify-between px-3 sm:px-6 z-10">
+            <div class="flex items-center gap-2 sm:gap-3">
+                <button onclick="toggleSidebar()" class="p-1.5 sm:p-2 rounded-xl hover:bg-slate-200/50 dark:hover:bg-slate-800/50 text-slate-700 dark:text-slate-300 active:scale-95 transition-transform" aria-label="Toggle Navigation Sidebar">
                     <i data-lucide="menu" class="w-5 h-5"></i>
                 </button>
-                <h2 id="page-title" class="font-bold text-lg tracking-tight">Dashboard</h2>
+                <h2 id="page-title" class="font-bold text-base sm:text-lg tracking-tight truncate max-w-[140px] sm:max-w-none">Dashboard</h2>
             </div>
-            <div class="flex items-center gap-3">
-                <span id="active-theme-badge" class="px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300 border border-blue-300/50">
+            <div class="flex items-center gap-1.5 sm:gap-3">
+                <span id="active-theme-badge" class="px-2 sm:px-3 py-1 rounded-full text-[10px] sm:text-xs font-semibold bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300 border border-blue-300/50 truncate max-w-[100px] sm:max-w-none">
                     Bright Sapphire
                 </span>
-                <span class="px-3 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300 border border-emerald-300/50">
+                <span class="px-2 sm:px-3 py-1 rounded-full text-[10px] sm:text-xs font-semibold bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300 border border-emerald-300/50 flex-shrink-0">
                     AI Ready
                 </span>
             </div>
         </header>
 
         <!-- Dynamic Content Scroll Container -->
-        <div class="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar" id="main-content">
+        <div class="flex-1 overflow-y-auto p-3 sm:p-6 space-y-4 sm:space-y-6 custom-scrollbar" id="main-content">
 
             <!-- QUICK TAB NAVIGATION PILL BAR (ONE-CLICK OPEN & SWITCH) -->
             <div class="sticky top-0 z-20 pb-2 -mt-2">
@@ -1619,6 +1668,11 @@
                 }
             }
 
+            // On mobile / preview screens, auto-collapse sidebar drawer when a tab is selected
+            if (window.innerWidth < 1024) {
+                toggleSidebar(false);
+            }
+
             // Scroll to top smoothly
             const mainContent = document.getElementById('main-content');
             if (mainContent) mainContent.scrollTop = 0;
@@ -1626,16 +1680,42 @@
             lucide.createIcons();
         }
 
-        function toggleSidebar() {
+        function toggleSidebar(forceState) {
             const sidebar = document.getElementById('sidebar-container');
             const toggleIcon = document.getElementById('sidebar-toggle-icon');
+            const backdrop = document.getElementById('sidebar-backdrop');
             if (!sidebar) return;
-            sidebar.classList.toggle('sidebar-collapsed');
-            if (toggleIcon) {
-                if (sidebar.classList.contains('sidebar-collapsed')) {
-                    toggleIcon.setAttribute('data-lucide', 'panel-left-open');
+
+            const isDesktop = window.innerWidth >= 1024;
+            
+            if (typeof forceState === 'boolean') {
+                if (forceState) {
+                    sidebar.classList.add('sidebar-expanded');
+                    sidebar.classList.remove('sidebar-collapsed');
                 } else {
-                    toggleIcon.setAttribute('data-lucide', 'panel-left-close');
+                    sidebar.classList.remove('sidebar-expanded');
+                    sidebar.classList.add('sidebar-collapsed');
+                }
+            } else {
+                if (isDesktop) {
+                    sidebar.classList.toggle('sidebar-collapsed');
+                } else {
+                    sidebar.classList.toggle('sidebar-expanded');
+                }
+            }
+
+            const isExpanded = isDesktop 
+                ? !sidebar.classList.contains('sidebar-collapsed')
+                : sidebar.classList.contains('sidebar-expanded');
+
+            if (toggleIcon) {
+                toggleIcon.setAttribute('data-lucide', isExpanded ? 'panel-left-close' : 'panel-left-open');
+            }
+            if (backdrop) {
+                if (!isDesktop && sidebar.classList.contains('sidebar-expanded')) {
+                    backdrop.classList.remove('hidden');
+                } else {
+                    backdrop.classList.add('hidden');
                 }
             }
             lucide.createIcons();
