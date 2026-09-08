@@ -219,10 +219,13 @@
         }
     </style>
 </head>
-<body class="h-screen flex overflow-hidden">
+<body class="h-screen flex overflow-hidden relative">
 
-    <!-- PERSISTENT LEFT SIDEBAR / DASHBOARD (ALWAYS ON THE LEFT OF THE SCREEN) -->
-    <aside id="sidebar-container" class="sidebar-collapsed static inset-y-0 left-0 w-60 sm:w-64 md:w-72 glass-card border-r flex flex-col justify-between p-3.5 sm:p-5 z-40 transition-all duration-300 shadow-sm flex-shrink-0 select-none overflow-y-auto custom-scrollbar">
+    <!-- MOBILE SIDEBAR BACKDROP -->
+    <div id="sidebar-backdrop" onclick="toggleSidebar()" class="fixed inset-0 bg-slate-950/50 backdrop-blur-sm z-30 hidden lg:hidden"></div>
+
+    <!-- PERSISTENT LEFT SIDEBAR / DASHBOARD -->
+    <aside id="sidebar-container" class="fixed lg:static inset-y-0 left-0 -translate-x-full lg:translate-x-0 w-64 lg:w-64 glass-card border-r flex flex-col justify-between p-4 z-40 transition-transform duration-300 shadow-xl lg:shadow-none flex-shrink-0 select-none overflow-y-auto custom-scrollbar">
         <div>
             <!-- Header Brand -->
             <div class="flex items-center justify-between mb-6 sm:mb-8">
@@ -1628,14 +1631,21 @@
 
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar-container');
+            const backdrop = document.getElementById('sidebar-backdrop');
             const toggleIcon = document.getElementById('sidebar-toggle-icon');
             if (!sidebar) return;
-            sidebar.classList.toggle('sidebar-collapsed');
-            if (toggleIcon) {
-                if (sidebar.classList.contains('sidebar-collapsed')) {
-                    toggleIcon.setAttribute('data-lucide', 'panel-left-open');
-                } else {
-                    toggleIcon.setAttribute('data-lucide', 'panel-left-close');
+            
+            if (window.innerWidth < 1024) {
+                sidebar.classList.toggle('-translate-x-full');
+                if (backdrop) backdrop.classList.toggle('hidden');
+            } else {
+                sidebar.classList.toggle('sidebar-collapsed');
+                if (toggleIcon) {
+                    if (sidebar.classList.contains('sidebar-collapsed')) {
+                        toggleIcon.setAttribute('data-lucide', 'panel-left-open');
+                    } else {
+                        toggleIcon.setAttribute('data-lucide', 'panel-left-close');
+                    }
                 }
             }
             lucide.createIcons();

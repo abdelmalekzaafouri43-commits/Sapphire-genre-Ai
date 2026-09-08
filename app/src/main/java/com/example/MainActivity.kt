@@ -91,8 +91,8 @@ class MainActivity : ComponentActivity() {
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT
             )
-            // Set layer type to NONE so the WebView relies on system view hierarchy without triggering Mesa DRI render node probing
-            setLayerType(android.view.View.LAYER_TYPE_NONE, null)
+            // Set layer type to HARDWARE for optimal rendering and touch event dispatch
+            setLayerType(android.view.View.LAYER_TYPE_HARDWARE, null)
             setBackgroundColor(android.graphics.Color.TRANSPARENT)
             addJavascriptInterface(WebAppInterface(this@MainActivity), "AndroidBridge")
             
